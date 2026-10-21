@@ -1,0 +1,16 @@
+# Open gaps and blockers
+
+Updated: 2026-10-21. These are preparation findings, not claims that the project is blocked in full.
+
+| ID | Severity | Scope | Next action |
+|---|---|---|---|
+| GAP-001 | Release gate | SRS v1.0 stakeholder approval is pending. | Obtain recorded product, engineering, security/privacy, publishing, and QA sign-off before release. Continue implementation planning against the SRS. |
+| GAP-002 | Contract | 39 of 102 Step 1 OpenAPI operations carry `requires-specific-DTO`; design-stage contracts are not implementation-ready. | Specify request/response DTOs, errors, authorization, and negative tests per operation before building each module. |
+| GAP-003 | Data | Candidate 39-model Prisma schema has not been validated or migrated; polymorphic scopes and SQL integrity rules need review. | Run Prisma validation and database migration/transaction tests in the future Node/PostgreSQL workspace. |
+| GAP-004 | Traceability | 18 SRS business rules are absent from source traceability; 59 of 90 wireframe screens have no direct requirement link in the source mapping. | Refine screen, API, sprint, and test mappings during module planning without dropping BR rules or treating every screen as an independent requirement. |
+| GAP-005 | Business/provider | SRS DEC-01–DEC-12 remain open: legal publisher/rights, prices/trial/refunds, gateway and recurring capability, hosting RPO/RTO, upload policy, offline terms, institution proof, research lawful basis/retention/disclosure, role separation, certification/AI/classroom scope, and capacity/cost. | Use configurable, deny-by-default technical boundaries. Obtain accountable decisions before corresponding production capability or release. |
+| GAP-006 | Content | Approved manuscripts, teaching assets, final rights, and publisher review are not supplied as deployable content. | Keep future content unpublished until supplied and approved; do not fabricate production books. |
+| GAP-007 | Source package | Wireframe README references a companion single-file HTML export that is not present; editable `index.html`, CSS, JS, CSV and previews are present. | Use editable wireframe source as UI reference and request export only if needed. |
+| GAP-008 | Repository | Public GitHub remote currently has no history; internal source documents are local only. | Keep source packages out of the public initial commit. Establish a secure source-sharing route if collaborators need them. |
+
+No application source, database migration, runtime configuration, CI pipeline, or deployable service exists yet.

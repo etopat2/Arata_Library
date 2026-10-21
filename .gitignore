@@ -1,0 +1,16 @@
+# Internal source specifications supplied in the local workspace. The GitHub remote is public.
+/Documentation/Arata_TechLibrary_SRS_v1.0_2026-10-21.docx
+/Documentation/Arata_TechLibrary_Engineering_Design_Package_v1.0/
+/Documentation/Arata_TechLibrary_Step1_Implementation_Contracts_v1.0/
+/Documentation/Arata_TechLibrary_Wireframe_v3.1/
+
+# Local development and secret material.
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+coverage/
+.pytest_cache/
+__pycache__/
+*.pyc
