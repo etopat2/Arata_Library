@@ -1,0 +1,103 @@
+method,path,operation_id,tag,contract_state,security_declared,authorization_note,request_body_declared,response_codes,source_requirement_count,mapped_requirement_count,implementation_status
+POST,/api/v1/auth/register,post_auth_register,auth,draft DTO; needs implementation review,no,authenticated-or-explicit-public-policy,yes,201;400;401;403;409;429,11,11,Design only; no API service
+POST,/api/v1/auth/login,post_auth_login,auth,draft DTO; needs implementation review,no,authenticated-or-explicit-public-policy,yes,201;400;401;403;409;429,11,11,Design only; no API service
+POST,/api/v1/auth/logout,post_auth_logout,auth,requires-specific-DTO,no,authenticated-or-explicit-public-policy,yes,201;400;401;403;409;429,11,11,Design only; no API service
+POST,/api/v1/auth/verify-email,post_auth_verify_email,auth,requires-specific-DTO,no,authenticated-or-explicit-public-policy,yes,201;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/auth/password/reset-request,post_auth_password_reset_request,auth,requires-specific-DTO,no,authenticated-or-explicit-public-policy,yes,201;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/auth/password/reset,post_auth_password_reset,auth,requires-specific-DTO,no,authenticated-or-explicit-public-policy,yes,201;400;401;403;409;429,0,1,Design only; no API service
+GET,/api/v1/auth/sessions,get_auth_sessions,auth,draft DTO; needs implementation review,no,authenticated-or-explicit-public-policy,no,200;400;401;403;409;429,0,1,Design only; no API service
+DELETE,/api/v1/auth/sessions/{id},delete_auth_sessions_id,auth,draft DTO; needs implementation review,no,authenticated-or-explicit-public-policy,no,200;400;401;403;409;429,0,1,Design only; no API service
+GET,/api/v1/catalogue/collections,get_catalogue_collections,catalogue,draft DTO; needs implementation review,no,public-read,no,200;400;401;403;409;429,20,20,Design only; no API service
+GET,/api/v1/catalogue/publications,get_catalogue_publications,catalogue,draft DTO; needs implementation review,no,public-read,no,200;400;401;403;409;429,20,20,Design only; no API service
+GET,/api/v1/catalogue/publications/{id},get_catalogue_publications_id,catalogue,draft DTO; needs implementation review,no,public-read,no,200;400;401;403;409;429,20,20,Design only; no API service
+GET,/api/v1/catalogue/publications/{id}/volumes,get_catalogue_publications_id_volumes,catalogue,draft DTO; needs implementation review,no,public-read,no,200;400;401;403;409;429,0,1,Design only; no API service
+GET,/api/v1/catalogue/editions/{id},get_catalogue_editions_id,catalogue,draft DTO; needs implementation review,no,public-read,no,200;400;401;403;409;429,0,1,Design only; no API service
+GET,/api/v1/catalogue/search,get_catalogue_search,catalogue,draft DTO; needs implementation review,no,public-read,no,200;400;401;403;409;429,8,8,Design only; no API service
+GET,/api/v1/free-resources,get_free_resources,free-resources,draft DTO; needs implementation review,no,public-read,no,200;400;401;403;409;429,0,1,Design only; no API service
+GET,/api/v1/resources/{id},get_resources_id,resources,draft DTO; needs implementation review,yes,authenticated-or-explicit-public-policy,no,200;400;401;403;409;429,0,4,Design only; no API service
+GET,/api/v1/resources/{id}/open,get_resources_id_open,resources,draft DTO; needs implementation review,yes,authenticated-or-explicit-public-policy,no,200;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/resources/{id}/download,post_resources_id_download,resources,requires-specific-DTO,yes,authenticated-or-explicit-public-policy,yes,201;400;401;403;409;429,0,3,Design only; no API service
+GET,/api/v1/me/dashboard,get_me_dashboard,me,draft DTO; needs implementation review,yes,authenticated-or-explicit-public-policy,no,200;400;401;403;409;429,0,1,Design only; no API service
+GET,/api/v1/me/entitlements,get_me_entitlements,me,draft DTO; needs implementation review,yes,authenticated-or-explicit-public-policy,no,200;400;401;403;409;429,0,1,Design only; no API service
+GET,/api/v1/me/bookmarks,get_me_bookmarks,me,draft DTO; needs implementation review,yes,authenticated-or-explicit-public-policy,no,200;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/me/bookmarks,post_me_bookmarks,me,requires-specific-DTO,yes,authenticated-or-explicit-public-policy,yes,201;400;401;403;409;429,0,1,Design only; no API service
+DELETE,/api/v1/me/bookmarks/{id},delete_me_bookmarks_id,me,draft DTO; needs implementation review,yes,authenticated-or-explicit-public-policy,no,200;400;401;403;409;429,0,1,Design only; no API service
+GET,/api/v1/me/annotations,get_me_annotations,me,draft DTO; needs implementation review,yes,authenticated-or-explicit-public-policy,no,200;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/me/annotations,post_me_annotations,me,requires-specific-DTO,yes,authenticated-or-explicit-public-policy,yes,201;400;401;403;409;429,0,1,Design only; no API service
+GET,/api/v1/me/progress,get_me_progress,me,draft DTO; needs implementation review,yes,authenticated-or-explicit-public-policy,no,200;400;401;403;409;429,0,1,Design only; no API service
+PUT,/api/v1/me/progress,put_me_progress,me,requires-specific-DTO,yes,authenticated-or-explicit-public-policy,yes,200;400;401;403;409;429,0,1,Design only; no API service
+GET,/api/v1/me/privacy-preferences,get_me_privacy_preferences,me,draft DTO; needs implementation review,yes,authenticated-or-explicit-public-policy,no,200;400;401;403;409;429,0,1,Design only; no API service
+PUT,/api/v1/me/privacy-preferences,put_me_privacy_preferences,me,requires-specific-DTO,yes,authenticated-or-explicit-public-policy,yes,200;400;401;403;409;429,0,1,Design only; no API service
+GET,/api/v1/reader/editions/{id}/manifest,get_reader_editions_id_manifest,reader,draft DTO; needs implementation review,yes,authenticated-or-explicit-public-policy,no,200;400;401;403;409;429,22,22,Design only; no API service
+GET,/api/v1/reader/lessons/{id},get_reader_lessons_id,reader,draft DTO; needs implementation review,yes,authenticated-or-explicit-public-policy,no,200;400;401;403;409;429,22,26,Design only; no API service
+GET,/api/v1/reader/lessons/{id}/code-assets,get_reader_lessons_id_code_assets,reader,draft DTO; needs implementation review,yes,authenticated-or-explicit-public-policy,no,200;400;401;403;409;429,22,22,Design only; no API service
+POST,/api/v1/reader/offline-licenses,post_reader_offline_licenses,reader,requires-specific-DTO,yes,authenticated-or-explicit-public-policy,yes,201;400;401;403;409;429,12,13,Design only; no API service
+DELETE,/api/v1/reader/offline-licenses/{id},delete_reader_offline_licenses_id,reader,draft DTO; needs implementation review,yes,authenticated-or-explicit-public-policy,no,200;400;401;403;409;429,12,12,Design only; no API service
+POST,/api/v1/reader/sync,post_reader_sync,reader,requires-specific-DTO,yes,authenticated-or-explicit-public-policy,yes,201;400;401;403;409;429,0,1,Design only; no API service
+GET,/api/v1/learning/quizzes/{id},get_learning_quizzes_id,learning,draft DTO; needs implementation review,yes,authenticated-or-explicit-public-policy,no,200;400;401;403;409;429,12,12,Design only; no API service
+POST,/api/v1/learning/quizzes/{id}/attempts,post_learning_quizzes_id_attempts,learning,requires-specific-DTO,yes,authenticated-or-explicit-public-policy,yes,201;400;401;403;409;429,12,12,Design only; no API service
+POST,/api/v1/learning/attempts/{id}/submit,post_learning_attempts_id_submit,learning,requires-specific-DTO,yes,authenticated-or-explicit-public-policy,yes,201;400;401;403;409;429,12,12,Design only; no API service
+GET,/api/v1/learning/projects,get_learning_projects,learning,draft DTO; needs implementation review,yes,authenticated-or-explicit-public-policy,no,200;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/learning/projects,post_learning_projects,learning,requires-specific-DTO,yes,authenticated-or-explicit-public-policy,yes,201;400;401;403;409;429,0,1,Design only; no API service
+GET,/api/v1/plans,get_plans,plans,draft DTO; needs implementation review,no,authenticated-or-explicit-public-policy,no,200;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/orders,post_orders,orders,requires-specific-DTO,yes,authenticated-or-explicit-public-policy,yes,201;400;401;403;409;429,0,1,Design only; no API service
+GET,/api/v1/payments/{id}/status,get_payments_id_status,payments,draft DTO; needs implementation review,yes,authenticated-or-explicit-public-policy,no,200;400;401;403;409;429,18,18,Design only; no API service
+POST,/api/v1/payments/webhooks/{provider},post_payments_webhooks_provider,payments,requires-specific-DTO,no,authenticated-or-explicit-public-policy,yes,201;400;401;403;409;429,18,19,Design only; no API service
+GET,/api/v1/me/subscriptions,get_me_subscriptions,me,draft DTO; needs implementation review,yes,authenticated-or-explicit-public-policy,no,200;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/me/subscriptions/{id}/cancel,post_me_subscriptions_id_cancel,me,requires-specific-DTO,yes,authenticated-or-explicit-public-policy,yes,201;400;401;403;409;429,0,1,Design only; no API service
+GET,/api/v1/me/invoices,get_me_invoices,me,draft DTO; needs implementation review,yes,authenticated-or-explicit-public-policy,no,200;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/institutional/eligibility/check,post_institutional_eligibility_check,institutional,requires-specific-DTO,yes,authenticated-or-explicit-public-policy,yes,201;400;401;403;409;429,13,15,Design only; no API service
+GET,/api/v1/institutional/memberships,get_institutional_memberships,institutional,draft DTO; needs implementation review,yes,authenticated-or-explicit-public-policy,no,200;400;401;403;409;429,13,13,Design only; no API service
+POST,/api/v1/institutional/memberships,post_institutional_memberships,institutional,requires-specific-DTO,yes,authenticated-or-explicit-public-policy,yes,201;400;401;403;409;429,13,13,Design only; no API service
+GET,/api/v1/institutional/memberships/{id},get_institutional_memberships_id,institutional,draft DTO; needs implementation review,yes,authenticated-or-explicit-public-policy,no,200;400;401;403;409;429,13,13,Design only; no API service
+GET,/api/v1/admin/publications,get_admin_publications,admin,draft DTO; needs implementation review,yes,privileged-admin,no,200;400;401;403;409;429,71,71,Design only; no API service
+POST,/api/v1/admin/publications,post_admin_publications,admin,draft DTO; needs implementation review,yes,privileged-admin,yes,201;400;401;403;409;429,71,71,Design only; no API service
+GET,/api/v1/admin/publications/{id},get_admin_publications_id,admin,draft DTO; needs implementation review,yes,privileged-admin,no,200;400;401;403;409;429,71,71,Design only; no API service
+PATCH,/api/v1/admin/publications/{id},patch_admin_publications_id,admin,draft DTO; needs implementation review,yes,privileged-admin,yes,200;400;401;403;409;429,71,71,Design only; no API service
+POST,/api/v1/admin/publications/{id}/volumes,post_admin_publications_id_volumes,admin,draft DTO; needs implementation review,yes,privileged-admin,yes,201;400;401;403;409;429,71,71,Design only; no API service
+POST,/api/v1/admin/volumes/{id}/editions,post_admin_volumes_id_editions,admin,draft DTO; needs implementation review,yes,privileged-admin,yes,201;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/admin/editions/{id}/revisions,post_admin_editions_id_revisions,admin,draft DTO; needs implementation review,yes,privileged-admin,yes,201;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/admin/revisions/{id}/chapters,post_admin_revisions_id_chapters,admin,requires-specific-DTO,yes,privileged-admin,yes,201;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/admin/revisions/{id}/submit-review,post_admin_revisions_id_submit_review,admin,requires-specific-DTO,yes,privileged-admin,yes,201;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/admin/revisions/{id}/approve,post_admin_revisions_id_approve,admin,requires-specific-DTO,yes,privileged-admin,yes,201;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/admin/revisions/{id}/publish,post_admin_revisions_id_publish,admin,requires-specific-DTO,yes,privileged-admin,yes,201;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/admin/uploads/initiate,post_admin_uploads_initiate,admin,requires-specific-DTO,yes,privileged-admin,yes,201;400;401;403;409;429,12,12,Design only; no API service
+POST,/api/v1/admin/uploads/{id}/complete,post_admin_uploads_id_complete,admin,requires-specific-DTO,yes,privileged-admin,yes,201;400;401;403;409;429,12,12,Design only; no API service
+GET,/api/v1/admin/uploads/{id}/status,get_admin_uploads_id_status,admin,draft DTO; needs implementation review,yes,privileged-admin,no,200;400;401;403;409;429,12,12,Design only; no API service
+POST,/api/v1/admin/resource-attachments,post_admin_resource_attachments,admin,requires-specific-DTO,yes,privileged-admin,yes,201;400;401;403;409;429,0,1,Design only; no API service
+GET,/api/v1/admin/content-policies,get_admin_content_policies,admin,draft DTO; needs implementation review,yes,privileged-admin,no,200;400;401;403;409;429,0,2,Design only; no API service
+POST,/api/v1/admin/content-policies,post_admin_content_policies,admin,draft DTO; needs implementation review,yes,privileged-admin,yes,201;400;401;403;409;429,0,2,Design only; no API service
+PATCH,/api/v1/admin/content-policies/{id},patch_admin_content_policies_id,admin,draft DTO; needs implementation review,yes,privileged-admin,yes,200;400;401;403;409;429,0,1,Design only; no API service
+GET,/api/v1/admin/entitlements,get_admin_entitlements,admin,draft DTO; needs implementation review,yes,privileged-admin,no,200;400;401;403;409;429,17,17,Design only; no API service
+POST,/api/v1/admin/entitlements,post_admin_entitlements,admin,requires-specific-DTO,yes,privileged-admin,yes,201;400;401;403;409;429,17,17,Design only; no API service
+POST,/api/v1/admin/entitlements/{id}/revoke,post_admin_entitlements_id_revoke,admin,requires-specific-DTO,yes,privileged-admin,yes,201;400;401;403;409;429,17,17,Design only; no API service
+POST,/api/v1/admin/entitlements/{id}/extend,post_admin_entitlements_id_extend,admin,requires-specific-DTO,yes,privileged-admin,yes,201;400;401;403;409;429,17,17,Design only; no API service
+GET,/api/v1/admin/institutions,get_admin_institutions,admin,draft DTO; needs implementation review,yes,privileged-admin,no,200;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/admin/institutions,post_admin_institutions,admin,requires-specific-DTO,yes,privileged-admin,yes,201;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/admin/institutions/{id}/domains,post_admin_institutions_id_domains,admin,requires-specific-DTO,yes,privileged-admin,yes,201;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/admin/institution-memberships/{id}/review,post_admin_institution_memberships_id_review,admin,requires-specific-DTO,yes,privileged-admin,yes,201;400;401;403;409;429,0,1,Design only; no API service
+GET,/api/v1/admin/cohorts,get_admin_cohorts,admin,draft DTO; needs implementation review,yes,privileged-admin,no,200;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/admin/cohorts,post_admin_cohorts,admin,requires-specific-DTO,yes,privileged-admin,yes,201;400;401;403;409;429,0,1,Design only; no API service
+GET,/api/v1/admin/plans,get_admin_plans,admin,draft DTO; needs implementation review,yes,privileged-admin,no,200;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/admin/plans,post_admin_plans,admin,requires-specific-DTO,yes,privileged-admin,yes,201;400;401;403;409;429,0,1,Design only; no API service
+GET,/api/v1/admin/orders,get_admin_orders,admin,draft DTO; needs implementation review,yes,privileged-admin,no,200;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/admin/payments/reconcile,post_admin_payments_reconcile,admin,requires-specific-DTO,yes,privileged-admin,yes,201;400;401;403;409;429,18,18,Design only; no API service
+GET,/api/v1/admin/audit,get_admin_audit,admin,draft DTO; needs implementation review,yes,privileged-admin,no,200;400;401;403;409;429,20,20,Design only; no API service
+POST,/api/v1/research/events,post_research_events,research,requires-specific-DTO,no,authenticated-or-explicit-public-policy,yes,201;400;401;403;409;429,17,17,Design only; no API service
+GET,/api/v1/admin/research/dashboard,get_admin_research_dashboard,admin,draft DTO; needs implementation review,yes,admin-research,no,200;400;401;403;409;429,16,16,Design only; no API service
+GET,/api/v1/admin/research/metrics,get_admin_research_metrics,admin,draft DTO; needs implementation review,yes,admin-research,no,200;400;401;403;409;429,16,16,Design only; no API service
+GET,/api/v1/admin/research/studies,get_admin_research_studies,admin,draft DTO; needs implementation review,yes,admin-research,no,200;400;401;403;409;429,16,16,Design only; no API service
+POST,/api/v1/admin/research/studies,post_admin_research_studies,admin,requires-specific-DTO,yes,admin-research,yes,201;400;401;403;409;429,16,16,Design only; no API service
+GET,/api/v1/admin/research/reports,get_admin_research_reports,admin,draft DTO; needs implementation review,yes,admin-research,no,200;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/admin/research/reports,post_admin_research_reports,admin,requires-specific-DTO,yes,admin-research,yes,201;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/admin/research/exports,post_admin_research_exports,admin,requires-specific-DTO,yes,admin-research,yes,201;400;401;403;409;429,0,1,Design only; no API service
+GET,/api/v1/admin/research/publications,get_admin_research_publications,admin,draft DTO; needs implementation review,yes,admin-research,no,200;400;401;403;409;429,0,4,Design only; no API service
+POST,/api/v1/admin/research/publications,post_admin_research_publications,admin,draft DTO; needs implementation review,yes,admin-research,yes,201;400;401;403;409;429,0,4,Design only; no API service
+POST,/api/v1/admin/research/publications/{id}/review,post_admin_research_publications_id_review,admin,draft DTO; needs implementation review,yes,admin-research,yes,201;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/admin/research/publications/{id}/approve,post_admin_research_publications_id_approve,admin,draft DTO; needs implementation review,yes,admin-research,yes,201;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/admin/research/publications/{id}/release,post_admin_research_publications_id_release,admin,draft DTO; needs implementation review,yes,admin-research,yes,201;400;401;403;409;429,0,1,Design only; no API service
+POST,/api/v1/admin/research/publications/{id}/withdraw,post_admin_research_publications_id_withdraw,admin,draft DTO; needs implementation review,yes,admin-research,yes,201;400;401;403;409;429,0,1,Design only; no API service
+GET,/api/v1/public/insights,get_public_insights,public,draft DTO; needs implementation review,no,public-read,no,200;400;401;403;409;429,0,3,Design only; no API service
+GET,/api/v1/public/insights/{id},get_public_insights_id,public,draft DTO; needs implementation review,no,public-read,no,200;400;401;403;409;429,0,1,Design only; no API service
+GET,/api/v1/public/statistics/library-overview,get_public_statistics_library_overview,public,draft DTO; needs implementation review,no,public-read,no,200;400;401;403;409;429,0,1,Design only; no API service
+GET,/api/v1/public/statistics/popular-resources,get_public_statistics_popular_resources,public,draft DTO; needs implementation review,no,public-read,no,200;400;401;403;409;429,0,1,Design only; no API service
