@@ -16,3 +16,4 @@ prisma/generated/
 .pytest_cache/
 __pycache__/
 *.pyc
+.secrets/

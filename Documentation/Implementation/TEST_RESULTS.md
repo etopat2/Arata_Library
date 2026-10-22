@@ -25,3 +25,12 @@ Updated: 2026-10-22. This preparation task has no application code or runtime te
 | Development seed and physical ERD | Passed | Labelled draft-only sample; 75-table, 122-relationship Mermaid/DOT/SVG generated from PostgreSQL catalog. |
 | Dependency audit | Passed | `npm audit --omit=dev` reported zero vulnerabilities. |
 | Restore and application security tests | Open | Timed restore, server authorization, payment provider signatures, key management, retention worker and disclosure workflow need future services. |
+
+## Database environment and CI checks — 2026-10-22
+
+| Check | Result | Evidence / limitation |
+|---|---|---|
+| Compose definition | Passed locally | `docker compose --env-file .env.compose.local -f compose.database.yaml config --quiet`. |
+| Compose secret initialization | Passed locally | 72-character random hex password stored in ignored `.secrets`; initializer refused to overwrite it on second run. No secret value printed. |
+| Clean dependency install, audit and SBOM | Passed locally | `npm ci`; `npm audit --audit-level=high` found zero vulnerabilities; `npm sbom --package-lock-only --sbom-format=cyclonedx` generated 191 components. |
+| Docker container execution | Pending CI | Local Docker Desktop service is stopped and cannot be started in this session; the feature branch CI job will run the container path. |

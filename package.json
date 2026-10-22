@@ -11,6 +11,8 @@
     "db:migrate:test": "tsx database/scripts/migrate-test.ts",
     "db:migrate:status": "prisma migrate status",
     "db:provision:dev": "tsx database/scripts/provision-dev.ts",
+    "db:compose:init": "tsx database/scripts/init-compose.ts",
+    "db:compose:provision": "tsx database/scripts/provision-compose.ts",
     "db:grant:dev": "tsx database/scripts/grant-dev.ts",
     "db:verify": "tsx database/scripts/verify-dev.ts",
     "db:erd": "tsx database/scripts/generate-erd.ts",

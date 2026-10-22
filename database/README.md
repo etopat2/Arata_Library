@@ -25,6 +25,29 @@ Requirements: Node 22 or later, PostgreSQL 18 with a role that can create databa
 
 The migration role owns database objects. The app role receives DML only in `app` and has no `research` schema access. Separate research ingestion, reporting, and identity-link roles receive only their required schema and table privileges. Do not use the migration or privileged admin URL in the application runtime. Store credentials in a managed secret store for any nonlocal environment.
 
+## Isolated Docker development database
+
+The repository also has a PostgreSQL 18.4 Compose service on localhost port `55433` by default. It uses a separate named volume and does not connect to or modify the PostgreSQL service on port `5432`. The official PostgreSQL 18 image persists data under `/var/lib/postgresql`; the Compose mount follows that layout. The bootstrap password is a generated, ignored file mounted as a container secret, and no privileged URL is stored in the Compose environment file.
+
+From PowerShell, with Docker Desktop running:
+
+```powershell
+npm ci
+npm run db:compose:init
+docker compose --env-file .env.compose.local -f compose.database.yaml up --detach --wait
+$env:ARATA_ENV_FILE = '.env.compose.local'
+npm run db:compose:provision
+npm run db:migrate:deploy
+npm run db:migrate:test
+npm run db:grant:dev
+npm run db:verify
+npm run db:test
+```
+
+`db:compose:init` refuses to overwrite existing secret or environment files. If port `55433` is occupied, set `ARATA_POSTGRES_PORT` to another free, non-default local port before running it; the generated Compose environment file keeps provisioning and port mapping aligned. `docker compose ... down` stops the service while preserving its named data volume. Removing volumes discards that database and must be confined to a verified disposable environment. Do not apply the provisioning script to an existing database.
+
+The [database CI workflow](../.github/workflows/database.yml) runs the same provisioning, migrations, grants, SQL checks, tests, schema drift checks, dependency audit, and CycloneDX SBOM generation on an ephemeral GitHub runner. It uses read-only repository permissions, pinned action commits, and removes its disposable container, volume, and secret files after the job.
+
 | Local role | Scope |
 |---|---|
 | `arata_migrate_dev` | Owns development, test and shadow databases; migration and maintenance only. |

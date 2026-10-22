@@ -1,0 +1,73 @@
+name: Database foundation
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: database-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      ARATA_ENV_FILE: .env.compose.local
+      PRISMA_HIDE_UPDATE_MESSAGE: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Create ephemeral database secret
+        run: npm run db:compose:init
+      - name: Validate and start isolated PostgreSQL 18
+        run: |
+          docker compose --env-file .env.compose.local -f compose.database.yaml config --quiet
+          docker compose --env-file .env.compose.local -f compose.database.yaml up --detach --wait
+      - name: Provision isolated roles and databases
+        run: npm run db:compose:provision
+      - name: Apply versioned migrations
+        run: |
+          npm run db:migrate:deploy
+          npm run db:migrate:test
+          npm run db:grant:dev
+      - name: Validate schema, code and SQL integrity
+        run: |
+          npm run db:format
+          git diff --exit-code -- prisma/schema.prisma
+          npm run db:validate
+          npm run db:generate
+          npm run typecheck
+          npm run db:migrate:status
+          npx prisma migrate diff --from-migrations prisma/migrations --to-config-datasource --exit-code
+          npx prisma migrate diff --from-migrations prisma/migrations --to-schema prisma/schema.prisma --exit-code
+          npm run db:verify
+          npm run db:test
+      - name: Audit dependencies and create SBOM
+        run: |
+          npm audit --audit-level=high
+          npm sbom --package-lock-only --sbom-format=cyclonedx > "$RUNNER_TEMP/arata-sbom.cdx.json"
+      - name: Upload dependency SBOM
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: arata-database-sbom
+          path: ${{ runner.temp }}/arata-sbom.cdx.json
+          retention-days: 30
+      - name: Remove ephemeral database and secrets
+        if: always()
+        run: |
+          docker compose --env-file .env.compose.local -f compose.database.yaml down --volumes --remove-orphans || true
+          rm -f .env.compose.local .secrets/postgres_bootstrap_password
