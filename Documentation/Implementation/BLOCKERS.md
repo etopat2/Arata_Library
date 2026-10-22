@@ -13,6 +13,6 @@ Updated: 2026-10-22. These are preparation findings, not claims that the project
 | GAP-007 | Source package | Wireframe README references a companion single-file HTML export that is not present; editable `index.html`, CSS, JS, CSV and previews are present. | Use editable wireframe source as UI reference and request export only if needed. |
 | GAP-008 | Repository | Public GitHub remote now has project history; internal source documents remain local only. | Continue keeping source packages out of public commits. Establish a secure sharing route if collaborators need them. |
 | GAP-009 | Release gate | DR-006 encrypted identity mapping service and key management, DR-009 timed restore drill, and scheduled retention execution are not delivered by the schema. | Implement and validate these before release. |
-| GAP-010 | Resolved for database CI | Docker Desktop engine was unavailable in the Windows session. | [Feature branch CI run 39727149026](https://github.com/etopat2/Arata_Library/actions/runs/39727149026) passed the complete PostgreSQL container path. Local Docker remains optional for developers with a running engine. |
+| GAP-010 | Resolved for database CI | Docker Desktop engine was unavailable in the Windows session. | [Main CI run 39727484615](https://github.com/etopat2/Arata_Library/actions/runs/39727484615) passed the complete PostgreSQL container path. Local Docker remains optional for developers with a running engine. |
 
-No application API, CI pipeline, or deployable service exists yet. The local database foundation and development configuration are present.
+No application API or deployable service exists yet. The database CI pipeline and local database foundation are present; full application CI gates remain open.
