@@ -1,10 +1,11 @@
 # Implementation progress
 
-Updated: 2026-10-21. Status describes verified implementation, not design intent.
+Updated: 2026-10-22. Status describes verified implementation, not design intent.
 
 | Task | Status | Requirement IDs | Wireframe screens | Paths | Verification |
 |---|---|---|---|---|---|
 | Project inventory and operating rules | Complete | NFR-OPS-006; BR-001–BR-018 included in tracker | N/A (documentation task) | `AGENTS.md`; `.gitignore`; `Documentation/Implementation/*` | See `TEST_RESULTS.md` |
 | Application implementation | Not started | Remaining SRS baseline | 90-screen source inventory | N/A | No application tests run |
+| PostgreSQL database foundation | Complete for data layer; product features remain open | DR-001–DR-007, DR-009–DR-010; FR-PUB-001–004; FR-ENT-001–004; FR-PAY-001–004; FR-INS-001–004; RAI-COL-001–004; RAI-PUB-001–004; database aspects of BR-001–010 and BR-013–018 | `studio`, `publication-tree`, `content-policy`, `entitlements`, `eligibility`, `research-overview`, `security-audit` | `prisma/schema.prisma`; `prisma/migrations/`; `database/`; `.env.database.example` | PostgreSQL 18.4: 3 migrations; 8/8 tests; 75 tables, 122 FKs; migration and schema diffs empty. See `database/VALIDATION_REPORT.md`. |
 
-The original 269-row design traceability is a planning aid. The implementation tracker contains 287 IDs from the SRS: 269 tagged requirements plus 18 business rules. No product feature is marked implemented.
+The original 269-row design traceability is a planning aid. The implementation tracker contains 287 IDs from the SRS: 269 tagged requirements plus 18 business rules. Database contribution is separate from full feature delivery; no application feature is marked implemented.

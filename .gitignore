@@ -8,9 +8,11 @@
 .env
 .env.*
 !.env.example
+!.env.database.example
 node_modules/
 dist/
 coverage/
+prisma/generated/
 .pytest_cache/
 __pycache__/
 *.pyc

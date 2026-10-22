@@ -1,0 +1,1457 @@
+generator client {
+  provider = "prisma-client"
+  output   = "./generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["app", "research", "research_private"]
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  CLOSED
+
+  @@schema("app")
+}
+
+enum AuthenticatorKind {
+  PASSWORD
+  TOTP
+  PASSKEY
+  RECOVERY_CODE
+
+  @@schema("app")
+}
+
+enum PublicationKind {
+  STANDALONE
+  SERIES
+
+  @@schema("app")
+}
+
+enum PublicationStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+  WITHDRAWN
+
+  @@schema("app")
+}
+
+enum RevisionStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  PUBLISHED
+  REJECTED
+
+  @@schema("app")
+}
+
+enum ReviewDecision {
+  APPROVED
+  CHANGES_REQUESTED
+  REJECTED
+
+  @@schema("app")
+}
+
+enum AssetStatus {
+  QUARANTINED
+  SCANNING
+  CLEAN
+  REJECTED
+
+  @@schema("app")
+}
+
+enum AccessClass {
+  PUBLIC_FREE
+  REGISTERED_FREE
+  PREMIUM
+  RESTRICTED
+
+  @@schema("app")
+}
+
+enum EntitlementSource {
+  PAID
+  TRIAL
+  INSTITUTION
+  COMPLIMENTARY
+  SPONSORED
+
+  @@schema("app")
+}
+
+enum EntitlementStatus {
+  PENDING
+  ACTIVE
+  REVOKED
+
+  @@schema("app")
+}
+
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+
+  @@schema("app")
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+  REFUNDED
+
+  @@schema("app")
+}
+
+enum PaymentStatus {
+  INITIATED
+  PENDING
+  VERIFIED
+  FAILED
+  REVERSED
+
+  @@schema("app")
+}
+
+enum RefundStatus {
+  REQUESTED
+  APPROVED
+  SUBMITTED
+  SETTLED
+  REJECTED
+
+  @@schema("app")
+}
+
+enum InstitutionStatus {
+  PENDING
+  APPROVED
+  SUSPENDED
+  REJECTED
+
+  @@schema("app")
+}
+
+enum MembershipStatus {
+  PENDING
+  VERIFIED
+  SUSPENDED
+  EXPIRED
+  REJECTED
+
+  @@schema("app")
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXCEPTION
+
+  @@schema("app")
+}
+
+enum AttemptStatus {
+  STARTED
+  SUBMITTED
+  GRADED
+
+  @@schema("app")
+}
+
+enum NotificationStatus {
+  QUEUED
+  SENT
+  FAILED
+
+  @@schema("app")
+}
+
+enum SubjectRequestStatus {
+  OPEN
+  VERIFYING
+  PROCESSING
+  COMPLETED
+  REJECTED
+
+  @@schema("app")
+}
+
+enum EntitlementScope {
+  LIBRARY
+  PUBLICATION
+  VOLUME
+  EDITION
+  RESOURCE
+
+  @@schema("app")
+}
+
+enum ResearchReportStatus {
+  DRAFT
+  UNDER_REVIEW
+  APPROVED
+  RELEASED
+  WITHDRAWN
+
+  @@schema("research")
+}
+
+enum ResearchStudyStatus {
+  DRAFT
+  APPROVED
+  PAUSED
+  CLOSED
+
+  @@schema("research")
+}
+
+model User {
+  id                 String              @id @default(uuid()) @db.Uuid
+  email              String              @unique @db.VarChar(320)
+  passwordHash       String?             @db.VarChar(255)
+  status             UserStatus          @default(ACTIVE)
+  emailVerifiedAt    DateTime?           @db.Timestamptz(6)
+  termsAcceptedAt    DateTime            @db.Timestamptz(6)
+  privacyVersion     String              @db.VarChar(64)
+  createdAt          DateTime            @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime            @updatedAt @db.Timestamptz(6)
+  profile            UserProfile?
+  sessions           AuthSession[]
+  authenticators     Authenticator[]
+  verificationTokens VerificationToken[]
+  roles              RoleAssignment[]
+  privacyPreferences PrivacyPreference[]
+  subjectRequests    SubjectRequest[]
+  publications       Publication[]
+  uploads            Asset[]
+  editorialReviews   EditorialReview[]
+  subscriptions      Subscription[]
+  trialUsages        TrialUsage[]
+  orders             Order[]
+  entitlements       Entitlement[]
+  memberships        Membership[]
+  cohortMemberships  CohortMember[]
+  progress           ReadingProgress[]
+  bookmarks          Bookmark[]
+  annotations        Annotation[]
+  quizAttempts       QuizAttempt[]
+  projectSubmissions ProjectSubmission[]
+  offlineLicences    OfflineLicence[]
+  syncOperations     SyncOperation[]
+  notifications      Notification[]
+  auditEvents        AuditEvent[]
+  pseudonymLinks     PseudonymLink[]
+  policyChanges      PolicyChange[]
+  requestedGrants    GrantApproval[]     @relation("GrantRequester")
+  approvedGrants     GrantApproval[]     @relation("GrantApprover")
+  eligibilityReviews EligibilityReview[]
+  approvalsRequested ApprovalRequest[]   @relation("ApprovalRequester")
+  approvalsDecided   ApprovalRequest[]   @relation("ApprovalDecider")
+  disclosureReviews  DisclosureReview[]
+  researchExports    ResearchExport[]
+  publishedInsights  PublicInsight[]
+  researchAudits     ResearchAudit[]
+  approvedDomains    InstitutionDomain[]
+
+  @@schema("app")
+}
+
+model UserProfile {
+  userId      String   @id @db.Uuid
+  displayName String?  @db.VarChar(200)
+  locale      String   @default("en-GB") @db.VarChar(32)
+  timezone    String   @default("UTC") @db.VarChar(80)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@schema("app")
+}
+
+model AuthSession {
+  id            String    @id @default(uuid()) @db.Uuid
+  userId        String    @db.Uuid
+  tokenHash     String    @unique @db.VarChar(128)
+  expiresAt     DateTime  @db.Timestamptz(6)
+  revokedAt     DateTime? @db.Timestamptz(6)
+  mfaVerifiedAt DateTime? @db.Timestamptz(6)
+  createdAt     DateTime  @default(now()) @db.Timestamptz(6)
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@schema("app")
+}
+
+model Authenticator {
+  id             String            @id @default(uuid()) @db.Uuid
+  userId         String            @db.Uuid
+  kind           AuthenticatorKind
+  credentialHash String            @db.VarChar(512)
+  lastUsedAt     DateTime?         @db.Timestamptz(6)
+  createdAt      DateTime          @default(now()) @db.Timestamptz(6)
+  revokedAt      DateTime?         @db.Timestamptz(6)
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, kind])
+  @@schema("app")
+}
+
+model VerificationToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  purpose   String    @db.VarChar(64)
+  tokenHash String    @unique @db.VarChar(128)
+  expiresAt DateTime  @db.Timestamptz(6)
+  usedAt    DateTime? @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose, expiresAt])
+  @@schema("app")
+}
+
+model Role {
+  id          String           @id @default(uuid()) @db.Uuid
+  code        String           @unique @db.VarChar(80)
+  description String?
+  assignments RoleAssignment[]
+  permissions RolePermission[]
+
+  @@schema("app")
+}
+
+model Permission {
+  id          String           @id @default(uuid()) @db.Uuid
+  code        String           @unique @db.VarChar(120)
+  description String?
+  roles       RolePermission[]
+
+  @@schema("app")
+}
+
+model RolePermission {
+  roleId       String     @db.Uuid
+  permissionId String     @db.Uuid
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@schema("app")
+}
+
+model RoleAssignment {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  roleId    String    @db.Uuid
+  scopeType String    @default("PLATFORM") @db.VarChar(32)
+  scopeId   String?   @db.Uuid
+  startsAt  DateTime  @default(now()) @db.Timestamptz(6)
+  endsAt    DateTime? @db.Timestamptz(6)
+  revokedAt DateTime? @db.Timestamptz(6)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role      @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@index([userId, roleId, scopeType, scopeId])
+  @@schema("app")
+}
+
+model ProcessingPurpose {
+  id          String              @id @default(uuid()) @db.Uuid
+  code        String              @unique @db.VarChar(80)
+  description String
+  lawfulBasis String              @db.VarChar(120)
+  optional    Boolean             @default(false)
+  preferences PrivacyPreference[]
+  retention   RetentionPolicy[]
+  events      ResearchEvent[]
+
+  @@schema("app")
+}
+
+model PrivacyPreference {
+  id            String            @id @default(uuid()) @db.Uuid
+  userId        String            @db.Uuid
+  purposeId     String            @db.Uuid
+  granted       Boolean
+  policyVersion String            @db.VarChar(64)
+  effectiveAt   DateTime          @default(now()) @db.Timestamptz(6)
+  withdrawnAt   DateTime?         @db.Timestamptz(6)
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose       ProcessingPurpose @relation(fields: [purposeId], references: [id], onDelete: Restrict)
+
+  @@index([userId, purposeId, effectiveAt])
+  @@schema("app")
+}
+
+model SubjectRequest {
+  id          String               @id @default(uuid()) @db.Uuid
+  userId      String               @db.Uuid
+  requestType String               @db.VarChar(40)
+  status      SubjectRequestStatus @default(OPEN)
+  reason      String?
+  requestedAt DateTime             @default(now()) @db.Timestamptz(6)
+  resolvedAt  DateTime?            @db.Timestamptz(6)
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId, status])
+  @@schema("app")
+}
+
+model RetentionPolicy {
+  id         String            @id @default(uuid()) @db.Uuid
+  purposeId  String            @db.Uuid
+  dataClass  String            @db.VarChar(80)
+  days       Int?
+  legalBasis String
+  approvedAt DateTime?         @db.Timestamptz(6)
+  version    Int
+  purpose    ProcessingPurpose @relation(fields: [purposeId], references: [id], onDelete: Restrict)
+
+  @@unique([purposeId, dataClass, version])
+  @@schema("app")
+}
+
+model Collection {
+  id           String                  @id @default(uuid()) @db.Uuid
+  slug         String                  @unique @db.VarChar(200)
+  title        String                  @db.VarChar(300)
+  description  String?
+  createdAt    DateTime                @default(now()) @db.Timestamptz(6)
+  publications PublicationCollection[]
+
+  @@schema("app")
+}
+
+model PublicationCollection {
+  publicationId String      @db.Uuid
+  collectionId  String      @db.Uuid
+  publication   Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  collection    Collection  @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@id([publicationId, collectionId])
+  @@schema("app")
+}
+
+model Publication {
+  id              String                  @id @default(uuid()) @db.Uuid
+  slug            String                  @unique @db.VarChar(200)
+  title           String                  @db.VarChar(400)
+  kind            PublicationKind
+  status          PublicationStatus       @default(DRAFT)
+  ownerId         String                  @db.Uuid
+  copyrightNotice String?
+  createdAt       DateTime                @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime                @updatedAt @db.Timestamptz(6)
+  owner           User                    @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  collections     PublicationCollection[]
+  volumes         Volume[]
+  editions        Edition[]
+  resources       Resource[]
+  policies        ContentPolicy[]
+  entitlements    Entitlement[]
+  researchEvents  ResearchEvent[]
+
+  @@index([status, kind])
+  @@schema("app")
+}
+
+model Volume {
+  id            String          @id @default(uuid()) @db.Uuid
+  publicationId String          @db.Uuid
+  ordinal       Int
+  title         String          @db.VarChar(400)
+  createdAt     DateTime        @default(now()) @db.Timestamptz(6)
+  publication   Publication     @relation(fields: [publicationId], references: [id], onDelete: Restrict)
+  editions      Edition[]
+  resources     Resource[]
+  policies      ContentPolicy[]
+  entitlements  Entitlement[]
+
+  @@unique([publicationId, ordinal])
+  @@unique([id, publicationId])
+  @@schema("app")
+}
+
+model Edition {
+  id                String            @id @default(uuid()) @db.Uuid
+  publicationId     String            @db.Uuid
+  volumeId          String?           @db.Uuid
+  editionCode       String            @db.VarChar(60)
+  label             String            @db.VarChar(200)
+  currentRevisionId String?           @db.Uuid
+  isDefault         Boolean           @default(false)
+  createdAt         DateTime          @default(now()) @db.Timestamptz(6)
+  publication       Publication       @relation(fields: [publicationId], references: [id], onDelete: Restrict)
+  volume            Volume?           @relation(fields: [volumeId, publicationId], references: [id, publicationId], onDelete: Restrict)
+  revisions         Revision[]        @relation("EditionRevisions")
+  currentRevision   Revision?         @relation("CurrentRevision", fields: [currentRevisionId], references: [id], onDelete: Restrict)
+  resources         Resource[]
+  policies          ContentPolicy[]
+  entitlements      Entitlement[]
+  progress          ReadingProgress[]
+  bookmarks         Bookmark[]
+  annotations       Annotation[]
+  offlineLicences   OfflineLicence[]
+
+  @@index([publicationId, volumeId])
+  @@schema("app")
+}
+
+model Revision {
+  id              String            @id @default(uuid()) @db.Uuid
+  editionId       String            @db.Uuid
+  number          Int
+  status          RevisionStatus    @default(DRAFT)
+  manifestHash    String?           @db.VarChar(128)
+  changeSummary   String?
+  publishedAt     DateTime?         @db.Timestamptz(6)
+  createdAt       DateTime          @default(now()) @db.Timestamptz(6)
+  edition         Edition           @relation("EditionRevisions", fields: [editionId], references: [id], onDelete: Restrict)
+  currentFor      Edition[]         @relation("CurrentRevision")
+  chapters        Chapter[]
+  reviews         EditorialReview[]
+  resources       Resource[]
+  policies        ContentPolicy[]
+  quizzes         Quiz[]
+  researchEvents  ResearchEvent[]
+  bookmarks       Bookmark[]
+  annotations     Annotation[]
+  offlineLicences OfflineLicence[]
+
+  @@unique([editionId, number])
+  @@unique([id, editionId])
+  @@schema("app")
+}
+
+model Chapter {
+  id         String          @id @default(uuid()) @db.Uuid
+  revisionId String          @db.Uuid
+  ordinal    Int
+  slug       String          @db.VarChar(200)
+  title      String          @db.VarChar(400)
+  revision   Revision        @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  lessons    Lesson[]
+  resources  Resource[]
+  policies   ContentPolicy[]
+
+  @@unique([revisionId, ordinal])
+  @@unique([revisionId, slug])
+  @@schema("app")
+}
+
+model Lesson {
+  id          String            @id @default(uuid()) @db.Uuid
+  chapterId   String            @db.Uuid
+  ordinal     Int
+  title       String            @db.VarChar(400)
+  bodyAssetId String?           @db.Uuid
+  contentHash String?           @db.VarChar(128)
+  chapter     Chapter           @relation(fields: [chapterId], references: [id], onDelete: Restrict)
+  bodyAsset   Asset?            @relation("LessonBody", fields: [bodyAssetId], references: [id], onDelete: Restrict)
+  resources   Resource[]
+  policies    ContentPolicy[]
+  progress    ReadingProgress[]
+  quizzes     Quiz[]
+  projects    Project[]
+
+  @@unique([chapterId, ordinal])
+  @@schema("app")
+}
+
+model Asset {
+  id           String               @id @default(uuid()) @db.Uuid
+  uploadedById String               @db.Uuid
+  storageKey   String               @unique @db.VarChar(500)
+  originalName String               @db.VarChar(400)
+  mimeType     String               @db.VarChar(160)
+  sizeBytes    BigInt
+  sha256       String               @db.VarChar(64)
+  status       AssetStatus          @default(QUARANTINED)
+  scanEvidence Json?
+  scannedAt    DateTime?            @db.Timestamptz(6)
+  createdAt    DateTime             @default(now()) @db.Timestamptz(6)
+  uploadedBy   User                 @relation(fields: [uploadedById], references: [id], onDelete: Restrict)
+  lessonBodies Lesson[]             @relation("LessonBody")
+  attachments  ResourceAttachment[]
+  submissions  ProjectSubmission[]
+
+  @@index([status, createdAt])
+  @@index([sha256])
+  @@schema("app")
+}
+
+model Resource {
+  id            String               @id @default(uuid()) @db.Uuid
+  title         String               @db.VarChar(400)
+  accessClass   AccessClass          @default(RESTRICTED)
+  licenceCode   String               @db.VarChar(100)
+  publishedAt   DateTime?            @db.Timestamptz(6)
+  withdrawnAt   DateTime?            @db.Timestamptz(6)
+  publicationId String?              @db.Uuid
+  volumeId      String?              @db.Uuid
+  editionId     String?              @db.Uuid
+  revisionId    String?              @db.Uuid
+  chapterId     String?              @db.Uuid
+  lessonId      String?              @db.Uuid
+  createdAt     DateTime             @default(now()) @db.Timestamptz(6)
+  publication   Publication?         @relation(fields: [publicationId], references: [id], onDelete: Restrict)
+  volume        Volume?              @relation(fields: [volumeId], references: [id], onDelete: Restrict)
+  edition       Edition?             @relation(fields: [editionId], references: [id], onDelete: Restrict)
+  revision      Revision?            @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  chapter       Chapter?             @relation(fields: [chapterId], references: [id], onDelete: Restrict)
+  lesson        Lesson?              @relation(fields: [lessonId], references: [id], onDelete: Restrict)
+  attachments   ResourceAttachment[]
+  policies      ContentPolicy[]
+  entitlements  Entitlement[]
+
+  @@index([accessClass, publishedAt])
+  @@schema("app")
+}
+
+model ResourceAttachment {
+  resourceId String   @db.Uuid
+  assetId    String   @db.Uuid
+  ordinal    Int      @default(0)
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Restrict)
+  asset      Asset    @relation(fields: [assetId], references: [id], onDelete: Restrict)
+
+  @@id([resourceId, assetId])
+  @@unique([resourceId, ordinal])
+  @@schema("app")
+}
+
+model EditorialReview {
+  id           String         @id @default(uuid()) @db.Uuid
+  revisionId   String         @db.Uuid
+  reviewerId   String         @db.Uuid
+  decision     ReviewDecision
+  manifestHash String         @db.VarChar(128)
+  comment      String?
+  decidedAt    DateTime       @default(now()) @db.Timestamptz(6)
+  revision     Revision       @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  reviewer     User           @relation(fields: [reviewerId], references: [id], onDelete: Restrict)
+
+  @@unique([revisionId, reviewerId, manifestHash])
+  @@schema("app")
+}
+
+model ContentPolicy {
+  id            String         @id @default(uuid()) @db.Uuid
+  publicationId String?        @db.Uuid
+  volumeId      String?        @db.Uuid
+  editionId     String?        @db.Uuid
+  revisionId    String?        @db.Uuid
+  chapterId     String?        @db.Uuid
+  lessonId      String?        @db.Uuid
+  resourceId    String?        @db.Uuid
+  accessClass   AccessClass?
+  allowRead     Boolean?
+  allowDownload Boolean?
+  allowCopy     Boolean?
+  allowPrint    Boolean?
+  allowOffline  Boolean?
+  allowShare    Boolean?
+  watermark     Boolean?
+  version       Int
+  isActive      Boolean        @default(false)
+  approvedAt    DateTime?      @db.Timestamptz(6)
+  createdAt     DateTime       @default(now()) @db.Timestamptz(6)
+  publication   Publication?   @relation(fields: [publicationId], references: [id], onDelete: Restrict)
+  volume        Volume?        @relation(fields: [volumeId], references: [id], onDelete: Restrict)
+  edition       Edition?       @relation(fields: [editionId], references: [id], onDelete: Restrict)
+  revision      Revision?      @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  chapter       Chapter?       @relation(fields: [chapterId], references: [id], onDelete: Restrict)
+  lesson        Lesson?        @relation(fields: [lessonId], references: [id], onDelete: Restrict)
+  resource      Resource?      @relation(fields: [resourceId], references: [id], onDelete: Restrict)
+  changes       PolicyChange[]
+
+  @@schema("app")
+}
+
+model PolicyChange {
+  id         String        @id @default(uuid()) @db.Uuid
+  policyId   String        @db.Uuid
+  actorId    String        @db.Uuid
+  beforeHash String?       @db.VarChar(128)
+  afterHash  String        @db.VarChar(128)
+  reason     String
+  changedAt  DateTime      @default(now()) @db.Timestamptz(6)
+  policy     ContentPolicy @relation(fields: [policyId], references: [id], onDelete: Restrict)
+  actor      User          @relation(fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([policyId, changedAt])
+  @@schema("app")
+}
+
+model Plan {
+  id       String        @id @default(uuid()) @db.Uuid
+  code     String        @unique @db.VarChar(80)
+  name     String        @db.VarChar(200)
+  active   Boolean       @default(false)
+  versions PlanVersion[]
+
+  @@schema("app")
+}
+
+model PlanVersion {
+  id            String         @id @default(uuid()) @db.Uuid
+  planId        String         @db.Uuid
+  version       Int
+  currencyCode  String         @db.VarChar(3)
+  amountMinor   BigInt
+  periodMonths  Int?
+  scopeKind     String         @db.VarChar(32)
+  scopeId       String?        @db.Uuid
+  termsHash     String         @db.VarChar(128)
+  validFrom     DateTime       @db.Timestamptz(6)
+  validUntil    DateTime?      @db.Timestamptz(6)
+  plan          Plan           @relation(fields: [planId], references: [id], onDelete: Restrict)
+  subscriptions Subscription[]
+  orders        Order[]
+
+  @@unique([planId, version])
+  @@index([validFrom, validUntil])
+  @@schema("app")
+}
+
+model Subscription {
+  id                 String             @id @default(uuid()) @db.Uuid
+  userId             String             @db.Uuid
+  planVersionId      String             @db.Uuid
+  status             SubscriptionStatus @default(PENDING)
+  currentPeriodStart DateTime?          @db.Timestamptz(6)
+  currentPeriodEnd   DateTime?          @db.Timestamptz(6)
+  cancelAtPeriodEnd  Boolean            @default(false)
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+  user               User               @relation(fields: [userId], references: [id], onDelete: Restrict)
+  planVersion        PlanVersion        @relation(fields: [planVersionId], references: [id], onDelete: Restrict)
+  entitlements       Entitlement[]
+
+  @@index([userId, status, currentPeriodEnd])
+  @@schema("app")
+}
+
+model TrialUsage {
+  id           String        @id @default(uuid()) @db.Uuid
+  userId       String        @db.Uuid
+  campaignKey  String        @db.VarChar(100)
+  startsAt     DateTime      @db.Timestamptz(6)
+  endsAt       DateTime      @db.Timestamptz(6)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  entitlements Entitlement[]
+
+  @@unique([userId, campaignKey])
+  @@schema("app")
+}
+
+model Order {
+  id              String           @id @default(uuid()) @db.Uuid
+  userId          String           @db.Uuid
+  planVersionId   String           @db.Uuid
+  merchantRef     String           @unique @db.VarChar(120)
+  idempotencyKey  String           @unique @db.VarChar(120)
+  currencyCode    String           @db.VarChar(3)
+  totalMinor      BigInt
+  status          OrderStatus      @default(PENDING)
+  createdAt       DateTime         @default(now()) @db.Timestamptz(6)
+  paidAt          DateTime?        @db.Timestamptz(6)
+  user            User             @relation(fields: [userId], references: [id], onDelete: Restrict)
+  planVersion     PlanVersion      @relation(fields: [planVersionId], references: [id], onDelete: Restrict)
+  paymentAttempts PaymentAttempt[]
+  invoice         Invoice?
+  entitlements    Entitlement[]
+
+  @@index([userId, createdAt])
+  @@schema("app")
+}
+
+model PaymentAttempt {
+  id                  String               @id @default(uuid()) @db.Uuid
+  orderId             String               @db.Uuid
+  provider            String               @db.VarChar(80)
+  providerRef         String?              @db.VarChar(160)
+  idempotencyKey      String               @unique @db.VarChar(160)
+  amountMinor         BigInt
+  currencyCode        String               @db.VarChar(3)
+  status              PaymentStatus        @default(INITIATED)
+  verifiedAt          DateTime?            @db.Timestamptz(6)
+  createdAt           DateTime             @default(now()) @db.Timestamptz(6)
+  order               Order                @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  gatewayEvents       GatewayEvent[]
+  refunds             Refund[]
+  reconciliationItems ReconciliationItem[]
+
+  @@unique([provider, providerRef])
+  @@index([orderId, status])
+  @@schema("app")
+}
+
+model GatewayEvent {
+  id               String          @id @default(uuid()) @db.Uuid
+  provider         String          @db.VarChar(80)
+  providerEventId  String          @db.VarChar(200)
+  paymentAttemptId String?         @db.Uuid
+  payloadHash      String          @db.VarChar(128)
+  signatureValid   Boolean         @default(false)
+  receivedAt       DateTime        @default(now()) @db.Timestamptz(6)
+  processedAt      DateTime?       @db.Timestamptz(6)
+  paymentAttempt   PaymentAttempt? @relation(fields: [paymentAttemptId], references: [id], onDelete: Restrict)
+
+  @@unique([provider, providerEventId])
+  @@index([processedAt])
+  @@schema("app")
+}
+
+model Invoice {
+  id            String   @id @default(uuid()) @db.Uuid
+  orderId       String   @unique @db.Uuid
+  invoiceNumber String   @unique @db.VarChar(120)
+  currencyCode  String   @db.VarChar(3)
+  totalMinor    BigInt
+  issuedAt      DateTime @default(now()) @db.Timestamptz(6)
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  @@schema("app")
+}
+
+model Refund {
+  id               String         @id @default(uuid()) @db.Uuid
+  paymentAttemptId String         @db.Uuid
+  providerRefundId String?        @unique @db.VarChar(160)
+  idempotencyKey   String         @unique @db.VarChar(160)
+  amountMinor      BigInt
+  status           RefundStatus   @default(REQUESTED)
+  approvedAt       DateTime?      @db.Timestamptz(6)
+  settledAt        DateTime?      @db.Timestamptz(6)
+  paymentAttempt   PaymentAttempt @relation(fields: [paymentAttemptId], references: [id], onDelete: Restrict)
+
+  @@schema("app")
+}
+
+model ReconciliationRun {
+  id         String               @id @default(uuid()) @db.Uuid
+  provider   String               @db.VarChar(80)
+  periodFrom DateTime             @db.Timestamptz(6)
+  periodTo   DateTime             @db.Timestamptz(6)
+  startedAt  DateTime             @default(now()) @db.Timestamptz(6)
+  endedAt    DateTime?            @db.Timestamptz(6)
+  items      ReconciliationItem[]
+
+  @@schema("app")
+}
+
+model ReconciliationItem {
+  id               String            @id @default(uuid()) @db.Uuid
+  runId            String            @db.Uuid
+  paymentAttemptId String?           @db.Uuid
+  providerRef      String            @db.VarChar(160)
+  outcome          String            @db.VarChar(40)
+  detail           Json?
+  run              ReconciliationRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  paymentAttempt   PaymentAttempt?   @relation(fields: [paymentAttemptId], references: [id], onDelete: Restrict)
+
+  @@unique([runId, providerRef])
+  @@schema("app")
+}
+
+model Entitlement {
+  id             String             @id @default(uuid()) @db.Uuid
+  userId         String             @db.Uuid
+  source         EntitlementSource
+  status         EntitlementStatus  @default(PENDING)
+  scope          EntitlementScope
+  publicationId  String?            @db.Uuid
+  volumeId       String?            @db.Uuid
+  editionId      String?            @db.Uuid
+  resourceId     String?            @db.Uuid
+  orderId        String?            @db.Uuid
+  subscriptionId String?            @db.Uuid
+  trialUsageId   String?            @db.Uuid
+  membershipId   String?            @db.Uuid
+  startsAt       DateTime           @db.Timestamptz(6)
+  endsAt         DateTime?          @db.Timestamptz(6)
+  revokedAt      DateTime?          @db.Timestamptz(6)
+  reason         String?
+  createdAt      DateTime           @default(now()) @db.Timestamptz(6)
+  user           User               @relation(fields: [userId], references: [id], onDelete: Restrict)
+  publication    Publication?       @relation(fields: [publicationId], references: [id], onDelete: Restrict)
+  volume         Volume?            @relation(fields: [volumeId], references: [id], onDelete: Restrict)
+  edition        Edition?           @relation(fields: [editionId], references: [id], onDelete: Restrict)
+  resource       Resource?          @relation(fields: [resourceId], references: [id], onDelete: Restrict)
+  order          Order?             @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  subscription   Subscription?      @relation(fields: [subscriptionId], references: [id], onDelete: Restrict)
+  trialUsage     TrialUsage?        @relation(fields: [trialUsageId], references: [id], onDelete: Restrict)
+  membership     Membership?        @relation(fields: [membershipId], references: [id], onDelete: Restrict)
+  events         EntitlementEvent[]
+  approvals      GrantApproval[]
+
+  @@index([userId, scope, status, startsAt, endsAt])
+  @@index([membershipId])
+  @@schema("app")
+}
+
+model EntitlementEvent {
+  id            String      @id @default(uuid()) @db.Uuid
+  entitlementId String      @db.Uuid
+  action        String      @db.VarChar(80)
+  reason        String?
+  actorId       String?     @db.Uuid
+  occurredAt    DateTime    @default(now()) @db.Timestamptz(6)
+  entitlement   Entitlement @relation(fields: [entitlementId], references: [id], onDelete: Restrict)
+
+  @@index([entitlementId, occurredAt])
+  @@schema("app")
+}
+
+model GrantApproval {
+  id            String         @id @default(uuid()) @db.Uuid
+  entitlementId String         @db.Uuid
+  requestedById String         @db.Uuid
+  approvedById  String?        @db.Uuid
+  status        ApprovalStatus @default(PENDING)
+  reason        String
+  requestedAt   DateTime       @default(now()) @db.Timestamptz(6)
+  decidedAt     DateTime?      @db.Timestamptz(6)
+  entitlement   Entitlement    @relation(fields: [entitlementId], references: [id], onDelete: Restrict)
+  requestedBy   User           @relation("GrantRequester", fields: [requestedById], references: [id], onDelete: Restrict)
+  approvedBy    User?          @relation("GrantApprover", fields: [approvedById], references: [id], onDelete: Restrict)
+
+  @@index([entitlementId, status])
+  @@schema("app")
+}
+
+model Institution {
+  id               String              @id @default(uuid()) @db.Uuid
+  legalName        String              @db.VarChar(400)
+  status           InstitutionStatus   @default(PENDING)
+  verificationMode String              @db.VarChar(80)
+  approvedAt       DateTime?           @db.Timestamptz(6)
+  createdAt        DateTime            @default(now()) @db.Timestamptz(6)
+  domains          InstitutionDomain[]
+  memberships      Membership[]
+  policies         EligibilityPolicy[]
+  cohorts          Cohort[]
+
+  @@schema("app")
+}
+
+model InstitutionDomain {
+  id                 String      @id @default(uuid()) @db.Uuid
+  institutionId      String      @db.Uuid
+  domain             String      @unique @db.VarChar(253)
+  ownershipProofHash String?     @db.VarChar(128)
+  approvedById       String?     @db.Uuid
+  approvedAt         DateTime?   @db.Timestamptz(6)
+  verifiedAt         DateTime?   @db.Timestamptz(6)
+  suspendedAt        DateTime?   @db.Timestamptz(6)
+  reviewDueAt        DateTime?   @db.Timestamptz(6)
+  institution        Institution @relation(fields: [institutionId], references: [id], onDelete: Restrict)
+  approvedBy         User?       @relation(fields: [approvedById], references: [id], onDelete: Restrict)
+
+  @@index([institutionId, verifiedAt])
+  @@schema("app")
+}
+
+model Membership {
+  id                 String              @id @default(uuid()) @db.Uuid
+  institutionId      String              @db.Uuid
+  userId             String              @db.Uuid
+  status             MembershipStatus    @default(PENDING)
+  verificationMethod String              @db.VarChar(80)
+  evidenceRef        String?
+  verifiedAt         DateTime?           @db.Timestamptz(6)
+  expiresAt          DateTime?           @db.Timestamptz(6)
+  createdAt          DateTime            @default(now()) @db.Timestamptz(6)
+  institution        Institution         @relation(fields: [institutionId], references: [id], onDelete: Restrict)
+  user               User                @relation(fields: [userId], references: [id], onDelete: Restrict)
+  reviews            EligibilityReview[]
+  entitlements       Entitlement[]
+
+  @@unique([institutionId, userId])
+  @@index([status, expiresAt])
+  @@schema("app")
+}
+
+model EligibilityPolicy {
+  id               String           @id @default(uuid()) @db.Uuid
+  institutionId    String           @db.Uuid
+  category         String           @db.VarChar(80)
+  scope            EntitlementScope
+  scopeId          String?          @db.Uuid
+  verificationMode String           @db.VarChar(80)
+  validityDays     Int
+  active           Boolean          @default(false)
+  institution      Institution      @relation(fields: [institutionId], references: [id], onDelete: Restrict)
+
+  @@index([institutionId, active])
+  @@schema("app")
+}
+
+model EligibilityReview {
+  id           String         @id @default(uuid()) @db.Uuid
+  membershipId String         @db.Uuid
+  reviewerId   String         @db.Uuid
+  decision     ApprovalStatus
+  reason       String
+  reviewedAt   DateTime       @default(now()) @db.Timestamptz(6)
+  membership   Membership     @relation(fields: [membershipId], references: [id], onDelete: Restrict)
+  reviewer     User           @relation(fields: [reviewerId], references: [id], onDelete: Restrict)
+
+  @@index([membershipId, reviewedAt])
+  @@schema("app")
+}
+
+model Cohort {
+  id            String         @id @default(uuid()) @db.Uuid
+  institutionId String         @db.Uuid
+  name          String         @db.VarChar(200)
+  createdAt     DateTime       @default(now()) @db.Timestamptz(6)
+  institution   Institution    @relation(fields: [institutionId], references: [id], onDelete: Restrict)
+  members       CohortMember[]
+
+  @@unique([institutionId, name])
+  @@schema("app")
+}
+
+model CohortMember {
+  cohortId String    @db.Uuid
+  userId   String    @db.Uuid
+  joinedAt DateTime  @default(now()) @db.Timestamptz(6)
+  leftAt   DateTime? @db.Timestamptz(6)
+  cohort   Cohort    @relation(fields: [cohortId], references: [id], onDelete: Restrict)
+  user     User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@id([cohortId, userId])
+  @@schema("app")
+}
+
+model ReadingProgress {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @db.Uuid
+  editionId   String    @db.Uuid
+  lessonId    String    @db.Uuid
+  position    Json?
+  completedAt DateTime? @db.Timestamptz(6)
+  updatedAt   DateTime  @updatedAt @db.Timestamptz(6)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  edition     Edition   @relation(fields: [editionId], references: [id], onDelete: Restrict)
+  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, lessonId])
+  @@index([userId, updatedAt])
+  @@schema("app")
+}
+
+model Bookmark {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  editionId  String   @db.Uuid
+  revisionId String   @db.Uuid
+  anchor     String   @db.VarChar(500)
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  edition    Edition  @relation(fields: [editionId], references: [id], onDelete: Restrict)
+  revision   Revision @relation(fields: [revisionId, editionId], references: [id, editionId], onDelete: Restrict)
+
+  @@unique([userId, revisionId, anchor])
+  @@schema("app")
+}
+
+model Annotation {
+  id               String   @id @default(uuid()) @db.Uuid
+  userId           String   @db.Uuid
+  editionId        String   @db.Uuid
+  revisionId       String   @db.Uuid
+  anchor           String   @db.VarChar(500)
+  encryptedBodyRef String   @db.VarChar(500)
+  createdAt        DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime @updatedAt @db.Timestamptz(6)
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  edition          Edition  @relation(fields: [editionId], references: [id], onDelete: Restrict)
+  revision         Revision @relation(fields: [revisionId, editionId], references: [id, editionId], onDelete: Restrict)
+
+  @@index([userId, revisionId])
+  @@schema("app")
+}
+
+model Quiz {
+  id          String         @id @default(uuid()) @db.Uuid
+  lessonId    String         @db.Uuid
+  revisionId  String         @db.Uuid
+  version     Int
+  title       String         @db.VarChar(300)
+  publishedAt DateTime?      @db.Timestamptz(6)
+  lesson      Lesson         @relation(fields: [lessonId], references: [id], onDelete: Restrict)
+  revision    Revision       @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  questions   QuizQuestion[]
+  attempts    QuizAttempt[]
+
+  @@unique([lessonId, version])
+  @@schema("app")
+}
+
+model QuizQuestion {
+  id            String       @id @default(uuid()) @db.Uuid
+  quizId        String       @db.Uuid
+  ordinal       Int
+  kind          String       @db.VarChar(40)
+  promptAssetId String?      @db.Uuid
+  answerSpec    Json
+  points        Int          @default(1)
+  quiz          Quiz         @relation(fields: [quizId], references: [id], onDelete: Restrict)
+  answers       QuizAnswer[]
+
+  @@unique([quizId, ordinal])
+  @@schema("app")
+}
+
+model QuizAttempt {
+  id          String        @id @default(uuid()) @db.Uuid
+  userId      String        @db.Uuid
+  quizId      String        @db.Uuid
+  status      AttemptStatus @default(STARTED)
+  startedAt   DateTime      @default(now()) @db.Timestamptz(6)
+  submittedAt DateTime?     @db.Timestamptz(6)
+  score       Decimal?      @db.Decimal(8, 2)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  quiz        Quiz          @relation(fields: [quizId], references: [id], onDelete: Restrict)
+  answers     QuizAnswer[]
+
+  @@index([userId, quizId, startedAt])
+  @@schema("app")
+}
+
+model QuizAnswer {
+  attemptId  String       @db.Uuid
+  questionId String       @db.Uuid
+  response   Json
+  awarded    Decimal?     @db.Decimal(8, 2)
+  attempt    QuizAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question   QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Restrict)
+
+  @@id([attemptId, questionId])
+  @@schema("app")
+}
+
+model Project {
+  id           String              @id @default(uuid()) @db.Uuid
+  lessonId     String              @db.Uuid
+  version      Int
+  title        String              @db.VarChar(300)
+  briefAssetId String?             @db.Uuid
+  lesson       Lesson              @relation(fields: [lessonId], references: [id], onDelete: Restrict)
+  submissions  ProjectSubmission[]
+
+  @@unique([lessonId, version])
+  @@schema("app")
+}
+
+model ProjectSubmission {
+  id          String   @id @default(uuid()) @db.Uuid
+  projectId   String   @db.Uuid
+  userId      String   @db.Uuid
+  assetId     String   @db.Uuid
+  submittedAt DateTime @default(now()) @db.Timestamptz(6)
+  status      String   @db.VarChar(40)
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  asset       Asset    @relation(fields: [assetId], references: [id], onDelete: Restrict)
+
+  @@index([userId, projectId])
+  @@schema("app")
+}
+
+model OfflineLicence {
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @db.Uuid
+  editionId    String    @db.Uuid
+  revisionId   String    @db.Uuid
+  deviceHash   String    @db.VarChar(128)
+  manifestHash String    @db.VarChar(128)
+  issuedAt     DateTime  @default(now()) @db.Timestamptz(6)
+  expiresAt    DateTime  @db.Timestamptz(6)
+  revokedAt    DateTime? @db.Timestamptz(6)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  edition      Edition   @relation(fields: [editionId], references: [id], onDelete: Restrict)
+  revision     Revision  @relation(fields: [revisionId, editionId], references: [id, editionId], onDelete: Restrict)
+
+  @@index([userId, deviceHash, expiresAt])
+  @@schema("app")
+}
+
+model SyncOperation {
+  id                String   @id @default(uuid()) @db.Uuid
+  userId            String   @db.Uuid
+  deviceHash        String   @db.VarChar(128)
+  clientOperationId String   @db.VarChar(160)
+  operationType     String   @db.VarChar(80)
+  payloadHash       String   @db.VarChar(128)
+  result            Json?
+  processedAt       DateTime @default(now()) @db.Timestamptz(6)
+  user              User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, clientOperationId])
+  @@schema("app")
+}
+
+model Notification {
+  id           String             @id @default(uuid()) @db.Uuid
+  userId       String             @db.Uuid
+  kind         String             @db.VarChar(80)
+  status       NotificationStatus @default(QUEUED)
+  templateCode String             @db.VarChar(100)
+  createdAt    DateTime           @default(now()) @db.Timestamptz(6)
+  sentAt       DateTime?          @db.Timestamptz(6)
+  user         User               @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([status, createdAt])
+  @@schema("app")
+}
+
+model ApprovalRequest {
+  id                String          @id @default(uuid()) @db.Uuid
+  kind              String          @db.VarChar(80)
+  objectId          String          @db.Uuid
+  requestedById     String          @db.Uuid
+  decidedById       String?         @db.Uuid
+  status            ApprovalStatus  @default(PENDING)
+  reason            String
+  requestedAt       DateTime        @default(now()) @db.Timestamptz(6)
+  decidedAt         DateTime?       @db.Timestamptz(6)
+  requestedBy       User            @relation("ApprovalRequester", fields: [requestedById], references: [id], onDelete: Restrict)
+  decidedBy         User?           @relation("ApprovalDecider", fields: [decidedById], references: [id], onDelete: Restrict)
+  insightExceptions PublicInsight[]
+
+  @@index([kind, objectId, status])
+  @@schema("app")
+}
+
+model AuditEvent {
+  id            String   @id @default(uuid()) @db.Uuid
+  actorId       String?  @db.Uuid
+  action        String   @db.VarChar(120)
+  objectType    String   @db.VarChar(80)
+  objectId      String?  @db.Uuid
+  beforeHash    String?  @db.VarChar(128)
+  afterHash     String?  @db.VarChar(128)
+  correlationId String   @db.VarChar(120)
+  occurredAt    DateTime @default(now()) @db.Timestamptz(6)
+  actor         User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([objectType, objectId, occurredAt])
+  @@index([actorId, occurredAt])
+  @@schema("app")
+}
+
+model OutboxEvent {
+  id             String    @id @default(uuid()) @db.Uuid
+  aggregateType  String    @db.VarChar(80)
+  aggregateId    String    @db.Uuid
+  eventType      String    @db.VarChar(120)
+  idempotencyKey String    @unique @db.VarChar(160)
+  payload        Json
+  occurredAt     DateTime  @default(now()) @db.Timestamptz(6)
+  publishedAt    DateTime? @db.Timestamptz(6)
+  attemptCount   Int       @default(0)
+
+  @@index([publishedAt, occurredAt])
+  @@schema("app")
+}
+
+model PseudonymLink {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  pseudonym  String    @unique @db.VarChar(128)
+  keyVersion String    @db.VarChar(40)
+  createdAt  DateTime  @default(now()) @db.Timestamptz(6)
+  rotatedAt  DateTime? @db.Timestamptz(6)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@schema("research_private")
+}
+
+model ResearchSession {
+  id             String          @id @default(uuid()) @db.Uuid
+  pseudonym      String          @db.VarChar(128)
+  startedAt      DateTime        @db.Timestamptz(6)
+  endedAt        DateTime?       @db.Timestamptz(6)
+  visibleSeconds Int             @default(0)
+  engagedSeconds Int             @default(0)
+  methodVersion  String          @db.VarChar(40)
+  events         ResearchEvent[]
+
+  @@index([pseudonym, startedAt])
+  @@schema("research")
+}
+
+model ResearchEvent {
+  id             String            @id @default(uuid()) @db.Uuid
+  eventId        String            @unique @db.Uuid
+  pseudonym      String            @db.VarChar(128)
+  sessionId      String?           @db.Uuid
+  purposeId      String            @db.Uuid
+  publicationId  String?           @db.Uuid
+  revisionId     String?           @db.Uuid
+  eventType      String            @db.VarChar(100)
+  schemaVersion  Int
+  source         String            @db.VarChar(40)
+  eventAt        DateTime          @db.Timestamptz(6)
+  receivedAt     DateTime          @default(now()) @db.Timestamptz(6)
+  retentionUntil DateTime          @db.Timestamptz(6)
+  consentVersion String?           @db.VarChar(64)
+  properties     Json
+  session        ResearchSession?  @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  purpose        ProcessingPurpose @relation(fields: [purposeId], references: [id], onDelete: Restrict)
+  publication    Publication?      @relation(fields: [publicationId], references: [id], onDelete: SetNull)
+  revision       Revision?         @relation(fields: [revisionId], references: [id], onDelete: SetNull)
+
+  @@index([eventType, eventAt])
+  @@index([receivedAt], type: Brin, map: "research_event_received_brin")
+  @@index([retentionUntil])
+  @@index([pseudonym, eventAt])
+  @@schema("research")
+}
+
+model ResearchMetric {
+  id         String              @id @default(uuid()) @db.Uuid
+  code       String              @db.VarChar(100)
+  version    Int
+  formula    String
+  timezone   String              @db.VarChar(80)
+  approvedAt DateTime?           @db.Timestamptz(6)
+  aggregates ResearchAggregate[]
+
+  @@unique([code, version])
+  @@schema("research")
+}
+
+model ResearchAggregate {
+  id             String         @id @default(uuid()) @db.Uuid
+  metricId       String         @db.Uuid
+  periodStart    DateTime       @db.Timestamptz(6)
+  periodEnd      DateTime       @db.Timestamptz(6)
+  dimensionsHash String         @db.VarChar(128)
+  dimensions     Json
+  value          Decimal        @db.Decimal(20, 6)
+  sampleSize     Int
+  computedAt     DateTime       @default(now()) @db.Timestamptz(6)
+  metric         ResearchMetric @relation(fields: [metricId], references: [id], onDelete: Restrict)
+
+  @@unique([metricId, periodStart, periodEnd, dimensionsHash])
+  @@schema("research")
+}
+
+model ResearchStudy {
+  id              String              @id @default(uuid()) @db.Uuid
+  protocolVersion String              @db.VarChar(60)
+  question        String
+  status          ResearchStudyStatus @default(DRAFT)
+  approvedAt      DateTime?           @db.Timestamptz(6)
+  createdAt       DateTime            @default(now()) @db.Timestamptz(6)
+  reports         ResearchReport[]
+
+  @@schema("research")
+}
+
+model ResearchReport {
+  id            String               @id @default(uuid()) @db.Uuid
+  studyId       String?              @db.Uuid
+  metricVersion String               @db.VarChar(60)
+  snapshotKey   String               @unique @db.VarChar(500)
+  status        ResearchReportStatus @default(DRAFT)
+  createdAt     DateTime             @default(now()) @db.Timestamptz(6)
+  study         ResearchStudy?       @relation(fields: [studyId], references: [id], onDelete: Restrict)
+  reviews       DisclosureReview[]
+  insights      PublicInsight[]
+
+  @@schema("research")
+}
+
+model DisclosureReview {
+  id                String          @id @default(uuid()) @db.Uuid
+  reportId          String          @db.Uuid
+  reviewerId        String          @db.Uuid
+  decision          ApprovalStatus
+  minimumGroupSize  Int
+  suppressionProof  Json
+  differencingProof Json
+  reviewedAt        DateTime        @default(now()) @db.Timestamptz(6)
+  report            ResearchReport  @relation(fields: [reportId], references: [id], onDelete: Restrict)
+  reviewer          User            @relation(fields: [reviewerId], references: [id], onDelete: Restrict)
+  insights          PublicInsight[]
+
+  @@index([reportId, reviewedAt])
+  @@schema("research")
+}
+
+model PublicInsight {
+  id                  String                   @id @default(uuid()) @db.Uuid
+  reportId            String                   @db.Uuid
+  reviewId            String                   @db.Uuid
+  policyId            String                   @db.Uuid
+  publishedById       String                   @db.Uuid
+  exceptionApprovalId String?                  @db.Uuid
+  snapshotKey         String                   @unique @db.VarChar(500)
+  minimumGroupSize    Int
+  publishedAt         DateTime                 @default(now()) @db.Timestamptz(6)
+  withdrawnAt         DateTime?                @db.Timestamptz(6)
+  report              ResearchReport           @relation(fields: [reportId], references: [id], onDelete: Restrict)
+  review              DisclosureReview         @relation(fields: [reviewId], references: [id], onDelete: Restrict)
+  policy              ResearchDisclosurePolicy @relation(fields: [policyId], references: [id], onDelete: Restrict)
+  publishedBy         User                     @relation(fields: [publishedById], references: [id], onDelete: Restrict)
+  exceptionApproval   ApprovalRequest?         @relation(fields: [exceptionApprovalId], references: [id], onDelete: Restrict)
+
+  @@index([publishedAt, withdrawnAt])
+  @@schema("research")
+}
+
+model ResearchExport {
+  id            String   @id @default(uuid()) @db.Uuid
+  requestedById String   @db.Uuid
+  purpose       String
+  status        String   @db.VarChar(40)
+  expiresAt     DateTime @db.Timestamptz(6)
+  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+  requestedBy   User     @relation(fields: [requestedById], references: [id], onDelete: Restrict)
+
+  @@index([expiresAt, status])
+  @@schema("research")
+}
+
+model ResearchDisclosurePolicy {
+  id               String          @id @default(uuid()) @db.Uuid
+  version          Int             @unique
+  minimumGroupSize Int
+  suppressionRule  String
+  approvedAt       DateTime?       @db.Timestamptz(6)
+  insights         PublicInsight[]
+
+  @@schema("research")
+}
+
+model ResearchAudit {
+  id         String   @id @default(uuid()) @db.Uuid
+  actorId    String?  @db.Uuid
+  action     String   @db.VarChar(120)
+  objectType String   @db.VarChar(80)
+  objectId   String?  @db.Uuid
+  purpose    String
+  occurredAt DateTime @default(now()) @db.Timestamptz(6)
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([objectType, objectId, occurredAt])
+  @@schema("research")
+}

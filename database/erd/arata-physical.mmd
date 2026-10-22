@@ -1,0 +1,817 @@
+erDiagram
+  app_Annotation {
+    uuid id PK
+    uuid userId FK
+    uuid editionId FK
+    uuid revisionId FK
+    character_varying_500_ anchor
+    character_varying_500_ encryptedBodyRef
+    timestamp_6__with_time_zone createdAt
+    timestamp_6__with_time_zone updatedAt
+  }
+  app_ApprovalRequest {
+    uuid id PK
+    character_varying_80_ kind
+    uuid objectId
+    uuid requestedById FK
+    uuid decidedById FK
+    app__ApprovalStatus_ status
+    text reason
+    timestamp_6__with_time_zone requestedAt
+    timestamp_6__with_time_zone decidedAt
+  }
+  app_Asset {
+    uuid id PK
+    uuid uploadedById FK
+    character_varying_500_ storageKey
+    character_varying_400_ originalName
+    character_varying_160_ mimeType
+    bigint sizeBytes
+    character_varying_64_ sha256
+    app__AssetStatus_ status
+    jsonb scanEvidence
+    timestamp_6__with_time_zone scannedAt
+    timestamp_6__with_time_zone createdAt
+  }
+  app_AuditEvent {
+    uuid id PK
+    uuid actorId FK
+    character_varying_120_ action
+    character_varying_80_ objectType
+    uuid objectId
+    character_varying_128_ beforeHash
+    character_varying_128_ afterHash
+    character_varying_120_ correlationId
+    timestamp_6__with_time_zone occurredAt
+  }
+  app_AuthSession {
+    uuid id PK
+    uuid userId FK
+    character_varying_128_ tokenHash
+    timestamp_6__with_time_zone expiresAt
+    timestamp_6__with_time_zone revokedAt
+    timestamp_6__with_time_zone mfaVerifiedAt
+    timestamp_6__with_time_zone createdAt
+  }
+  app_Authenticator {
+    uuid id PK
+    uuid userId FK
+    app__AuthenticatorKind_ kind
+    character_varying_512_ credentialHash
+    timestamp_6__with_time_zone lastUsedAt
+    timestamp_6__with_time_zone createdAt
+    timestamp_6__with_time_zone revokedAt
+  }
+  app_Bookmark {
+    uuid id PK
+    uuid userId FK
+    uuid editionId FK
+    uuid revisionId FK
+    character_varying_500_ anchor
+    timestamp_6__with_time_zone createdAt
+  }
+  app_Chapter {
+    uuid id PK
+    uuid revisionId FK
+    integer ordinal
+    character_varying_200_ slug
+    character_varying_400_ title
+  }
+  app_Cohort {
+    uuid id PK
+    uuid institutionId FK
+    character_varying_200_ name
+    timestamp_6__with_time_zone createdAt
+  }
+  app_CohortMember {
+    uuid cohortId PK,FK
+    uuid userId PK,FK
+    timestamp_6__with_time_zone joinedAt
+    timestamp_6__with_time_zone leftAt
+  }
+  app_Collection {
+    uuid id PK
+    character_varying_200_ slug
+    character_varying_300_ title
+    text description
+    timestamp_6__with_time_zone createdAt
+  }
+  app_ContentPolicy {
+    uuid id PK
+    uuid publicationId FK
+    uuid volumeId FK
+    uuid editionId FK
+    uuid revisionId FK
+    uuid chapterId FK
+    uuid lessonId FK
+    uuid resourceId FK
+    app__AccessClass_ accessClass
+    boolean allowRead
+    boolean allowDownload
+    boolean allowCopy
+    boolean allowPrint
+    boolean allowOffline
+    boolean allowShare
+    boolean watermark
+    integer version
+    boolean isActive
+    timestamp_6__with_time_zone approvedAt
+    timestamp_6__with_time_zone createdAt
+  }
+  app_Edition {
+    uuid id PK
+    uuid publicationId FK
+    uuid volumeId FK
+    character_varying_60_ editionCode
+    character_varying_200_ label
+    uuid currentRevisionId FK
+    boolean isDefault
+    timestamp_6__with_time_zone createdAt
+  }
+  app_EditorialReview {
+    uuid id PK
+    uuid revisionId FK
+    uuid reviewerId FK
+    app__ReviewDecision_ decision
+    character_varying_128_ manifestHash
+    text comment
+    timestamp_6__with_time_zone decidedAt
+  }
+  app_EligibilityPolicy {
+    uuid id PK
+    uuid institutionId FK
+    character_varying_80_ category
+    app__EntitlementScope_ scope
+    uuid scopeId
+    character_varying_80_ verificationMode
+    integer validityDays
+    boolean active
+  }
+  app_EligibilityReview {
+    uuid id PK
+    uuid membershipId FK
+    uuid reviewerId FK
+    app__ApprovalStatus_ decision
+    text reason
+    timestamp_6__with_time_zone reviewedAt
+  }
+  app_Entitlement {
+    uuid id PK
+    uuid userId FK
+    app__EntitlementSource_ source
+    app__EntitlementStatus_ status
+    app__EntitlementScope_ scope
+    uuid publicationId FK
+    uuid volumeId FK
+    uuid editionId FK
+    uuid resourceId FK
+    uuid orderId FK
+    uuid subscriptionId FK
+    uuid trialUsageId FK
+    uuid membershipId FK
+    timestamp_6__with_time_zone startsAt
+    timestamp_6__with_time_zone endsAt
+    timestamp_6__with_time_zone revokedAt
+    text reason
+    timestamp_6__with_time_zone createdAt
+  }
+  app_EntitlementEvent {
+    uuid id PK
+    uuid entitlementId FK
+    character_varying_80_ action
+    text reason
+    uuid actorId
+    timestamp_6__with_time_zone occurredAt
+  }
+  app_GatewayEvent {
+    uuid id PK
+    character_varying_80_ provider
+    character_varying_200_ providerEventId
+    uuid paymentAttemptId FK
+    character_varying_128_ payloadHash
+    boolean signatureValid
+    timestamp_6__with_time_zone receivedAt
+    timestamp_6__with_time_zone processedAt
+  }
+  app_GrantApproval {
+    uuid id PK
+    uuid entitlementId FK
+    uuid requestedById FK
+    uuid approvedById FK
+    app__ApprovalStatus_ status
+    text reason
+    timestamp_6__with_time_zone requestedAt
+    timestamp_6__with_time_zone decidedAt
+  }
+  app_Institution {
+    uuid id PK
+    character_varying_400_ legalName
+    app__InstitutionStatus_ status
+    character_varying_80_ verificationMode
+    timestamp_6__with_time_zone approvedAt
+    timestamp_6__with_time_zone createdAt
+  }
+  app_InstitutionDomain {
+    uuid id PK
+    uuid institutionId FK
+    character_varying_253_ domain
+    character_varying_128_ ownershipProofHash
+    uuid approvedById FK
+    timestamp_6__with_time_zone approvedAt
+    timestamp_6__with_time_zone verifiedAt
+    timestamp_6__with_time_zone suspendedAt
+    timestamp_6__with_time_zone reviewDueAt
+  }
+  app_Invoice {
+    uuid id PK
+    uuid orderId FK
+    character_varying_120_ invoiceNumber
+    character_varying_3_ currencyCode
+    bigint totalMinor
+    timestamp_6__with_time_zone issuedAt
+  }
+  app_Lesson {
+    uuid id PK
+    uuid chapterId FK
+    integer ordinal
+    character_varying_400_ title
+    uuid bodyAssetId FK
+    character_varying_128_ contentHash
+  }
+  app_Membership {
+    uuid id PK
+    uuid institutionId FK
+    uuid userId FK
+    app__MembershipStatus_ status
+    character_varying_80_ verificationMethod
+    text evidenceRef
+    timestamp_6__with_time_zone verifiedAt
+    timestamp_6__with_time_zone expiresAt
+    timestamp_6__with_time_zone createdAt
+  }
+  app_Notification {
+    uuid id PK
+    uuid userId FK
+    character_varying_80_ kind
+    app__NotificationStatus_ status
+    character_varying_100_ templateCode
+    timestamp_6__with_time_zone createdAt
+    timestamp_6__with_time_zone sentAt
+  }
+  app_OfflineLicence {
+    uuid id PK
+    uuid userId FK
+    uuid editionId FK
+    uuid revisionId FK
+    character_varying_128_ deviceHash
+    character_varying_128_ manifestHash
+    timestamp_6__with_time_zone issuedAt
+    timestamp_6__with_time_zone expiresAt
+    timestamp_6__with_time_zone revokedAt
+  }
+  app_Order {
+    uuid id PK
+    uuid userId FK
+    uuid planVersionId FK
+    character_varying_120_ merchantRef
+    character_varying_120_ idempotencyKey
+    character_varying_3_ currencyCode
+    bigint totalMinor
+    app__OrderStatus_ status
+    timestamp_6__with_time_zone createdAt
+    timestamp_6__with_time_zone paidAt
+  }
+  app_OutboxEvent {
+    uuid id PK
+    character_varying_80_ aggregateType
+    uuid aggregateId
+    character_varying_120_ eventType
+    character_varying_160_ idempotencyKey
+    jsonb payload
+    timestamp_6__with_time_zone occurredAt
+    timestamp_6__with_time_zone publishedAt
+    integer attemptCount
+  }
+  app_PaymentAttempt {
+    uuid id PK
+    uuid orderId FK
+    character_varying_80_ provider
+    character_varying_160_ providerRef
+    character_varying_160_ idempotencyKey
+    bigint amountMinor
+    character_varying_3_ currencyCode
+    app__PaymentStatus_ status
+    timestamp_6__with_time_zone verifiedAt
+    timestamp_6__with_time_zone createdAt
+  }
+  app_Permission {
+    uuid id PK
+    character_varying_120_ code
+    text description
+  }
+  app_Plan {
+    uuid id PK
+    character_varying_80_ code
+    character_varying_200_ name
+    boolean active
+  }
+  app_PlanVersion {
+    uuid id PK
+    uuid planId FK
+    integer version
+    character_varying_3_ currencyCode
+    bigint amountMinor
+    integer periodMonths
+    character_varying_32_ scopeKind
+    uuid scopeId
+    character_varying_128_ termsHash
+    timestamp_6__with_time_zone validFrom
+    timestamp_6__with_time_zone validUntil
+  }
+  app_PolicyChange {
+    uuid id PK
+    uuid policyId FK
+    uuid actorId FK
+    character_varying_128_ beforeHash
+    character_varying_128_ afterHash
+    text reason
+    timestamp_6__with_time_zone changedAt
+  }
+  app_PrivacyPreference {
+    uuid id PK
+    uuid userId FK
+    uuid purposeId FK
+    boolean granted
+    character_varying_64_ policyVersion
+    timestamp_6__with_time_zone effectiveAt
+    timestamp_6__with_time_zone withdrawnAt
+  }
+  app_ProcessingPurpose {
+    uuid id PK
+    character_varying_80_ code
+    text description
+    character_varying_120_ lawfulBasis
+    boolean optional
+  }
+  app_Project {
+    uuid id PK
+    uuid lessonId FK
+    integer version
+    character_varying_300_ title
+    uuid briefAssetId
+  }
+  app_ProjectSubmission {
+    uuid id PK
+    uuid projectId FK
+    uuid userId FK
+    uuid assetId FK
+    timestamp_6__with_time_zone submittedAt
+    character_varying_40_ status
+  }
+  app_Publication {
+    uuid id PK
+    character_varying_200_ slug
+    character_varying_400_ title
+    app__PublicationKind_ kind
+    app__PublicationStatus_ status
+    uuid ownerId FK
+    text copyrightNotice
+    timestamp_6__with_time_zone createdAt
+    timestamp_6__with_time_zone updatedAt
+  }
+  app_PublicationCollection {
+    uuid publicationId PK,FK
+    uuid collectionId PK,FK
+  }
+  app_Quiz {
+    uuid id PK
+    uuid lessonId FK
+    uuid revisionId FK
+    integer version
+    character_varying_300_ title
+    timestamp_6__with_time_zone publishedAt
+  }
+  app_QuizAnswer {
+    uuid attemptId PK,FK
+    uuid questionId PK,FK
+    jsonb response
+    numeric_8_2_ awarded
+  }
+  app_QuizAttempt {
+    uuid id PK
+    uuid userId FK
+    uuid quizId FK
+    app__AttemptStatus_ status
+    timestamp_6__with_time_zone startedAt
+    timestamp_6__with_time_zone submittedAt
+    numeric_8_2_ score
+  }
+  app_QuizQuestion {
+    uuid id PK
+    uuid quizId FK
+    integer ordinal
+    character_varying_40_ kind
+    uuid promptAssetId
+    jsonb answerSpec
+    integer points
+  }
+  app_ReadingProgress {
+    uuid id PK
+    uuid userId FK
+    uuid editionId FK
+    uuid lessonId FK
+    jsonb position
+    timestamp_6__with_time_zone completedAt
+    timestamp_6__with_time_zone updatedAt
+  }
+  app_ReconciliationItem {
+    uuid id PK
+    uuid runId FK
+    uuid paymentAttemptId FK
+    character_varying_160_ providerRef
+    character_varying_40_ outcome
+    jsonb detail
+  }
+  app_ReconciliationRun {
+    uuid id PK
+    character_varying_80_ provider
+    timestamp_6__with_time_zone periodFrom
+    timestamp_6__with_time_zone periodTo
+    timestamp_6__with_time_zone startedAt
+    timestamp_6__with_time_zone endedAt
+  }
+  app_Refund {
+    uuid id PK
+    uuid paymentAttemptId FK
+    character_varying_160_ providerRefundId
+    character_varying_160_ idempotencyKey
+    bigint amountMinor
+    app__RefundStatus_ status
+    timestamp_6__with_time_zone approvedAt
+    timestamp_6__with_time_zone settledAt
+  }
+  app_Resource {
+    uuid id PK
+    character_varying_400_ title
+    app__AccessClass_ accessClass
+    character_varying_100_ licenceCode
+    timestamp_6__with_time_zone publishedAt
+    timestamp_6__with_time_zone withdrawnAt
+    uuid publicationId FK
+    uuid volumeId FK
+    uuid editionId FK
+    uuid revisionId FK
+    uuid chapterId FK
+    uuid lessonId FK
+    timestamp_6__with_time_zone createdAt
+  }
+  app_ResourceAttachment {
+    uuid resourceId PK,FK
+    uuid assetId PK,FK
+    integer ordinal
+  }
+  app_RetentionPolicy {
+    uuid id PK
+    uuid purposeId FK
+    character_varying_80_ dataClass
+    integer days
+    text legalBasis
+    timestamp_6__with_time_zone approvedAt
+    integer version
+  }
+  app_Revision {
+    uuid id PK
+    uuid editionId FK
+    integer number
+    app__RevisionStatus_ status
+    character_varying_128_ manifestHash
+    text changeSummary
+    timestamp_6__with_time_zone publishedAt
+    timestamp_6__with_time_zone createdAt
+  }
+  app_Role {
+    uuid id PK
+    character_varying_80_ code
+    text description
+  }
+  app_RoleAssignment {
+    uuid id PK
+    uuid userId FK
+    uuid roleId FK
+    character_varying_32_ scopeType
+    uuid scopeId
+    timestamp_6__with_time_zone startsAt
+    timestamp_6__with_time_zone endsAt
+    timestamp_6__with_time_zone revokedAt
+  }
+  app_RolePermission {
+    uuid roleId PK,FK
+    uuid permissionId PK,FK
+  }
+  app_SubjectRequest {
+    uuid id PK
+    uuid userId FK
+    character_varying_40_ requestType
+    app__SubjectRequestStatus_ status
+    text reason
+    timestamp_6__with_time_zone requestedAt
+    timestamp_6__with_time_zone resolvedAt
+  }
+  app_Subscription {
+    uuid id PK
+    uuid userId FK
+    uuid planVersionId FK
+    app__SubscriptionStatus_ status
+    timestamp_6__with_time_zone currentPeriodStart
+    timestamp_6__with_time_zone currentPeriodEnd
+    boolean cancelAtPeriodEnd
+    timestamp_6__with_time_zone createdAt
+  }
+  app_SyncOperation {
+    uuid id PK
+    uuid userId FK
+    character_varying_128_ deviceHash
+    character_varying_160_ clientOperationId
+    character_varying_80_ operationType
+    character_varying_128_ payloadHash
+    jsonb result
+    timestamp_6__with_time_zone processedAt
+  }
+  app_TrialUsage {
+    uuid id PK
+    uuid userId FK
+    character_varying_100_ campaignKey
+    timestamp_6__with_time_zone startsAt
+    timestamp_6__with_time_zone endsAt
+  }
+  app_User {
+    uuid id PK
+    character_varying_320_ email
+    character_varying_255_ passwordHash
+    app__UserStatus_ status
+    timestamp_6__with_time_zone emailVerifiedAt
+    timestamp_6__with_time_zone termsAcceptedAt
+    character_varying_64_ privacyVersion
+    timestamp_6__with_time_zone createdAt
+    timestamp_6__with_time_zone updatedAt
+  }
+  app_UserProfile {
+    uuid userId PK,FK
+    character_varying_200_ displayName
+    character_varying_32_ locale
+    character_varying_80_ timezone
+    timestamp_6__with_time_zone updatedAt
+  }
+  app_VerificationToken {
+    uuid id PK
+    uuid userId FK
+    character_varying_64_ purpose
+    character_varying_128_ tokenHash
+    timestamp_6__with_time_zone expiresAt
+    timestamp_6__with_time_zone usedAt
+    timestamp_6__with_time_zone createdAt
+  }
+  app_Volume {
+    uuid id PK
+    uuid publicationId FK
+    integer ordinal
+    character_varying_400_ title
+    timestamp_6__with_time_zone createdAt
+  }
+  research_DisclosureReview {
+    uuid id PK
+    uuid reportId FK
+    uuid reviewerId FK
+    app__ApprovalStatus_ decision
+    integer minimumGroupSize
+    jsonb suppressionProof
+    jsonb differencingProof
+    timestamp_6__with_time_zone reviewedAt
+  }
+  research_PublicInsight {
+    uuid id PK
+    uuid reportId FK
+    uuid reviewId FK
+    uuid policyId FK
+    uuid publishedById FK
+    uuid exceptionApprovalId FK
+    character_varying_500_ snapshotKey
+    integer minimumGroupSize
+    timestamp_6__with_time_zone publishedAt
+    timestamp_6__with_time_zone withdrawnAt
+  }
+  research_ResearchAggregate {
+    uuid id PK
+    uuid metricId FK
+    timestamp_6__with_time_zone periodStart
+    timestamp_6__with_time_zone periodEnd
+    character_varying_128_ dimensionsHash
+    jsonb dimensions
+    numeric_20_6_ value
+    integer sampleSize
+    timestamp_6__with_time_zone computedAt
+  }
+  research_ResearchAudit {
+    uuid id PK
+    uuid actorId FK
+    character_varying_120_ action
+    character_varying_80_ objectType
+    uuid objectId
+    text purpose
+    timestamp_6__with_time_zone occurredAt
+  }
+  research_ResearchDisclosurePolicy {
+    uuid id PK
+    integer version
+    integer minimumGroupSize
+    text suppressionRule
+    timestamp_6__with_time_zone approvedAt
+  }
+  research_ResearchEvent {
+    uuid id PK
+    uuid eventId
+    character_varying_128_ pseudonym
+    uuid sessionId FK
+    uuid purposeId FK
+    uuid publicationId FK
+    uuid revisionId FK
+    character_varying_100_ eventType
+    integer schemaVersion
+    character_varying_40_ source
+    timestamp_6__with_time_zone eventAt
+    timestamp_6__with_time_zone receivedAt
+    timestamp_6__with_time_zone retentionUntil
+    character_varying_64_ consentVersion
+    jsonb properties
+  }
+  research_ResearchExport {
+    uuid id PK
+    uuid requestedById FK
+    text purpose
+    character_varying_40_ status
+    timestamp_6__with_time_zone expiresAt
+    timestamp_6__with_time_zone createdAt
+  }
+  research_ResearchMetric {
+    uuid id PK
+    character_varying_100_ code
+    integer version
+    text formula
+    character_varying_80_ timezone
+    timestamp_6__with_time_zone approvedAt
+  }
+  research_ResearchReport {
+    uuid id PK
+    uuid studyId FK
+    character_varying_60_ metricVersion
+    character_varying_500_ snapshotKey
+    research__ResearchReportStatus_ status
+    timestamp_6__with_time_zone createdAt
+  }
+  research_ResearchSession {
+    uuid id PK
+    character_varying_128_ pseudonym
+    timestamp_6__with_time_zone startedAt
+    timestamp_6__with_time_zone endedAt
+    integer visibleSeconds
+    integer engagedSeconds
+    character_varying_40_ methodVersion
+  }
+  research_ResearchStudy {
+    uuid id PK
+    character_varying_60_ protocolVersion
+    text question
+    research__ResearchStudyStatus_ status
+    timestamp_6__with_time_zone approvedAt
+    timestamp_6__with_time_zone createdAt
+  }
+  research_private_PseudonymLink {
+    uuid id PK
+    uuid userId FK
+    character_varying_128_ pseudonym
+    character_varying_40_ keyVersion
+    timestamp_6__with_time_zone createdAt
+    timestamp_6__with_time_zone rotatedAt
+  }
+  app_Edition ||--o{ app_Annotation : "Annotation_editionId_fkey"
+  app_Revision ||--o{ app_Annotation : "Annotation_revisionId_editionId_fkey"
+  app_User ||--o{ app_Annotation : "Annotation_userId_fkey"
+  app_User o|--o{ app_ApprovalRequest : "ApprovalRequest_decidedById_fkey"
+  app_User ||--o{ app_ApprovalRequest : "ApprovalRequest_requestedById_fkey"
+  app_User ||--o{ app_Asset : "Asset_uploadedById_fkey"
+  app_User o|--o{ app_AuditEvent : "AuditEvent_actorId_fkey"
+  app_User ||--o{ app_AuthSession : "AuthSession_userId_fkey"
+  app_User ||--o{ app_Authenticator : "Authenticator_userId_fkey"
+  app_Edition ||--o{ app_Bookmark : "Bookmark_editionId_fkey"
+  app_Revision ||--o{ app_Bookmark : "Bookmark_revisionId_editionId_fkey"
+  app_User ||--o{ app_Bookmark : "Bookmark_userId_fkey"
+  app_Revision ||--o{ app_Chapter : "Chapter_revisionId_fkey"
+  app_Institution ||--o{ app_Cohort : "Cohort_institutionId_fkey"
+  app_Cohort ||--o{ app_CohortMember : "CohortMember_cohortId_fkey"
+  app_User ||--o{ app_CohortMember : "CohortMember_userId_fkey"
+  app_Chapter o|--o{ app_ContentPolicy : "ContentPolicy_chapterId_fkey"
+  app_Edition o|--o{ app_ContentPolicy : "ContentPolicy_editionId_fkey"
+  app_Lesson o|--o{ app_ContentPolicy : "ContentPolicy_lessonId_fkey"
+  app_Publication o|--o{ app_ContentPolicy : "ContentPolicy_publicationId_fkey"
+  app_Resource o|--o{ app_ContentPolicy : "ContentPolicy_resourceId_fkey"
+  app_Revision o|--o{ app_ContentPolicy : "ContentPolicy_revisionId_fkey"
+  app_Volume o|--o{ app_ContentPolicy : "ContentPolicy_volumeId_fkey"
+  app_Revision o|--o{ app_Edition : "Edition_currentRevisionId_fkey"
+  app_Publication ||--o{ app_Edition : "Edition_publicationId_fkey"
+  app_Volume o|--o{ app_Edition : "Edition_volumeId_publicationId_fkey"
+  app_User ||--o{ app_EditorialReview : "EditorialReview_reviewerId_fkey"
+  app_Revision ||--o{ app_EditorialReview : "EditorialReview_revisionId_fkey"
+  app_Institution ||--o{ app_EligibilityPolicy : "EligibilityPolicy_institutionId_fkey"
+  app_Membership ||--o{ app_EligibilityReview : "EligibilityReview_membershipId_fkey"
+  app_User ||--o{ app_EligibilityReview : "EligibilityReview_reviewerId_fkey"
+  app_Edition o|--o{ app_Entitlement : "Entitlement_editionId_fkey"
+  app_Membership o|--o{ app_Entitlement : "Entitlement_membershipId_fkey"
+  app_Order o|--o{ app_Entitlement : "Entitlement_orderId_fkey"
+  app_Publication o|--o{ app_Entitlement : "Entitlement_publicationId_fkey"
+  app_Resource o|--o{ app_Entitlement : "Entitlement_resourceId_fkey"
+  app_Subscription o|--o{ app_Entitlement : "Entitlement_subscriptionId_fkey"
+  app_TrialUsage o|--o{ app_Entitlement : "Entitlement_trialUsageId_fkey"
+  app_User ||--o{ app_Entitlement : "Entitlement_userId_fkey"
+  app_Volume o|--o{ app_Entitlement : "Entitlement_volumeId_fkey"
+  app_Entitlement ||--o{ app_EntitlementEvent : "EntitlementEvent_entitlementId_fkey"
+  app_PaymentAttempt o|--o{ app_GatewayEvent : "GatewayEvent_paymentAttemptId_fkey"
+  app_User o|--o{ app_GrantApproval : "GrantApproval_approvedById_fkey"
+  app_Entitlement ||--o{ app_GrantApproval : "GrantApproval_entitlementId_fkey"
+  app_User ||--o{ app_GrantApproval : "GrantApproval_requestedById_fkey"
+  app_User o|--o{ app_InstitutionDomain : "InstitutionDomain_approvedById_fkey"
+  app_Institution ||--o{ app_InstitutionDomain : "InstitutionDomain_institutionId_fkey"
+  app_Order ||--o{ app_Invoice : "Invoice_orderId_fkey"
+  app_Asset o|--o{ app_Lesson : "Lesson_bodyAssetId_fkey"
+  app_Chapter ||--o{ app_Lesson : "Lesson_chapterId_fkey"
+  app_Institution ||--o{ app_Membership : "Membership_institutionId_fkey"
+  app_User ||--o{ app_Membership : "Membership_userId_fkey"
+  app_User ||--o{ app_Notification : "Notification_userId_fkey"
+  app_Edition ||--o{ app_OfflineLicence : "OfflineLicence_editionId_fkey"
+  app_Revision ||--o{ app_OfflineLicence : "OfflineLicence_revisionId_editionId_fkey"
+  app_User ||--o{ app_OfflineLicence : "OfflineLicence_userId_fkey"
+  app_PlanVersion ||--o{ app_Order : "Order_planVersionId_fkey"
+  app_User ||--o{ app_Order : "Order_userId_fkey"
+  app_Order ||--o{ app_PaymentAttempt : "PaymentAttempt_orderId_fkey"
+  app_Plan ||--o{ app_PlanVersion : "PlanVersion_planId_fkey"
+  app_User ||--o{ app_PolicyChange : "PolicyChange_actorId_fkey"
+  app_ContentPolicy ||--o{ app_PolicyChange : "PolicyChange_policyId_fkey"
+  app_ProcessingPurpose ||--o{ app_PrivacyPreference : "PrivacyPreference_purposeId_fkey"
+  app_User ||--o{ app_PrivacyPreference : "PrivacyPreference_userId_fkey"
+  app_Lesson ||--o{ app_Project : "Project_lessonId_fkey"
+  app_Asset ||--o{ app_ProjectSubmission : "ProjectSubmission_assetId_fkey"
+  app_Project ||--o{ app_ProjectSubmission : "ProjectSubmission_projectId_fkey"
+  app_User ||--o{ app_ProjectSubmission : "ProjectSubmission_userId_fkey"
+  app_User ||--o{ app_Publication : "Publication_ownerId_fkey"
+  app_Collection ||--o{ app_PublicationCollection : "PublicationCollection_collectionId_fkey"
+  app_Publication ||--o{ app_PublicationCollection : "PublicationCollection_publicationId_fkey"
+  app_Lesson ||--o{ app_Quiz : "Quiz_lessonId_fkey"
+  app_Revision ||--o{ app_Quiz : "Quiz_revisionId_fkey"
+  app_QuizAttempt ||--o{ app_QuizAnswer : "QuizAnswer_attemptId_fkey"
+  app_QuizQuestion ||--o{ app_QuizAnswer : "QuizAnswer_questionId_fkey"
+  app_Quiz ||--o{ app_QuizAttempt : "QuizAttempt_quizId_fkey"
+  app_User ||--o{ app_QuizAttempt : "QuizAttempt_userId_fkey"
+  app_Quiz ||--o{ app_QuizQuestion : "QuizQuestion_quizId_fkey"
+  app_Edition ||--o{ app_ReadingProgress : "ReadingProgress_editionId_fkey"
+  app_Lesson ||--o{ app_ReadingProgress : "ReadingProgress_lessonId_fkey"
+  app_User ||--o{ app_ReadingProgress : "ReadingProgress_userId_fkey"
+  app_PaymentAttempt o|--o{ app_ReconciliationItem : "ReconciliationItem_paymentAttemptId_fkey"
+  app_ReconciliationRun ||--o{ app_ReconciliationItem : "ReconciliationItem_runId_fkey"
+  app_PaymentAttempt ||--o{ app_Refund : "Refund_paymentAttemptId_fkey"
+  app_Chapter o|--o{ app_Resource : "Resource_chapterId_fkey"
+  app_Edition o|--o{ app_Resource : "Resource_editionId_fkey"
+  app_Lesson o|--o{ app_Resource : "Resource_lessonId_fkey"
+  app_Publication o|--o{ app_Resource : "Resource_publicationId_fkey"
+  app_Revision o|--o{ app_Resource : "Resource_revisionId_fkey"
+  app_Volume o|--o{ app_Resource : "Resource_volumeId_fkey"
+  app_Asset ||--o{ app_ResourceAttachment : "ResourceAttachment_assetId_fkey"
+  app_Resource ||--o{ app_ResourceAttachment : "ResourceAttachment_resourceId_fkey"
+  app_ProcessingPurpose ||--o{ app_RetentionPolicy : "RetentionPolicy_purposeId_fkey"
+  app_Edition ||--o{ app_Revision : "Revision_editionId_fkey"
+  app_Role ||--o{ app_RoleAssignment : "RoleAssignment_roleId_fkey"
+  app_User ||--o{ app_RoleAssignment : "RoleAssignment_userId_fkey"
+  app_Permission ||--o{ app_RolePermission : "RolePermission_permissionId_fkey"
+  app_Role ||--o{ app_RolePermission : "RolePermission_roleId_fkey"
+  app_User ||--o{ app_SubjectRequest : "SubjectRequest_userId_fkey"
+  app_PlanVersion ||--o{ app_Subscription : "Subscription_planVersionId_fkey"
+  app_User ||--o{ app_Subscription : "Subscription_userId_fkey"
+  app_User ||--o{ app_SyncOperation : "SyncOperation_userId_fkey"
+  app_User ||--o{ app_TrialUsage : "TrialUsage_userId_fkey"
+  app_User ||--o| app_UserProfile : "UserProfile_userId_fkey"
+  app_User ||--o{ app_VerificationToken : "VerificationToken_userId_fkey"
+  app_Publication ||--o{ app_Volume : "Volume_publicationId_fkey"
+  research_ResearchReport ||--o{ research_DisclosureReview : "DisclosureReview_reportId_fkey"
+  app_User ||--o{ research_DisclosureReview : "DisclosureReview_reviewerId_fkey"
+  app_ApprovalRequest o|--o{ research_PublicInsight : "PublicInsight_exceptionApprovalId_fkey"
+  research_ResearchDisclosurePolicy ||--o{ research_PublicInsight : "PublicInsight_policyId_fkey"
+  app_User ||--o{ research_PublicInsight : "PublicInsight_publishedById_fkey"
+  research_ResearchReport ||--o{ research_PublicInsight : "PublicInsight_reportId_fkey"
+  research_DisclosureReview ||--o{ research_PublicInsight : "PublicInsight_reviewId_fkey"
+  research_ResearchMetric ||--o{ research_ResearchAggregate : "ResearchAggregate_metricId_fkey"
+  app_User o|--o{ research_ResearchAudit : "ResearchAudit_actorId_fkey"
+  app_Publication o|--o{ research_ResearchEvent : "ResearchEvent_publicationId_fkey"
+  app_ProcessingPurpose ||--o{ research_ResearchEvent : "ResearchEvent_purposeId_fkey"
+  app_Revision o|--o{ research_ResearchEvent : "ResearchEvent_revisionId_fkey"
+  research_ResearchSession o|--o{ research_ResearchEvent : "ResearchEvent_sessionId_fkey"
+  app_User ||--o{ research_ResearchExport : "ResearchExport_requestedById_fkey"
+  research_ResearchStudy o|--o{ research_ResearchReport : "ResearchReport_studyId_fkey"
+  app_User ||--o{ research_private_PseudonymLink : "PseudonymLink_userId_fkey"

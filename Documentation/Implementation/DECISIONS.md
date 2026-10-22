@@ -1,6 +1,6 @@
 # Implementation decisions
 
-Updated: 2026-10-21. Decisions here do not amend the SRS. Material owner decisions remain open in `BLOCKERS.md`.
+Updated: 2026-10-22. Decisions here do not amend the SRS. Material owner decisions remain open in `BLOCKERS.md`.
 
 | ID | Status | Sources and issue | Decision and consequence |
 |---|---|---|---|
@@ -10,6 +10,11 @@ Updated: 2026-10-21. Decisions here do not amend the SRS. Material owner decisio
 | ADR-INIT-004 | Adopted | GitHub repository `etopat2/Arata_Library` has no branches or commits; workspace has no `.git`. | Initialize local `main`, preserve local source files, add the remote, and make an initial documentation-only commit. Verify the pushed remote ref. |
 | ADR-INIT-005 | Adopted | Contracts README and `architecture_decisions.md` mark contracts and schema as candidates; 39 operations are flagged `requires-specific-DTO`. | Keep contract, schema, and prototype status as design-only. Require action-specific DTO review, `prisma validate`, migrations, transactional tests, and security tests before application claims. |
 | ADR-INIT-006 | Adopted | SRS R1/R2/R3 scope and 20-sprint design plan; S06, S12, S20 have no direct IDs in the current assignment. | Treat the sprint plan as sequencing, not scope or completion evidence. Preserve all requirement IDs and refine assignments before delivery. |
+| ADR-DB-001 | Adopted | The Step 1 39-model Prisma schema is a candidate and lacks several SRS domains and BR-001–BR-018 invariants. | Use a 75-model physical design across `app`, `research`, and `research_private`. SRS scope prevails. Keep API delivery and approvals open. |
+| ADR-DB-002 | Adopted | SRS BR-001–BR-010 and DR-002 require precise edition, publication, entitlement and institution states that nullable candidate relationships alone cannot enforce. | Add versioned SQL check constraints, partial unique indexes and triggers for hierarchy, immutable approved revisions, verified payment sources, exact-domain membership and effective UTC entitlement evaluation. |
+| ADR-DB-003 | Adopted | SRS DR-006 and BR-013/BR-018 require separated research identities and controlled publication; an ordinary app role would expose linkage. | Split research and identity-link schemas and use distinct least-privilege roles. Public insight requires approved policy, review and proof. Encryption and key management remain service work. |
+| ADR-DB-004 | Adopted | SRS DR-004/DR-009 and payment rules need stable time, value and migration semantics. | Use UTC `timestamptz`, integer minor monetary units with currency codes, idempotency keys, append-only audit, forward-only migrations and backup/restore procedures. Do not seed unapproved prices or disclosure thresholds. |
+| ADR-DB-005 | Adopted | Local PostgreSQL 18 already serves other databases, and the SRS requires data preservation. | Provision only new `arata_techlibrary_dev`, `_test`, and `_shadow_dev` names after existence preflight. Never reset an unverified database. Store generated role URLs only in ignored `.env.local`. |
 
 ## Existing design decisions retained
 
