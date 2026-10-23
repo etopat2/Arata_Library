@@ -1,0 +1,41 @@
+name: API contracts
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install locked Node dependencies
+        run: npm ci
+      - name: Create isolated Python environment
+        run: |
+          python3 -m venv .venv-api
+          .venv-api/bin/python -m pip install --disable-pip-version-check -r api/requirements-contract.txt
+      - name: Regenerate and validate OpenAPI and TypeScript
+        run: |
+          .venv-api/bin/python api/build_contracts.py
+          .venv-api/bin/python api/build_coverage.py
+          git diff --exit-code -- api/openapi.v1.yaml api/policies.v1.yaml api/ENDPOINT_TRACEABILITY.csv api/POLICY_MATRIX.csv api/REQUIREMENT_COVERAGE.md
+          .venv-api/bin/python api/validate_contracts.py
+          npm run api:types
+          git diff --exit-code -- api/generated/v1.ts
+          npm run typecheck
+      - name: Test all operations against the contract stub
+        run: .venv-api/bin/python -m pytest -q api/tests

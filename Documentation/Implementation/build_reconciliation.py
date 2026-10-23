@@ -429,6 +429,25 @@ def main(check: bool) -> None:
     if any(not row["acceptance_criterion"] or not row["boundary_or_negative_case"] or not row["evidence_method"] for row in criteria):
         raise ValueError("an acceptance criterion lacks an outcome, boundary or evidence method")
 
+    reviewed_trace_path = ROOT / "api/ENDPOINT_TRACEABILITY.csv"
+    if reviewed_trace_path.exists():
+        reviewed_by_id: dict[str, list[str]] = defaultdict(list)
+        for operation in rows(reviewed_trace_path):
+            route = operation["method"] + " " + operation["path"]
+            for requirement_id in operation["requirement_ids"].split(";"):
+                if requirement_id:
+                    reviewed_by_id[requirement_id].append(route)
+        for row in matrix:
+            linked = sorted(set(reviewed_by_id.get(row["requirement_id"], [])))
+            row["api_operations"] = ";".join(linked) or "N/A (no direct v1 operation)"
+            row["api_mapping_status"] = "Reviewed v1 design contract; service not implemented" if linked else "No direct v1 operation; verify indirect coverage"
+            if linked:
+                paths = [p for p in row["implementation_paths"].split(";") if p]
+                for contract_path in ("api/openapi.v1.yaml", "api/policies.v1.yaml"):
+                    if contract_path not in paths:
+                        paths.append(contract_path)
+                row["implementation_paths"] = ";".join(paths)
+                row["verification_result"] = "API contract validation passed; feature acceptance not run"
     files = {
         "REQUIREMENT_TRACEABILITY.csv": csv_bytes(matrix, list(matrix[0])),
         "ACCEPTANCE_CRITERIA.csv": csv_bytes(criteria, list(criteria[0])),

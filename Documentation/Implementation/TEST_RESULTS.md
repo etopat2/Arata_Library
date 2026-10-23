@@ -48,3 +48,14 @@ Updated: 2026-10-22. Results are grouped by completed task; application behavior
 | Source Step 1 static contract tests | Passed | `python -m pytest -q Documentation/Arata_TechLibrary_Step1_Implementation_Contracts_v1.0/test_contracts.py`: 5 passed. These validate candidate contracts only. |
 | Generated-record reproducibility | Passed | Regeneration followed by `python Documentation/Implementation/build_reconciliation.py --check` produced byte-identical CSV files. |
 | Application E2E, authorization, accessibility and security tests | Not run | No application API or PWA exists. Requirement acceptance rows remain test plans rather than execution evidence. |
+
+## Versioned API contract validation - 2026-10-23
+
+| Check | Result | Evidence / limit |
+|---|---|---|
+| OpenAPI 3.1 and examples | Passed | `python api/validate_contracts.py`: 190 operations, 160 paths, 359 schemas, 190 policies and trace rows; 87 request and 1,900 response/error examples validated. |
+| Source reconciliation | Passed | `python Documentation/Implementation/build_reconciliation.py --check`: 287 original SRS IDs, 90 screens, 102 Step 1 candidate routes and 75 database models retained. The standalone v1 design has 88 additional operations. |
+| Type generation and strict compilation | Passed | `npm run api:types`; `npm run typecheck`. Generated `api/generated/v1.ts` is committed. |
+| Test-only HTTP stub and authorization rules | Passed | `python -m pytest -q api/tests`: 5 tests passed, all 190 operations exercised; negative object, tenant, entitlement, action, MFA, purpose, disclosure, webhook, export and immutable-revision cases passed. Seven dependency deprecation warnings. |
+| Dependency audit | Passed | `npm audit --audit-level=high` reported zero vulnerabilities. |
+| Live API integration, E2E and security | Not run | No NestJS API exists; stub outcomes are contract validation only. Provider-specific callbacks, SSO, uploads, payments and research release still require live implementation tests. |

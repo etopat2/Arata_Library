@@ -18,6 +18,10 @@
     "db:erd": "tsx database/scripts/generate-erd.ts",
     "db:test": "tsx --test database/tests/*.test.ts",
     "db:seed:dev": "tsx prisma/seed.dev.ts",
+    "api:build": "python api/build_contracts.py",
+    "api:validate": "python api/validate_contracts.py",
+    "api:types": "openapi-typescript api/openapi.v1.yaml -o api/generated/v1.ts",
+    "api:test": "python -m pytest -q api/tests",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -30,6 +34,7 @@
     "@types/node": "22.18.6",
     "@types/pg": "8.15.5",
     "@viz-js/viz": "^3.17.0",
+    "openapi-typescript": "7.13.0",
     "prisma": "7.10.1",
     "tsx": "4.20.6",
     "typescript": "5.9.3"
