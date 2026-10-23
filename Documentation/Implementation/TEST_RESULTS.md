@@ -59,3 +59,19 @@ Updated: 2026-10-22. Results are grouped by completed task; application behavior
 | Test-only HTTP stub and authorization rules | Passed | `python -m pytest -q api/tests`: 5 tests passed, all 190 operations exercised; negative object, tenant, entitlement, action, MFA, purpose, disclosure, webhook, export and immutable-revision cases passed. Seven dependency deprecation warnings. |
 | Dependency audit | Passed | `npm audit --audit-level=high` reported zero vulnerabilities. |
 | Live API integration, E2E and security | Not run | No NestJS API exists; stub outcomes are contract validation only. Provider-specific callbacks, SSO, uploads, payments and research release still require live implementation tests. |
+
+## Runnable foundation validation - 2026-10-23
+
+Scope: FR-OFL-001/002 shell contribution; FR-OPS-006 health contribution; INT-001/003/005/009; NFR-OPS-004/005/006/007/008; SEC-001/006/007. Wireframes: N/A for foundation shell; `system-health` remains a future administrator screen. Paths: `apps/`, `packages/`, `infrastructure/`, `compose.foundation.yaml`, `.github/workflows/foundation.yml`, `tests/`.
+
+| Check | Result | Evidence / limit |
+|---|---|---|
+| Clean dependencies | Passed | `npm ci --legacy-peer-deps` installed 781 packages; `.npmrc` now selects the same mode for ordinary `npm ci`. `npm ci --dry-run --ignore-scripts --no-audit` succeeded. |
+| Lint, strict types, integration, build | Passed | `npm run foundation:check`: ESLint and Prettier clean, all workspace TypeScript packages and apps checked, 5/5 Vitest tests passed (including real PostgreSQL and authenticated Redis), API/PWA/worker builds passed. |
+| Browser and offline PWA | Passed | `npm run test:e2e`: 2/2 Chromium-channel Chrome tests passed against built preview; live API status, theme control, light theme primary text contrast at least 4.5:1, manifest, service worker activation and offline shell reload verified. |
+| Live services | Passed locally | PostgreSQL 18.4 `arata_techlibrary_dev` remained intact; `/api/v1/health/live` and service-authenticated `/ready` returned 200. Worker started and real BullMQ job test passed. |
+| Existing database and contract suites | Passed | `npm run db:validate`, `npm run db:migrate:status`, `npm run db:verify` (75 tables, 122 FKs, 3 complete migrations and isolated roles), `npm run db:test` (8/8), `python api/validate_contracts.py` (190 operations), `npm run api:test` (5/5), and reconciliation `--check` (287 IDs, 90 screens). |
+| Dependency and Compose checks | Passed for available local checks | `npm audit --audit-level=high` found zero vulnerabilities; CycloneDX SBOM generated for 767 nonoptional components; foundation Compose config passed with local values supplied only for interpolation. Parsed service configuration exposed only `API_HOST`, `DATABASE_URL`, `HEALTH_TOKEN`, `WEB_ORIGIN` to API and only `REDIS_URL` to worker. |
+| Container runtime and GitHub CI | Pending | Docker Desktop Windows service is stopped and cannot be started in this session. Image build and Compose runtime must pass in GitHub Actions before the container path is called verified. |
+
+These checks cover the foundation only. The other 188 versioned operations and domain feature acceptance remain open. The earlier “No NestJS API exists” statement above records the prior contract-stage result.

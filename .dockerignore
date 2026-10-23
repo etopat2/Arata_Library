@@ -1,0 +1,13 @@
+node_modules
+**/dist
+.env*
+.secrets
+Documentation/Arata_TechLibrary_*
+Documentation/Implementation
+database
+prisma
+api
+tests
+.git
+coverage
+playwright-report
