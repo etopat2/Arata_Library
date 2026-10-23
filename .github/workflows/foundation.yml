@@ -27,7 +27,7 @@ jobs:
       - run: npm run foundation:init-env && npm run db:compose:init
       - run: docker compose --env-file .env.compose.local -f compose.database.yaml config --quiet
       - run: docker compose --env-file .env.compose.local -f compose.database.yaml up -d --wait
-      - run: npm run db:compose:provision && npm run db:migrate:deploy && npm run db:grant:dev
+      - run: npm run db:compose:provision && npm run db:migrate:deploy && npm run db:migrate:test && npm run db:grant:dev
       - run: docker compose --env-file .env.compose.local --env-file .env.foundation.local -f compose.foundation.yaml config --quiet
       - run: docker compose --env-file .env.compose.local --env-file .env.foundation.local -f compose.foundation.yaml up -d --wait postgres redis
       - run: npm run foundation:check
