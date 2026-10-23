@@ -1,3 +1,5 @@
+name: arata-techlibrary-dev
+
 include:
   - compose.database.yaml
 
