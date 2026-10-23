@@ -23,6 +23,7 @@ npm run db:migrate:deploy
 npm run db:grant:dev
 docker compose --env-file .env.compose.local --env-file .env.foundation.local -f compose.foundation.yaml up -d --wait postgres redis
 docker compose --env-file .env.compose.local --env-file .env.foundation.local -f compose.foundation.yaml up -d --build api worker web
+node infrastructure/scripts/check-compose.mjs
 ```
 
 Do not run provisioning against a database with unverified existing data. The Compose PostgreSQL service uses a separate named volume and loopback port 55433. The API uses the least privilege application URL. The worker consumes only the `arata-diagnostics` queue; product jobs are not implemented. The PWA caches its shell and static assets; `/api/*` uses `NetworkOnly`, so protected responses are not saved to a public service worker cache. IndexedDB stores only the theme preference. Protected offline reading and sync are future feature work.

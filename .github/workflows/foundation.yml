@@ -46,5 +46,7 @@ jobs:
           path: ${{ runner.temp }}/arata-foundation-sbom.cdx.json
           retention-days: 30
       - run: docker compose --env-file .env.compose.local --env-file .env.foundation.local -f compose.foundation.yaml build api worker web
+      - run: docker compose --env-file .env.compose.local --env-file .env.foundation.local -f compose.foundation.yaml up -d --wait api worker web
+      - run: node infrastructure/scripts/check-compose.mjs
       - if: always()
         run: docker compose --env-file .env.compose.local --env-file .env.foundation.local -f compose.foundation.yaml down --volumes --remove-orphans || true
