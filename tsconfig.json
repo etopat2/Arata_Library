@@ -10,5 +10,5 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["database/**/*.ts", "prisma/**/*.ts", "prisma.config.ts"]
+  "include": ["database/**/*.ts", "prisma/**/*.ts", "api/generated/**/*.ts", "prisma.config.ts"]
 }

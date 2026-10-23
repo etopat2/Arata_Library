@@ -1,0 +1,2671 @@
+version: 1
+defaultEffect: deny
+evaluationOrder:
+- authentication
+- rolesAny
+- ownership
+- institutionBoundary
+- entitlement
+- contentPermission
+- mfa
+- reasonRequired
+- distinctApprover
+policies:
+  post_auth_register:
+    effect: allow
+    authentication: public
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_auth_login:
+    effect: allow
+    authentication: public
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_auth_logout:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_auth_verify_email:
+    effect: allow
+    authentication: public
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_auth_password_reset_request:
+    effect: allow
+    authentication: public
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_auth_password_reset:
+    effect: allow
+    authentication: public
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_auth_sessions:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  delete_auth_sessions_id:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_catalogue_collections:
+    effect: allow
+    authentication: public
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: public_metadata_only
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_catalogue_publications:
+    effect: allow
+    authentication: public
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: public_metadata_only
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_catalogue_publications_id:
+    effect: allow
+    authentication: public
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: public_metadata_only
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_catalogue_publications_id_volumes:
+    effect: allow
+    authentication: public
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: public_metadata_only
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_catalogue_editions_id:
+    effect: allow
+    authentication: public
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: public_metadata_only
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_catalogue_search:
+    effect: allow
+    authentication: public
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: public_metadata_only
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_free_resources:
+    effect: allow
+    authentication: public
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: public_metadata_only
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_resources_id:
+    effect: allow
+    authentication: public
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: public_metadata_only
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_resources_id_open:
+    effect: allow
+    authentication: optional_session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: active_scope_or_free
+    contentPermission: read
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_resources_id_download:
+    effect: allow
+    authentication: optional_session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: active_scope_or_free
+    contentPermission: download
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_me_dashboard:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_me_entitlements:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_me_bookmarks:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_me_bookmarks:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  delete_me_bookmarks_id:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_me_annotations:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_me_annotations:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_me_progress:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  put_me_progress:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_me_privacy_preferences:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  put_me_privacy_preferences:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_reader_editions_id_manifest:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: active_scope_or_free
+    contentPermission: read
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_reader_lessons_id:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: active_scope_or_free
+    contentPermission: read
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_reader_lessons_id_code_assets:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: active_scope_or_free
+    contentPermission: read
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_reader_offline_licenses:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: active_scope_or_free
+    contentPermission: read
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  delete_reader_offline_licenses_id:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: active_scope_or_free
+    contentPermission: read
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_reader_sync:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: active_scope_or_free
+    contentPermission: read
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_learning_quizzes_id:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: active_scope_or_free
+    contentPermission: read
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_learning_quizzes_id_attempts:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: active_scope_or_free
+    contentPermission: read
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_learning_attempts_id_submit:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: active_scope_or_free
+    contentPermission: read
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_learning_projects:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: active_scope_or_free
+    contentPermission: read
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_learning_projects:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: active_scope_or_free
+    contentPermission: read
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_plans:
+    effect: allow
+    authentication: public
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_orders:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_payments_id_status:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_payments_webhooks_provider:
+    effect: allow
+    authentication: webhook
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_me_subscriptions:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_me_subscriptions_id_cancel:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_me_invoices:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_institutional_eligibility_check:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_institutional_memberships:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_institutional_memberships:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_institutional_memberships_id:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_publications:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - author
+    - editor
+    - publisher
+    ownership: editorial_scope
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_publications:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - editor
+    - publisher
+    ownership: editorial_scope
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_publications_id:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - author
+    - editor
+    - publisher
+    ownership: editorial_scope
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  patch_admin_publications_id:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - editor
+    - publisher
+    ownership: editorial_scope
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_publications_id_volumes:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - editor
+    - publisher
+    ownership: editorial_scope
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_volumes_id_editions:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - editor
+    - publisher
+    ownership: editorial_scope
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_editions_id_revisions:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - editor
+    - publisher
+    ownership: editorial_scope
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_revisions_id_chapters:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - editor
+    - publisher
+    ownership: editorial_scope
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: draft_only_mutation
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_revisions_id_submit_review:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - editor
+    - publisher
+    ownership: editorial_scope
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_revisions_id_approve:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - editor
+    - publisher
+    ownership: editorial_scope
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_revisions_id_publish:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - editor
+    - publisher
+    ownership: editorial_scope
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_uploads_initiate:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - editor
+    - publisher
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_uploads_id_complete:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - editor
+    - publisher
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_uploads_id_status:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - author
+    - editor
+    - publisher
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_resource_attachments:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - editor
+    - publisher
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_content_policies:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - author
+    - editor
+    - publisher
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_content_policies:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - editor
+    - publisher
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  patch_admin_content_policies_id:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - editor
+    - publisher
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_entitlements:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - platform_admin
+    ownership: grant_scope
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_entitlements:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - platform_admin
+    ownership: grant_scope
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: true
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_entitlements_id_revoke:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - platform_admin
+    ownership: grant_scope
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: true
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_entitlements_id_extend:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - platform_admin
+    ownership: grant_scope
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: true
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_institutions:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - platform_admin
+    - institution_manager
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_institutions:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - platform_admin
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_institutions_id_domains:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - platform_admin
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_institution_memberships_id_review:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - platform_admin
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_cohorts:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - platform_admin
+    - institution_manager
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_cohorts:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - platform_admin
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_plans:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - finance
+    - platform_admin
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_plans:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - finance
+    - platform_admin
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_orders:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - finance
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_payments_reconcile:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - finance
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_audit:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - security_admin
+    - platform_admin
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_research_events:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: research_consent
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_research_dashboard:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - research_analyst
+    - research_admin
+    ownership: none
+    institutionBoundary: research_isolation
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: true
+    note: Deny by default; server evaluates current resource state.
+  get_admin_research_metrics:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - research_analyst
+    - research_admin
+    ownership: none
+    institutionBoundary: research_isolation
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: true
+    note: Deny by default; server evaluates current resource state.
+  get_admin_research_studies:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - research_analyst
+    - research_admin
+    ownership: none
+    institutionBoundary: research_isolation
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: true
+    note: Deny by default; server evaluates current resource state.
+  post_admin_research_studies:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - research_analyst
+    - research_admin
+    ownership: none
+    institutionBoundary: research_isolation
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: true
+    note: Deny by default; server evaluates current resource state.
+  get_admin_research_reports:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - research_analyst
+    - research_admin
+    ownership: none
+    institutionBoundary: research_isolation
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: true
+    note: Deny by default; server evaluates current resource state.
+  post_admin_research_reports:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - research_analyst
+    - research_admin
+    ownership: none
+    institutionBoundary: research_isolation
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: true
+    note: Deny by default; server evaluates current resource state.
+  post_admin_research_exports:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - research_admin
+    ownership: none
+    institutionBoundary: research_isolation
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: true
+    purposeRequired: true
+    note: Deny by default; server evaluates current resource state.
+  get_admin_research_publications:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - research_analyst
+    - research_admin
+    ownership: none
+    institutionBoundary: research_isolation
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: true
+    note: Deny by default; server evaluates current resource state.
+  post_admin_research_publications:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - research_analyst
+    - research_admin
+    ownership: none
+    institutionBoundary: research_isolation
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: true
+    note: Deny by default; server evaluates current resource state.
+  post_admin_research_publications_id_review:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - privacy_approver
+    ownership: none
+    institutionBoundary: research_isolation
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: true
+    note: Deny by default; server evaluates current resource state.
+  post_admin_research_publications_id_approve:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - privacy_approver
+    ownership: none
+    institutionBoundary: research_isolation
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: true
+    purposeRequired: true
+    note: Deny by default; server evaluates current resource state.
+  post_admin_research_publications_id_release:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - research_admin
+    ownership: none
+    institutionBoundary: research_isolation
+    entitlement: none
+    contentPermission: approved_disclosure_snapshot
+    mfa: true
+    reasonRequired: true
+    distinctApprover: true
+    purposeRequired: true
+    note: Deny by default; server evaluates current resource state.
+  post_admin_research_publications_id_withdraw:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - research_admin
+    ownership: none
+    institutionBoundary: research_isolation
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: true
+    note: Deny by default; server evaluates current resource state.
+  get_public_insights:
+    effect: allow
+    authentication: public
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: released_aggregate_only
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_public_insights_id:
+    effect: allow
+    authentication: public
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: released_aggregate_only
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_public_statistics_library_overview:
+    effect: allow
+    authentication: public
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: released_aggregate_only
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_public_statistics_popular_resources:
+    effect: allow
+    authentication: public
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: released_aggregate_only
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_me_profile:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  patch_me_profile:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_me_notification_preferences:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  put_me_notification_preferences:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_me_notifications:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_me_notification_read:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_auth_mfa_challenge:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_auth_mfa_verify:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_users:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - support
+    - platform_admin
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  patch_admin_user_status:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - platform_admin
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_roles:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - platform_admin
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_role_assignments:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - security_admin
+    - platform_admin
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: true
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  delete_admin_role_assignment:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - security_admin
+    - platform_admin
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: true
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_security_alerts:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - security_admin
+    - platform_admin
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_health_live:
+    effect: allow
+    authentication: public
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_health_ready:
+    effect: allow
+    authentication: service
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_system_health:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - platform_admin
+    - security_admin
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_me_refunds:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_payments:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - finance
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_refunds:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - finance
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_refund_approve:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - finance
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: true
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_refunds:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - finance
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_reconciliation_run:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - finance
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_me_trials:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_domain_approve:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - platform_admin
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: true
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_institution_memberships:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - platform_admin
+    - institution_manager
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_reader_offline_licenses:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: active_scope_or_free
+    contentPermission: read
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_research_events:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - research_analyst
+    - research_admin
+    ownership: none
+    institutionBoundary: research_isolation
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: true
+    note: Deny by default; server evaluates current resource state.
+  get_admin_research_sessions:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - research_analyst
+    - research_admin
+    ownership: none
+    institutionBoundary: research_isolation
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: true
+    note: Deny by default; server evaluates current resource state.
+  get_admin_research_quality:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - research_analyst
+    - research_admin
+    ownership: none
+    institutionBoundary: research_isolation
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: true
+    note: Deny by default; server evaluates current resource state.
+  get_admin_research_export:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - research_admin
+    ownership: none
+    institutionBoundary: research_isolation
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: true
+    note: Deny by default; server evaluates current resource state.
+  post_admin_research_disclosure:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - research_analyst
+    - research_admin
+    ownership: none
+    institutionBoundary: research_isolation
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: true
+    note: Deny by default; server evaluates current resource state.
+  get_me_privacy_requests:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_me_privacy_requests:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_privacy_requests:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - privacy_approver
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_privacy_request_resolve:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - privacy_approver
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_catalogue_edition_history:
+    effect: allow
+    authentication: public
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: public_metadata_only
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_revision:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - author
+    - editor
+    - publisher
+    ownership: editorial_scope
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  patch_admin_revision:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - editor
+    - publisher
+    ownership: editorial_scope
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: draft_only_mutation
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_publication_withdraw:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - editor
+    - publisher
+    ownership: editorial_scope
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_access_decision:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - security_admin
+    - platform_admin
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_reader_edition_search:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: active_scope_or_free
+    contentPermission: read
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_revision_diff:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - author
+    - editor
+    - publisher
+    ownership: editorial_scope
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_learning_project_submissions:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: active_scope_or_free
+    contentPermission: read
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_learning_project_submission:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: active_scope_or_free
+    contentPermission: read
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_learning_code_lab:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: active_scope_or_free
+    contentPermission: read
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_learning_code_run:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: active_scope_or_free
+    contentPermission: read
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_me_support_tickets:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_me_support_ticket:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_support_tickets:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - support
+    - platform_admin
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_support_ticket_resolve:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - support
+    - platform_admin
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_finance_report:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - finance
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_feature_flags:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - platform_admin
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  patch_admin_feature_flag:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - platform_admin
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_me_consents:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_me_consent:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_research_retention:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - research_admin
+    - privacy_approver
+    ownership: none
+    institutionBoundary: research_isolation
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: true
+    note: Deny by default; server evaluates current resource state.
+  post_admin_research_retention_run:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - research_admin
+    - privacy_approver
+    ownership: none
+    institutionBoundary: research_isolation
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: true
+    purposeRequired: true
+    note: Deny by default; server evaluates current resource state.
+  get_admin_institution_eligibility_policy:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - platform_admin
+    - institution_manager
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  put_admin_institution_eligibility_policy:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - platform_admin
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_upload_assets:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - author
+    - editor
+    - publisher
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_effective_content_policy:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - author
+    - editor
+    - publisher
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_standalone_edition:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - editor
+    - publisher
+    ownership: editorial_scope
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_lesson:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - editor
+    - publisher
+    ownership: editorial_scope
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: draft_only_mutation
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_lesson:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - author
+    - editor
+    - publisher
+    ownership: editorial_scope
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  patch_admin_lesson:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - editor
+    - publisher
+    ownership: editorial_scope
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: draft_only_mutation
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_catalogue_toc:
+    effect: allow
+    authentication: public
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: public_metadata_only
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_auth_sso_start:
+    effect: allow
+    authentication: public
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_auth_sso_callback:
+    effect: allow
+    authentication: public
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_catalogue_related_publications:
+    effect: allow
+    authentication: public
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: public_metadata_only
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_me_recommendations:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_import:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - editor
+    - publisher
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_import:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - editor
+    - publisher
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_gift_code:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - finance
+    - platform_admin
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: verified_paid_purchase
+    mfa: true
+    reasonRequired: true
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_gift_code_redeem:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_me_reader_settings:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  put_me_reader_settings:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_me_learning_goals:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_me_learning_goal:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_learning_certificate:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_or_cohort_scope
+    institutionBoundary: none
+    entitlement: active_scope_or_free
+    contentPermission: read
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_learning_discussions:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_or_cohort_scope
+    institutionBoundary: none
+    entitlement: active_scope_or_free
+    contentPermission: read
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_learning_discussion:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_or_cohort_scope
+    institutionBoundary: none
+    entitlement: active_scope_or_free
+    contentPermission: read
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_learning_discussion_reply:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_or_cohort_scope
+    institutionBoundary: none
+    entitlement: active_scope_or_free
+    contentPermission: read
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_roster_import:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - platform_admin
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  get_admin_institution_impact_report:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - platform_admin
+    - institution_manager
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_me_ai_question:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: active_scope_or_free
+    contentPermission: ai_consent_and_read
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+  post_admin_export:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - platform_admin
+    - finance
+    - security_admin
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+    exportKindRoles:
+      users:
+      - platform_admin
+      finance:
+      - finance
+      audit:
+      - security_admin
+      institution_memberships:
+      - platform_admin
+    sensitiveExportApproval: true
+  get_admin_export:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - platform_admin
+    - finance
+    - security_admin
+    ownership: export_scope
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server evaluates current resource state.
+    exportKindRoles:
+      users:
+      - platform_admin
+      finance:
+      - finance
+      audit:
+      - security_admin
+      institution_memberships:
+      - platform_admin
+    sensitiveExportApproval: true

@@ -1,10 +1,10 @@
 # Sprint status
 
-Updated: 2026-10-22. The source plan proposes 20 two-week sequencing units; durations are not delivery commitments.
+Updated: 2026-10-23. The source plan proposes 20 two-week sequencing units; durations are not delivery commitments.
 
 | Sprint | Source goal | Status | Current note |
 |---|---|---|---|
-| S01 | Initiation and design/contracts | In progress | Inventory, operating rules, database CI and full SRS reconciliation complete; action-specific contracts, application environments and threat model remain. |
+| S01 | Initiation and design/contracts | In progress | Inventory, database CI, SRS reconciliation and the 190-operation v1 API design contract are complete. Service implementation, threat model and application environments remain. |
 | S02–S20 | Design system through staging/UAT | Not started | Reconciled per-ID allocation is in `SPRINT_ALLOCATION.md`; source sprint numbers remain planning aids and service work has not started. |
 
 Database foundation completed across S01/S05/S08/S11/S13/S16/S18: 75 models, three migrations, development roles, ERD, seed and eight passing constraint tests. The application services and release acceptance for those sprints remain open.
