@@ -48,3 +48,18 @@ test('built PWA installs its service worker and loads its shell offline', async 
   await expect(page.getByRole('heading', { name: /a home for technology books/i })).toBeVisible();
   await context.setOffline(false);
 });
+
+test('account screens expose recovery and guard registration until approved policies are configured', async ({
+  page,
+}) => {
+  await page.goto('/?screen=register');
+  await expect(page.getByRole('heading', { name: 'Create your account' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Create account' })).toBeDisabled();
+  await expect(
+    page.getByText('Registration awaits approved terms and privacy notices.'),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'recovery' }).click();
+  await expect(page.getByRole('heading', { name: 'Recover account access' })).toBeVisible();
+  await page.getByRole('button', { name: 'login' }).click();
+  await expect(page.getByRole('heading', { name: 'Sign in to your library' })).toBeVisible();
+});

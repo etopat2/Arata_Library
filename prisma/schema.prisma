@@ -219,52 +219,57 @@ enum ResearchStudyStatus {
 }
 
 model User {
-  id                 String              @id @default(uuid()) @db.Uuid
-  email              String              @unique @db.VarChar(320)
-  passwordHash       String?             @db.VarChar(255)
-  status             UserStatus          @default(ACTIVE)
-  emailVerifiedAt    DateTime?           @db.Timestamptz(6)
-  termsAcceptedAt    DateTime            @db.Timestamptz(6)
-  privacyVersion     String              @db.VarChar(64)
-  createdAt          DateTime            @default(now()) @db.Timestamptz(6)
-  updatedAt          DateTime            @updatedAt @db.Timestamptz(6)
-  profile            UserProfile?
-  sessions           AuthSession[]
-  authenticators     Authenticator[]
-  verificationTokens VerificationToken[]
-  roles              RoleAssignment[]
-  privacyPreferences PrivacyPreference[]
-  subjectRequests    SubjectRequest[]
-  publications       Publication[]
-  uploads            Asset[]
-  editorialReviews   EditorialReview[]
-  subscriptions      Subscription[]
-  trialUsages        TrialUsage[]
-  orders             Order[]
-  entitlements       Entitlement[]
-  memberships        Membership[]
-  cohortMemberships  CohortMember[]
-  progress           ReadingProgress[]
-  bookmarks          Bookmark[]
-  annotations        Annotation[]
-  quizAttempts       QuizAttempt[]
-  projectSubmissions ProjectSubmission[]
-  offlineLicences    OfflineLicence[]
-  syncOperations     SyncOperation[]
-  notifications      Notification[]
-  auditEvents        AuditEvent[]
-  pseudonymLinks     PseudonymLink[]
-  policyChanges      PolicyChange[]
-  requestedGrants    GrantApproval[]     @relation("GrantRequester")
-  approvedGrants     GrantApproval[]     @relation("GrantApprover")
-  eligibilityReviews EligibilityReview[]
-  approvalsRequested ApprovalRequest[]   @relation("ApprovalRequester")
-  approvalsDecided   ApprovalRequest[]   @relation("ApprovalDecider")
-  disclosureReviews  DisclosureReview[]
-  researchExports    ResearchExport[]
-  publishedInsights  PublicInsight[]
-  researchAudits     ResearchAudit[]
-  approvedDomains    InstitutionDomain[]
+  id                     String                  @id @default(uuid()) @db.Uuid
+  email                  String                  @unique @db.VarChar(320)
+  passwordHash           String?                 @db.VarChar(255)
+  status                 UserStatus              @default(ACTIVE)
+  emailVerifiedAt        DateTime?               @db.Timestamptz(6)
+  failedLoginCount       Int                     @default(0)
+  lockedUntil            DateTime?               @db.Timestamptz(6)
+  closedAt               DateTime?               @db.Timestamptz(6)
+  termsAcceptedAt        DateTime?               @db.Timestamptz(6)
+  termsVersion           String                  @default("LEGACY_UNRECORDED") @db.VarChar(64)
+  privacyVersion         String                  @db.VarChar(64)
+  createdAt              DateTime                @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime                @updatedAt @db.Timestamptz(6)
+  profile                UserProfile?
+  sessions               AuthSession[]
+  authenticators         Authenticator[]
+  verificationTokens     VerificationToken[]
+  roles                  RoleAssignment[]
+  privacyPreferences     PrivacyPreference[]
+  notificationPreference NotificationPreference?
+  subjectRequests        SubjectRequest[]
+  publications           Publication[]
+  uploads                Asset[]
+  editorialReviews       EditorialReview[]
+  subscriptions          Subscription[]
+  trialUsages            TrialUsage[]
+  orders                 Order[]
+  entitlements           Entitlement[]
+  memberships            Membership[]
+  cohortMemberships      CohortMember[]
+  progress               ReadingProgress[]
+  bookmarks              Bookmark[]
+  annotations            Annotation[]
+  quizAttempts           QuizAttempt[]
+  projectSubmissions     ProjectSubmission[]
+  offlineLicences        OfflineLicence[]
+  syncOperations         SyncOperation[]
+  notifications          Notification[]
+  auditEvents            AuditEvent[]
+  pseudonymLinks         PseudonymLink[]
+  policyChanges          PolicyChange[]
+  requestedGrants        GrantApproval[]         @relation("GrantRequester")
+  approvedGrants         GrantApproval[]         @relation("GrantApprover")
+  eligibilityReviews     EligibilityReview[]
+  approvalsRequested     ApprovalRequest[]       @relation("ApprovalRequester")
+  approvalsDecided       ApprovalRequest[]       @relation("ApprovalDecider")
+  disclosureReviews      DisclosureReview[]
+  researchExports        ResearchExport[]
+  publishedInsights      PublicInsight[]
+  researchAudits         ResearchAudit[]
+  approvedDomains        InstitutionDomain[]
 
   @@schema("app")
 }
@@ -287,6 +292,8 @@ model AuthSession {
   expiresAt     DateTime  @db.Timestamptz(6)
   revokedAt     DateTime? @db.Timestamptz(6)
   mfaVerifiedAt DateTime? @db.Timestamptz(6)
+  deviceLabel   String?   @db.VarChar(160)
+  lastSeenAt    DateTime? @db.Timestamptz(6)
   createdAt     DateTime  @default(now()) @db.Timestamptz(6)
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -299,6 +306,10 @@ model Authenticator {
   userId         String            @db.Uuid
   kind           AuthenticatorKind
   credentialHash String            @db.VarChar(512)
+  credentialId   String?           @unique @db.VarChar(512)
+  signCount      Int               @default(0)
+  transports     String[]          @default([])
+  confirmedAt    DateTime?         @db.Timestamptz(6)
   lastUsedAt     DateTime?         @db.Timestamptz(6)
   createdAt      DateTime          @default(now()) @db.Timestamptz(6)
   revokedAt      DateTime?         @db.Timestamptz(6)
@@ -392,6 +403,16 @@ model PrivacyPreference {
   purpose       ProcessingPurpose @relation(fields: [purposeId], references: [id], onDelete: Restrict)
 
   @@index([userId, purposeId, effectiveAt])
+  @@schema("app")
+}
+
+model NotificationPreference {
+  userId    String   @id @db.Uuid
+  email     Boolean  @default(true)
+  inApp     Boolean  @default(true)
+  updatedAt DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@schema("app")
 }
 
@@ -1247,6 +1268,7 @@ model AuditEvent {
   beforeHash    String?  @db.VarChar(128)
   afterHash     String?  @db.VarChar(128)
   correlationId String   @db.VarChar(120)
+  reason        String?  @db.VarChar(1000)
   occurredAt    DateTime @default(now()) @db.Timestamptz(6)
   actor         User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
 

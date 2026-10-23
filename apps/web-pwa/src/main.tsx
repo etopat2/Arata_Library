@@ -5,6 +5,7 @@ import { Button, StatusBadge } from '@arata/ui';
 import { getTheme, setTheme } from './preferences.js';
 import { registerSW } from 'virtual:pwa-register';
 import './style.css';
+import { AccountScreens } from './AccountScreens.js';
 
 const updateSW = registerSW({
   onNeedRefresh() {
@@ -75,8 +76,8 @@ function App() {
           A home for technology books and learning.
         </h1>
         <p className="mt-6 max-w-2xl text-lg text-slate-400">
-          The application shell is ready. Catalogue, accounts, reading, and learning features will
-          appear here as they are implemented and verified.
+          Manage your account below. Catalogue, reading, and learning features will appear as their
+          services are implemented and verified.
         </p>
         {updateReady && (
           <div role="status" className="mt-6 rounded-xl border border-cyan-400 p-4">
@@ -96,6 +97,7 @@ function App() {
             separately by service credentials.
           </p>
         </section>
+        <AccountScreens />
       </main>
       <footer className="mx-auto max-w-5xl px-6 py-8 text-sm text-slate-400">
         Arata TechLibrary development build

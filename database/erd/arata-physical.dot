@@ -5,9 +5,9 @@ digraph ArataPhysicalERD {
   "app_Annotation" [label="app.Annotation\nPK id\nFK userId\nFK editionId\nFK revisionId\nanchor\nencryptedBodyRef\ncreatedAt\nupdatedAt", fillcolor="#f7f9fc"];
   "app_ApprovalRequest" [label="app.ApprovalRequest\nPK id\nkind\nobjectId\nFK requestedById\nFK decidedById?\nstatus\nreason\nrequestedAt\ndecidedAt?", fillcolor="#f7f9fc"];
   "app_Asset" [label="app.Asset\nPK id\nFK uploadedById\nstorageKey\noriginalName\nmimeType\nsizeBytes\nsha256\nstatus\nscanEvidence?\nscannedAt?\ncreatedAt", fillcolor="#f7f9fc"];
-  "app_AuditEvent" [label="app.AuditEvent\nPK id\nFK actorId?\naction\nobjectType\nobjectId?\nbeforeHash?\nafterHash?\ncorrelationId\noccurredAt", fillcolor="#f7f9fc"];
-  "app_AuthSession" [label="app.AuthSession\nPK id\nFK userId\ntokenHash\nexpiresAt\nrevokedAt?\nmfaVerifiedAt?\ncreatedAt", fillcolor="#f7f9fc"];
-  "app_Authenticator" [label="app.Authenticator\nPK id\nFK userId\nkind\ncredentialHash\nlastUsedAt?\ncreatedAt\nrevokedAt?", fillcolor="#f7f9fc"];
+  "app_AuditEvent" [label="app.AuditEvent\nPK id\nFK actorId?\naction\nobjectType\nobjectId?\nbeforeHash?\nafterHash?\ncorrelationId\noccurredAt\nreason?", fillcolor="#f7f9fc"];
+  "app_AuthSession" [label="app.AuthSession\nPK id\nFK userId\ntokenHash\nexpiresAt\nrevokedAt?\nmfaVerifiedAt?\ncreatedAt\ndeviceLabel?\nlastSeenAt?", fillcolor="#f7f9fc"];
+  "app_Authenticator" [label="app.Authenticator\nPK id\nFK userId\nkind\ncredentialHash\nlastUsedAt?\ncreatedAt\nrevokedAt?\ncredentialId?\nsignCount\ntransports\nconfirmedAt?", fillcolor="#f7f9fc"];
   "app_Bookmark" [label="app.Bookmark\nPK id\nFK userId\nFK editionId\nFK revisionId\nanchor\ncreatedAt", fillcolor="#f7f9fc"];
   "app_Chapter" [label="app.Chapter\nPK id\nFK revisionId\nordinal\nslug\ntitle", fillcolor="#f7f9fc"];
   "app_Cohort" [label="app.Cohort\nPK id\nFK institutionId\nname\ncreatedAt", fillcolor="#f7f9fc"];
@@ -28,6 +28,7 @@ digraph ArataPhysicalERD {
   "app_Lesson" [label="app.Lesson\nPK id\nFK chapterId\nordinal\ntitle\nFK bodyAssetId?\ncontentHash?", fillcolor="#f7f9fc"];
   "app_Membership" [label="app.Membership\nPK id\nFK institutionId\nFK userId\nstatus\nverificationMethod\nevidenceRef?\nverifiedAt?\nexpiresAt?\ncreatedAt", fillcolor="#f7f9fc"];
   "app_Notification" [label="app.Notification\nPK id\nFK userId\nkind\nstatus\ntemplateCode\ncreatedAt\nsentAt?", fillcolor="#f7f9fc"];
+  "app_NotificationPreference" [label="app.NotificationPreference\nPK userId\nemail\ninApp\nupdatedAt", fillcolor="#f7f9fc"];
   "app_OfflineLicence" [label="app.OfflineLicence\nPK id\nFK userId\nFK editionId\nFK revisionId\ndeviceHash\nmanifestHash\nissuedAt\nexpiresAt\nrevokedAt?", fillcolor="#f7f9fc"];
   "app_Order" [label="app.Order\nPK id\nFK userId\nFK planVersionId\nmerchantRef\nidempotencyKey\ncurrencyCode\ntotalMinor\nstatus\ncreatedAt\npaidAt?", fillcolor="#f7f9fc"];
   "app_OutboxEvent" [label="app.OutboxEvent\nPK id\naggregateType\naggregateId\neventType\nidempotencyKey\npayload\noccurredAt\npublishedAt?\nattemptCount", fillcolor="#f7f9fc"];
@@ -61,7 +62,7 @@ digraph ArataPhysicalERD {
   "app_Subscription" [label="app.Subscription\nPK id\nFK userId\nFK planVersionId\nstatus\ncurrentPeriodStart?\ncurrentPeriodEnd?\ncancelAtPeriodEnd\ncreatedAt", fillcolor="#f7f9fc"];
   "app_SyncOperation" [label="app.SyncOperation\nPK id\nFK userId\ndeviceHash\nclientOperationId\noperationType\npayloadHash\nresult?\nprocessedAt", fillcolor="#f7f9fc"];
   "app_TrialUsage" [label="app.TrialUsage\nPK id\nFK userId\ncampaignKey\nstartsAt\nendsAt", fillcolor="#f7f9fc"];
-  "app_User" [label="app.User\nPK id\nemail\npasswordHash?\nstatus\nemailVerifiedAt?\ntermsAcceptedAt\nprivacyVersion\ncreatedAt\nupdatedAt", fillcolor="#f7f9fc"];
+  "app_User" [label="app.User\nPK id\nemail\npasswordHash?\nstatus\nemailVerifiedAt?\ntermsAcceptedAt?\nprivacyVersion\ncreatedAt\nupdatedAt\nfailedLoginCount\nlockedUntil?\nclosedAt?\ntermsVersion", fillcolor="#f7f9fc"];
   "app_UserProfile" [label="app.UserProfile\nPK userId\ndisplayName?\nlocale\ntimezone\nupdatedAt", fillcolor="#f7f9fc"];
   "app_VerificationToken" [label="app.VerificationToken\nPK id\nFK userId\npurpose\ntokenHash\nexpiresAt\nusedAt?\ncreatedAt", fillcolor="#f7f9fc"];
   "app_Volume" [label="app.Volume\nPK id\nFK publicationId\nordinal\ntitle\ncreatedAt", fillcolor="#f7f9fc"];
@@ -130,6 +131,7 @@ digraph ArataPhysicalERD {
   "app_Institution" -> "app_Membership" [label="Membership_institutionId_fkey (institutionId)\n1 : 0..many"];
   "app_User" -> "app_Membership" [label="Membership_userId_fkey (userId)\n1 : 0..many"];
   "app_User" -> "app_Notification" [label="Notification_userId_fkey (userId)\n1 : 0..many"];
+  "app_User" -> "app_NotificationPreference" [label="NotificationPreference_userId_fkey (userId)\n1 : 0..1"];
   "app_Edition" -> "app_OfflineLicence" [label="OfflineLicence_editionId_fkey (editionId)\n1 : 0..many"];
   "app_Revision" -> "app_OfflineLicence" [label="OfflineLicence_revisionId_editionId_fkey (revisionId, editionId)\n1 : 0..many"];
   "app_User" -> "app_OfflineLicence" [label="OfflineLicence_userId_fkey (userId)\n1 : 0..many"];

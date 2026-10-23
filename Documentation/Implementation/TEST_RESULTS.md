@@ -1,5 +1,19 @@
 # Validation results
 
+## Identity and account service validation - 2026-10-24
+
+Scope: FR-IAM-001–009/011 and SEC-001/002/005/009 contributions. Wireframes: `register`, `login`, `verify-email`, `recovery`, `profile`, `privacy`, `my-sessions`; administrator screens are pending. Implementation: `apps/api/src/identity/`, `apps/web-pwa/src/AccountScreens.tsx`, `prisma/migrations/202610230001_identity_security` through `202610230007_identity_role_catalogue`, `tests/integration/identity.test.ts`, `tests/e2e/foundation.spec.ts`.
+
+| Check | Result | Evidence / limit |
+|---|---|---|
+| PostgreSQL migration and drift | Passed locally | Identity preflight passed; 10 forward migrations applied to isolated development and test DBs; both Prisma migration diffs empty; 76 tables, 123 foreign keys and UTC confirmed by SQL catalog. Physical ERD regenerated. |
+| Identity integration and authorization | Passed locally | 8/8 live NestJS/PostgreSQL/Redis tests: generic duplicate and recovery response, hash storage, verification token expiry/replay, password reset, lockout, CSRF, session ownership/rotation/revocation, MFA and step-up, role escalation denial, administrator invite/suspension, optional preferences, deletion request and audit reasons. Synthetic email capture only. Positive hardware passkey and institutional SSO tests remain open. |
+| Foundation quality and browser | Passed locally | `npm run foundation:check`: ESLint, Prettier, strict app/package types, 13/13 Vitest tests and builds passed. `npm run test:e2e`: 3/3 Chromium tests, including account screen navigation and legal-policy registration gate. Full account browser journeys remain open. |
+| Existing database and design contract | Passed locally | `npm run db:test`: 8/8 constraints. `npm run api:validate`: 190 design operations validated; `npm run api:test`: 5/5 stub contract tests. These do not prove live identity route conformance; API drift is GAP-016. |
+| Dependency and traceability | Passed locally | `npm audit --audit-level=high`: zero reported vulnerabilities. `build_reconciliation.py --check`: 287 original SRS IDs, 90 screens, 76 Prisma models; 14 rows explicitly marked partial. |
+
+Approved terms/privacy documents, SSO provider, export/retention processor, independent administrator role approval, positive passkey device tests, live OpenAPI reconciliation and hosted CI remain open. Registration stays unavailable without approved versions and URLs. Local tests do not establish production release readiness.
+
 Updated: 2026-10-22. Results are grouped by completed task; application behavior and release acceptance remain untested.
 
 | Check | Result | Evidence / limitation |

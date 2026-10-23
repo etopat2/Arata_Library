@@ -1,0 +1,1 @@
+ALTER TABLE app."AuditEvent" ADD COLUMN reason VARCHAR(1000);

@@ -30,6 +30,8 @@
     "db:compose:provision": "tsx database/scripts/provision-compose.ts",
     "db:grant:dev": "tsx database/scripts/grant-dev.ts",
     "db:verify": "tsx database/scripts/verify-dev.ts",
+    "db:identity:preflight": "tsx database/scripts/check-identity-preflight.ts",
+    "identity:bootstrap-admin": "tsx database/scripts/bootstrap-admin.ts",
     "db:erd": "tsx database/scripts/generate-erd.ts",
     "db:test": "tsx --test database/tests/*.test.ts",
     "db:seed:dev": "tsx prisma/seed.dev.ts",

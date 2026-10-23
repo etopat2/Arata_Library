@@ -24,11 +24,20 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL:?Run database Compose provisioning first}
       HEALTH_TOKEN: ${HEALTH_TOKEN:?Run foundation init first}
+      AUTH_SESSION_SECRET: ${AUTH_SESSION_SECRET:?Run foundation init first}
+      AUTH_DATA_KEY: ${AUTH_DATA_KEY:?Run foundation init first}
+      REDIS_URL: redis://redis:6379
+      AUTH_SMTP_HOST: mailpit
+      AUTH_SMTP_PORT: 1025
       WEB_ORIGIN: http://127.0.0.1:5173
       API_HOST: 0.0.0.0
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
     ports:
       - "127.0.0.1:3000:3000"
   worker:
@@ -53,6 +62,10 @@ services:
         condition: service_started
     ports:
       - "127.0.0.1:5173:5173"
+  mailpit:
+    image: axllent/mailpit:v1.27
+    ports:
+      - "127.0.0.1:8025:8025"
 
 volumes:
   redis_data:

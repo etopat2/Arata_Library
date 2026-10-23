@@ -269,7 +269,7 @@ def main(check: bool) -> None:
     for path, method, _ in operations:
         operation_by_path[path].append(method)
     models = set(re.findall(r"(?m)^model (\w+) \{", (ROOT / "prisma/schema.prisma").read_text(encoding="utf-8")))
-    if len(models) != 75:
+    if len(models) != 76:
         raise ValueError(f"unexpected Prisma model count: {len(models)}")
 
     prior = rows(OUT / "REQUIREMENT_TRACEABILITY.csv")
@@ -350,7 +350,7 @@ def main(check: bool) -> None:
         test_id = f"T-{ident}"
         criteria.append({"requirement_id": ident, "test_id": test_id, "acceptance_criterion": criterion,
                          "boundary_or_negative_case": boundary, "evidence_method": method,
-                         "execution_status": "Not run; criterion needs scenario refinement before implementation"})
+                         "execution_status": "Partial live identity checks; full criterion open" if prior_row["implementation_status"].startswith("Partially implemented") else "Not run; criterion needs scenario refinement before implementation"})
         matrix.append({
             "requirement_id": ident, "source": "ATL-SRS-001 v1.0 §8.1" if family == "BR" else prior_row["source"], "priority_release": priority,
             "delivery_stage": stage, "planned_sprint": sprint, "module": module,
@@ -441,6 +441,9 @@ def main(check: bool) -> None:
             linked = sorted(set(reviewed_by_id.get(row["requirement_id"], [])))
             row["api_operations"] = ";".join(linked) or "N/A (no direct v1 operation)"
             row["api_mapping_status"] = (
+                "Reviewed v1 design contract; live implementation partial; full acceptance open"
+                if linked and row["implementation_status"].startswith("Partially implemented")
+                else
                 "Reviewed v1 design contract; health operations implemented; other routes open"
                 if any("/api/v1/health/" in route for route in linked)
                 else "Reviewed v1 design contract; service not implemented" if linked
