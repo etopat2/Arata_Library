@@ -1,9 +1,24 @@
 {
-  "name": "arata-techlibrary-database",
+  "name": "arata-techlibrary",
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "workspaces": ["apps/*", "packages/*"],
   "scripts": {
+    "dev": "concurrently -k -n api,web \"npm run dev -w @arata/api\" \"npm run dev -w @arata/web-pwa\"",
+    "dev:api": "npm run dev -w @arata/api",
+    "dev:web": "npm run dev -w @arata/web-pwa",
+    "dev:worker": "npm run dev -w @arata/worker",
+    "foundation:init-env": "node infrastructure/scripts/init-foundation-env.mjs",
+    "foundation:check": "npm run lint && npm run typecheck:foundation && npm run test:foundation && npm run build:foundation",
+    "lint": "eslint apps packages tests --max-warnings=0 && prettier --check \"apps/**/*.{ts,tsx,css,json}\" \"packages/**/*.{ts,tsx,json}\" \"tests/**/*.{ts,tsx}\"",
+    "format": "prettier --write \"apps/**/*.{ts,tsx,css,json}\" \"packages/**/*.{ts,tsx,json}\" \"tests/**/*.{ts,tsx}\"",
+    "typecheck:foundation": "npm run build:packages && npm run typecheck -w @arata/api && npm run typecheck -w @arata/web-pwa && npm run typecheck -w @arata/worker",
+    "test:foundation": "vitest run --config vitest.config.ts",
+    "test:integration": "vitest run tests/integration --config vitest.config.ts",
+    "test:e2e": "playwright test",
+    "build:packages": "npm run build -w @arata/shared-types && npm run build -w @arata/validation && npm run build -w @arata/access-policy && npm run build -w @arata/api-client && npm run build -w @arata/ui",
+    "build:foundation": "npm run build:packages && npm run build -w @arata/api && npm run build -w @arata/web-pwa && npm run build -w @arata/worker",
     "db:format": "prisma format",
     "db:validate": "prisma validate",
     "db:generate": "prisma generate",
@@ -37,6 +52,16 @@
     "openapi-typescript": "7.13.0",
     "prisma": "7.10.1",
     "tsx": "4.20.6",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "@eslint/js": "^9.39.1",
+    "@playwright/test": "^1.57.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "concurrently": "^9.2.1",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.6.2",
+    "typescript-eslint": "^8.46.0",
+    "vitest": "^4.0.0"
   }
 }

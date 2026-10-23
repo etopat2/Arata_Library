@@ -59,7 +59,7 @@ jobs:
       - name: Audit dependencies and create SBOM
         run: |
           npm audit --audit-level=high
-          npm sbom --package-lock-only --sbom-format=cyclonedx > "$RUNNER_TEMP/arata-sbom.cdx.json"
+          npm sbom --package-lock-only --omit=optional --sbom-format=cyclonedx > "$RUNNER_TEMP/arata-sbom.cdx.json"
       - name: Upload dependency SBOM
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:

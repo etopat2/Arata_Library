@@ -1,0 +1,18 @@
+@import 'tailwindcss';
+:focus-visible {
+  outline: 3px solid #67e8f9;
+  outline-offset: 3px;
+}
+[data-theme='light'] {
+  background-color: #f8fafc;
+  color: #020617;
+}
+[data-theme='light'] .text-slate-400 {
+  color: #334155;
+}
+[data-theme='light'] .text-cyan-400 {
+  color: #0e7490;
+}
+[data-theme='light'] .border-slate-700 {
+  border-color: #cbd5e1;
+}

@@ -440,14 +440,20 @@ def main(check: bool) -> None:
         for row in matrix:
             linked = sorted(set(reviewed_by_id.get(row["requirement_id"], [])))
             row["api_operations"] = ";".join(linked) or "N/A (no direct v1 operation)"
-            row["api_mapping_status"] = "Reviewed v1 design contract; service not implemented" if linked else "No direct v1 operation; verify indirect coverage"
+            row["api_mapping_status"] = (
+                "Reviewed v1 design contract; health operations implemented; other routes open"
+                if any("/api/v1/health/" in route for route in linked)
+                else "Reviewed v1 design contract; service not implemented" if linked
+                else "No direct v1 operation; verify indirect coverage"
+            )
             if linked:
                 paths = [p for p in row["implementation_paths"].split(";") if p]
                 for contract_path in ("api/openapi.v1.yaml", "api/policies.v1.yaml"):
                     if contract_path not in paths:
                         paths.append(contract_path)
                 row["implementation_paths"] = ";".join(paths)
-                row["verification_result"] = "API contract validation passed; feature acceptance not run"
+                if row["verification_result"] in {"", "Not run", "API contract validation passed; feature acceptance not run"}:
+                    row["verification_result"] = "API contract validation passed; feature acceptance not run"
     files = {
         "REQUIREMENT_TRACEABILITY.csv": csv_bytes(matrix, list(matrix[0])),
         "ACCEPTANCE_CRITERIA.csv": csv_bytes(criteria, list(criteria[0])),

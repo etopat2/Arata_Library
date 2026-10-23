@@ -9,9 +9,13 @@
 .env.*
 !.env.example
 !.env.database.example
+!.env.foundation.example
 node_modules/
 dist/
 coverage/
+test-results/
+playwright-report/
+dump.rdb
 prisma/generated/
 .pytest_cache/
 __pycache__/
