@@ -14,7 +14,15 @@ Scope: FR-IAM-001–009/011 and SEC-001/002/005/009 contributions. Wireframes: `
 
 Approved terms/privacy documents, SSO provider, export/retention processor, independent administrator role approval, positive passkey device tests and live OpenAPI reconciliation remain open. Registration stays unavailable without approved versions and URLs. Local and hosted checks do not establish production release readiness.
 
-Hosted runs for commit `c35cf9b`: [API contracts](https://github.com/etopat2/Arata_Library/actions/runs/40026759118), [database](https://github.com/etopat2/Arata_Library/actions/runs/40026759185) and [application foundation](https://github.com/etopat2/Arata_Library/actions/runs/40026759299) all passed, including container build and running-service smoke. The later administrator PWA screen extension has local type, build and browser validation; hosted rerun is pending its push.
+Hosted runs for commit `c35cf9b`: [API contracts](https://github.com/etopat2/Arata_Library/actions/runs/40026759118), [database](https://github.com/etopat2/Arata_Library/actions/runs/40026759185) and [application foundation](https://github.com/etopat2/Arata_Library/actions/runs/40026759299) all passed, including container build and running-service smoke. Hosted runs for administrator UI commit `8cf1957` exposed a new Multer 2.4.0 advisory in the dependency audit and a privacy withdrawal timestamp constraint failure on clean Linux PostgreSQL. Both are addressed in the follow-up validation below; hosted rerun is pending.
+
+### Follow-up validation - 2026-10-24
+
+| Check | Result | Evidence / limit |
+|---|---|---|
+| Consent timestamp constraint | Passed locally | PostgreSQL now assigns both `effectiveAt` and `withdrawnAt` in the same statement. The identity integration test asserts equality on consent withdrawal; all 13 foundation Vitest tests pass against local PostgreSQL and Redis. Hosted clean-database rerun pending. |
+| Upload dependency advisory | Passed locally | Explicit Multer 2.5.0 override for Nest platform-express; lockfile resolves 2.5.0; `npm ls multer --all` and `npm audit --audit-level=high` report no invalid packages or vulnerabilities. `npm ci --dry-run --ignore-scripts --no-audit` succeeds. |
+| Foundation quality | Passed locally | `npm run foundation:check`: lint, strict types, 13/13 tests and production builds. Hosted rerun pending. |
 
 Updated: 2026-10-22. Results are grouped by completed task; application behavior and release acceptance remain untested.
 

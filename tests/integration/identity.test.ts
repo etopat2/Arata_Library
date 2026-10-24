@@ -278,6 +278,11 @@ describe('identity lifecycle and access boundaries', () => {
     expect(
       ((await privacy.json()) as { data: { researchConsent: boolean } }).data.researchConsent,
     ).toBe(true);
+    const withdrawn = await pool.query<{ exact: boolean }>(
+      'SELECT bool_and("withdrawnAt"="effectiveAt") AS exact FROM app."PrivacyPreference" WHERE "userId"=(SELECT id FROM app."User" WHERE email=$1) AND granted=false',
+      [email],
+    );
+    expect(withdrawn.rows[0]?.exact).toBe(true);
     const notification = await call(
       '/me/notification-preferences',
       'PUT',

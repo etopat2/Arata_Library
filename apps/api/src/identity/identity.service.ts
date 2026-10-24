@@ -619,15 +619,8 @@ export class IdentityService implements OnModuleDestroy {
         );
         if (!purpose.rows[0]) throw new HttpException('Privacy purpose is not configured', 503);
         await client.query(
-          'INSERT INTO app."PrivacyPreference" (id,"userId","purposeId",granted,"policyVersion","effectiveAt","withdrawnAt") VALUES ($1,$2,$3,$4,$5,now(),$6)',
-          [
-            randomUUID(),
-            context.user.id,
-            purpose.rows[0].id,
-            granted,
-            values.policyVersion,
-            granted ? null : new Date(),
-          ],
+          'INSERT INTO app."PrivacyPreference" (id,"userId","purposeId",granted,"policyVersion","effectiveAt","withdrawnAt") VALUES ($1,$2,$3,$4,$5,now(),CASE WHEN $4 THEN NULL ELSE now() END)',
+          [randomUUID(), context.user.id, purpose.rows[0].id, granted, values.policyVersion],
         );
       }
       await this.audit(
