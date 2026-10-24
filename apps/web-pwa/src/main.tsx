@@ -6,6 +6,7 @@ import { getTheme, setTheme } from './preferences.js';
 import { registerSW } from 'virtual:pwa-register';
 import { AccountScreens } from './AccountScreens.js';
 import { PublicPortal } from './PublicPortal.js';
+import { PublishingStudio } from './PublishingStudio.js';
 import './style.css';
 
 const accountScreens = new Set([
@@ -31,6 +32,7 @@ function App() {
   const [theme, chooseTheme] = useState<'dark' | 'light'>('dark');
   const [updateReady, setUpdateReady] = useState(false);
   const account = accountScreens.has(new URLSearchParams(location.search).get('screen') ?? '');
+  const studio = new URLSearchParams(location.search).get('screen') === 'studio';
 
   useEffect(() => {
     void getTheme().then(chooseTheme);
@@ -53,6 +55,7 @@ function App() {
     chooseTheme(next);
     void setTheme(next);
   }
+  if (studio) return <PublishingStudio />;
   if (!account)
     return (
       <PublicPortal

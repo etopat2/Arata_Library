@@ -20,6 +20,7 @@
     "test:foundation": "vitest run --config vitest.config.ts",
     "test:integration": "vitest run tests/integration --config vitest.config.ts",
     "test:e2e": "playwright test",
+    "test:e2e:studio": "playwright test --config playwright.studio.config.ts",
     "build:packages": "npm run build -w @arata/shared-types && npm run build -w @arata/validation && npm run build -w @arata/access-policy && npm run build -w @arata/api-client && npm run build -w @arata/ui",
     "build:foundation": "npm run build:packages && npm run build -w @arata/api && npm run build -w @arata/web-pwa && npm run build -w @arata/worker",
     "db:format": "prisma format",

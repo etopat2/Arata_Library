@@ -24,11 +24,13 @@
     "nodemailer": "^10.2.1",
     "pg": "8.16.3",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.8.2",
+    "yazl": "^3.3.1"
   },
   "devDependencies": {
     "@types/nodemailer": "^8.0.2",
     "@types/pg": "8.15.5",
+    "@types/yazl": "^3.3.1",
     "tsx": "4.20.6",
     "typescript": "5.9.3"
   }

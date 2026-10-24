@@ -86,6 +86,78 @@ export interface ApiData<T> {
   data: T;
   requestId: string;
 }
+export interface StudioTree {
+  library: { id: string; title: string; slug: string };
+  collections: { id: string; title: string; slug: string }[];
+  publications: {
+    id: string;
+    title: string;
+    slug: string;
+    kind: 'STANDALONE' | 'SERIES';
+    status: string;
+    collectionId: string | null;
+  }[];
+  volumes: { id: string; publicationId: string; title: string; ordinal: number }[];
+  editions: {
+    id: string;
+    publicationId: string;
+    volumeId: string | null;
+    label: string;
+    editionCode: string;
+    isDefault: boolean;
+    currentRevisionId: string | null;
+  }[];
+  revisions: {
+    id: string;
+    editionId: string;
+    number: number;
+    status: string;
+    publishedAt: string | null;
+  }[];
+  chapters: { id: string; revisionId: string; ordinal: number; title: string }[];
+}
+export interface StudioPublicationDetail {
+  publication: {
+    id: string;
+    title: string;
+    slug: string;
+    kind: string;
+    status: string;
+    languageCode: string | null;
+    licenceCode: string | null;
+    sourceRef: string | null;
+    copyrightNotice: string | null;
+    description: string | null;
+  };
+  collections: { id: string; title: string }[];
+  contributors: { id: string; displayName: string; role: string }[];
+  volumes: StudioTree['volumes'];
+  editions: StudioTree['editions'];
+  revisions: StudioTree['revisions'];
+}
+export interface StudioRevisionDetail {
+  revision: {
+    id: string;
+    editionId: string;
+    publicationId: string;
+    status: string;
+    manifestHash: string | null;
+  };
+  chapters: { id: string; ordinal: number; title: string; slug: string }[];
+  lessons: {
+    id: string;
+    chapterId: string;
+    ordinal: number;
+    title: string;
+    bodyMarkdown: string | null;
+    blocks: unknown;
+  }[];
+  bibliography: { citationKey: string; citationText: string; ordinal: number }[];
+  references: { label: string; sourceLessonId: string }[];
+  resources: { id: string; title: string }[];
+  reviews: { decision: string; comment: string; decidedAt: string }[];
+  errata: { notice: string; createdAt: string }[];
+}
 
 export class ApiError extends Error {
   constructor(
@@ -134,6 +206,46 @@ export function createApiClient(baseUrl = '') {
   }
   return {
     request,
+    studio: {
+      tree: () => request<ApiData<StudioTree>>('/studio/tree'),
+      publication: (id: string) =>
+        request<ApiData<StudioPublicationDetail>>(`/studio/publications/${encodeURIComponent(id)}`),
+      revision: (id: string) =>
+        request<ApiData<StudioRevisionDetail>>(`/studio/revisions/${encodeURIComponent(id)}`),
+      create: <T>(path: string, body: T) =>
+        request<ApiData<{ id: string }>>(`/studio/${path}`, 'POST', body),
+      change: <T>(path: string, body: T) =>
+        request<ApiData<{ id: string }>>(`/studio/${path}`, 'PATCH', body),
+      action: (path: string, body?: unknown) =>
+        request<ApiData<{ id: string; status?: string }>>(`/studio/${path}`, 'POST', body),
+      uploadStatus: (id: string) =>
+        request<
+          ApiData<{
+            id: string;
+            status: string;
+            receivedSize: string;
+            assetId: string | null;
+            failureCode: string | null;
+            processing?: {
+              status: string;
+              progress: number;
+              attempts: number;
+              failureCode: string | null;
+            };
+          }>
+        >(`/studio/uploads/${encodeURIComponent(id)}`),
+      importStatus: (id: string) =>
+        request<
+          ApiData<{
+            id: string;
+            status: string;
+            preview: unknown;
+            progress: number;
+            failureCode: string | null;
+            revisionId: string | null;
+          }>
+        >(`/studio/imports/${encodeURIComponent(id)}`),
+    },
     catalogue: {
       collections: (signal?: AbortSignal) =>
         request<ApiData<CatalogueCollection[]>>('/catalogue/collections', 'GET', undefined, signal),

@@ -56,7 +56,7 @@ beforeAll(async () => {
       [userId, tokenHash(sessionToken)],
     );
     const collection = await fixture.query<{ id: string }>(
-      `INSERT INTO app."Collection" (id,slug,title,description) VALUES (gen_random_uuid(),$1,'[TEST] Web collection','Synthetic test topic') RETURNING id`,
+      `INSERT INTO app."Collection" (id,"libraryId",slug,title,description) VALUES (gen_random_uuid(),(SELECT id FROM app."Library" WHERE slug='arata-techlibrary'),$1,'[TEST] Web collection','Synthetic test topic') RETURNING id`,
       [collectionSlug],
     );
     const contributor = await fixture.query<{ id: string }>(
@@ -64,8 +64,8 @@ beforeAll(async () => {
       [`test-ada-${suffix}`],
     );
     const book = await fixture.query<{ id: string }>(
-      `INSERT INTO app."Publication" (id,slug,title,description,subject,keywords,kind,status,"ownerId","featuredAt","licenceCode","createdAt","updatedAt")
-       VALUES (gen_random_uuid(),$1,'[TEST] Web Systems Series','Synthetic public description','Web systems',ARRAY['TypeScript','accessibility']::text[],'SERIES','DRAFT',$2,now(),'TEST-LICENCE',now(),now()) RETURNING id`,
+      `INSERT INTO app."Publication" (id,slug,title,description,subject,keywords,kind,status,"ownerId","featuredAt","licenceCode","languageCode","sourceRef","copyrightNotice","createdAt","updatedAt")
+       VALUES (gen_random_uuid(),$1,'[TEST] Web Systems Series','Synthetic public description','Web systems',ARRAY['TypeScript','accessibility']::text[],'SERIES','DRAFT',$2,now(),'TEST-LICENCE','en','TEST-SOURCE','[TEST] Synthetic rights',now(),now()) RETURNING id`,
       [seriesSlug, userId],
     );
     const bookId = book.rows[0]!.id;
@@ -113,13 +113,28 @@ beforeAll(async () => {
       `INSERT INTO app."ContentPolicy" (id,"publicationId","accessClass","allowRead",version,"isActive","approvedAt") VALUES (gen_random_uuid(),$1,'PREMIUM',true,1,true,now())`,
       [bookId],
     );
-    await fixture.query(
-      `INSERT INTO app."EditorialReview" (id,"revisionId","reviewerId",decision,"manifestHash") VALUES (gen_random_uuid(),$1,$2,'APPROVED',$3)`,
-      [revision.rows[0]!.id, userId, 'c'.repeat(64)],
+    const reviewer = await fixture.query<{ id: string }>(
+      `INSERT INTO app."User" (id,email,status,"termsAcceptedAt","privacyVersion","createdAt","updatedAt") VALUES (gen_random_uuid(),$1,'ACTIVE',now(),'TEST-ONLY',now(),now()) RETURNING id`,
+      [`catalogue-reviewer-${suffix}@example.invalid`],
     );
     await fixture.query(
-      `UPDATE app."Revision" SET status='PUBLISHED',"publishedAt"=now() WHERE id=$1`,
+      `UPDATE app."Revision" SET status='IN_REVIEW',"submittedAt"=now() WHERE id=$1`,
       [revision.rows[0]!.id],
+    );
+    await fixture.query(
+      `INSERT INTO app."EditorialReview" (id,"revisionId","reviewerId",decision,"manifestHash") VALUES (gen_random_uuid(),$1,$2,'APPROVED',$3)`,
+      [revision.rows[0]!.id, reviewer.rows[0]!.id, 'c'.repeat(64)],
+    );
+    await fixture.query(`UPDATE app."Revision" SET status='APPROVED' WHERE id=$1`, [
+      revision.rows[0]!.id,
+    ]);
+    await fixture.query(
+      `INSERT INTO app."RightsAttestation" (id,"publicationId","revisionId","actorId","manifestHash","licenceCode","sourceRef") VALUES (gen_random_uuid(),$1,$2,$3,$4,'TEST-LICENCE','TEST-SOURCE')`,
+      [bookId, revision.rows[0]!.id, userId, 'c'.repeat(64)],
+    );
+    await fixture.query(
+      `UPDATE app."Revision" SET status='PUBLISHED',"publishedAt"=now(),"publishedById"=$2 WHERE id=$1`,
+      [revision.rows[0]!.id, reviewer.rows[0]!.id],
     );
     await fixture.query(`UPDATE app."Edition" SET "currentRevisionId"=$1 WHERE id=$2`, [
       revision.rows[0]!.id,

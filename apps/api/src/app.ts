@@ -20,6 +20,12 @@ import {
   PublicationShareController,
 } from './catalogue/catalogue.controller.js';
 import { CatalogueService } from './catalogue/catalogue.service.js';
+import { StudioController } from './studio/studio.controller.js';
+import { StudioService } from './studio/studio.service.js';
+import { StudioUploadController } from './studio/uploads.controller.js';
+import { StudioUploads } from './studio/uploads.service.js';
+import { StudioImportController } from './studio/imports.controller.js';
+import { StudioImports } from './studio/imports.service.js';
 
 export type ApiConfig = ReturnType<typeof loadConfig>;
 export function loadConfig() {
@@ -75,6 +81,9 @@ class HealthController {
     CatalogueController,
     PublicResourceController,
     PublicationShareController,
+    StudioController,
+    StudioUploadController,
+    StudioImportController,
   ],
   providers: [
     { provide: 'APP_CONFIG', useFactory: loadConfig },
@@ -87,6 +96,9 @@ class HealthController {
     IdentityMailer,
     IdentityService,
     CatalogueService,
+    StudioService,
+    StudioUploads,
+    StudioImports,
   ],
 })
 class AppModule {}
@@ -105,7 +117,13 @@ export async function createApp() {
     origin: config.WEB_ORIGIN,
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
-    allowedHeaders: ['Authorization', 'X-Request-Id', 'X-CSRF-Token', 'Content-Type'],
+    allowedHeaders: [
+      'Authorization',
+      'X-Request-Id',
+      'X-CSRF-Token',
+      'X-Upload-Offset',
+      'Content-Type',
+    ],
   });
   app.use((request: Request, response: Response, next: () => void) => {
     const started = performance.now();

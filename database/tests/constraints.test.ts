@@ -48,8 +48,11 @@ async function addUser(client: Client, verified = true): Promise<string> {
 
 async function addPublication(client: Client, ownerId: string, kind: "STANDALONE" | "SERIES" = "STANDALONE"): Promise<string> {
   const id = randomUUID();
-  await client.query(`INSERT INTO app."Publication" (id, slug, title, kind, status, "ownerId", "createdAt", "updatedAt")
-    VALUES ($1, $2, '[TEST ONLY] Unpublished book', $3, 'DRAFT', $4, now(), now())`, [id, `test-${id}`, kind, ownerId]);
+  await client.query(`INSERT INTO app."Publication" (id, slug, title, kind, status, "ownerId", "languageCode", "sourceRef", "licenceCode", "copyrightNotice", "createdAt", "updatedAt")
+    VALUES ($1, $2, '[TEST ONLY] Unpublished book', $3, 'DRAFT', $4, 'en', 'TEST-SOURCE', 'TEST-ONLY', '[TEST ONLY] Synthetic rights', now(), now())`, [id, `test-${id}`, kind, ownerId]);
+  const contributorId = randomUUID();
+  await client.query(`INSERT INTO app."Contributor" (id,"displayName",slug) VALUES ($1,'[TEST ONLY] Author',$2)`, [contributorId, `test-${contributorId}`]);
+  await client.query(`INSERT INTO app."PublicationContributor" ("publicationId","contributorId",role,ordinal) VALUES ($1,$2,'AUTHOR',0)`, [id, contributorId]);
   return id;
 }
 
@@ -105,14 +108,17 @@ test("published revisions and their children are immutable and current pointers 
   const editionId = await addEdition(client, pubId);
   const revisionId = randomUUID();
   const hash = "b".repeat(64);
-  await client.query(`INSERT INTO app."Revision" (id, "editionId", number, status, "manifestHash") VALUES ($1, $2, 1, 'DRAFT', $3)`, [revisionId, editionId, hash]);
+  await client.query(`INSERT INTO app."Revision" (id, "editionId", number, status, "manifestHash", "createdById") VALUES ($1, $2, 1, 'DRAFT', $3, $4)`, [revisionId, editionId, hash, author]);
   const chapterId = randomUUID();
   await client.query(`INSERT INTO app."Chapter" (id, "revisionId", ordinal, slug, title) VALUES ($1, $2, 1, 'intro', 'Intro')`, [chapterId, revisionId]);
   const lessonId = randomUUID();
   await client.query(`INSERT INTO app."Lesson" (id, "chapterId", ordinal, title) VALUES ($1, $2, 1, 'Lesson')`, [lessonId, chapterId]);
   await rejectSql(client, `UPDATE app."Revision" SET status = 'PUBLISHED', "publishedAt" = now() WHERE id = $1`, [revisionId], "23514");
+  await client.query(`UPDATE app."Revision" SET status='IN_REVIEW',"submittedAt"=now() WHERE id=$1`, [revisionId]);
   await client.query(`INSERT INTO app."EditorialReview" (id, "revisionId", "reviewerId", decision, "manifestHash") VALUES ($1, $2, $3, 'APPROVED', $4)`, [randomUUID(), revisionId, reviewer, hash]);
-  await client.query(`UPDATE app."Revision" SET status = 'PUBLISHED', "publishedAt" = now() WHERE id = $1`, [revisionId]);
+  await client.query(`UPDATE app."Revision" SET status='APPROVED' WHERE id=$1`, [revisionId]);
+  await client.query(`INSERT INTO app."RightsAttestation" (id,"publicationId","revisionId","actorId","manifestHash","licenceCode","sourceRef") VALUES ($1,$2,$3,$4,$5,'TEST-ONLY','TEST-SOURCE')`, [randomUUID(),pubId,revisionId,author,hash]);
+  await client.query(`UPDATE app."Revision" SET status = 'PUBLISHED', "publishedAt" = now(),"publishedById"=$2 WHERE id = $1`, [revisionId,reviewer]);
   await rejectSql(client, `UPDATE app."Revision" SET "changeSummary" = 'changed' WHERE id = $1`, [revisionId], "23514");
   await rejectSql(client, `UPDATE app."Lesson" SET title = 'changed' WHERE id = $1`, [lessonId], "23514");
   await rejectSql(client, `DELETE FROM app."Chapter" WHERE id = $1`, [chapterId], "23514");

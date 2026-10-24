@@ -269,7 +269,7 @@ def main(check: bool) -> None:
     for path, method, _ in operations:
         operation_by_path[path].append(method)
     models = set(re.findall(r"(?m)^model (\w+) \{", (ROOT / "prisma/schema.prisma").read_text(encoding="utf-8")))
-    if len(models) != 78:
+    if len(models) != 87:
         raise ValueError(f"unexpected Prisma model count: {len(models)}")
 
     prior = rows(OUT / "REQUIREMENT_TRACEABILITY.csv")
@@ -363,7 +363,7 @@ def main(check: bool) -> None:
             "implementation_paths": prior_row["implementation_paths"],
             "implementation_status": prior_row["implementation_status"],
             "verification_result": prior_row["verification_result"],
-            "mapping_note": "Proposed invariant mapping; service and end-to-end acceptance remain open" if family == "BR" else prior_row["mapping_note"],
+            "mapping_note": prior_row["mapping_note"] if ident in {"BR-003", "BR-010", "BR-012", "BR-015"} else "Proposed invariant mapping; service and end-to-end acceptance remain open" if family == "BR" else prior_row["mapping_note"],
         })
 
     navigation: list[dict[str, str]] = []
@@ -449,6 +449,8 @@ def main(check: bool) -> None:
                 else "Reviewed v1 design contract; service not implemented" if linked
                 else "No direct v1 operation; verify indirect coverage"
             )
+            if row["requirement_id"].startswith(("FR-PUB-", "FR-AST-")) or row["requirement_id"] in {"BR-003", "BR-010", "BR-012", "BR-015"}:
+                row["api_mapping_status"] = "Design mapping retained; live Studio routes and exact DTO/policy reconciliation open (GAP-023)"
             if linked:
                 paths = [p for p in row["implementation_paths"].split(";") if p]
                 for contract_path in ("api/openapi.v1.yaml", "api/policies.v1.yaml"):

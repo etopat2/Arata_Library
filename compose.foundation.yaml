@@ -31,6 +31,9 @@ services:
       AUTH_SMTP_PORT: 1025
       WEB_ORIGIN: http://127.0.0.1:5173
       API_HOST: 0.0.0.0
+      STUDIO_STORAGE_ROOT: /app/.private-objects
+    volumes:
+      - studio_objects:/app/.private-objects
     depends_on:
       postgres:
         condition: service_healthy
@@ -47,9 +50,28 @@ services:
     command: ["node", "infrastructure/scripts/container-start.mjs", "worker"]
     environment:
       REDIS_URL: redis://redis:6379
+      DATABASE_URL: ${DATABASE_URL:?Run database Compose provisioning first}
+      STUDIO_STORAGE_ROOT: /app/.private-objects
+      CLAMD_HOST: clamav
+      CLAMD_PORT: 3310
+    volumes:
+      - studio_objects:/app/.private-objects
     depends_on:
       redis:
         condition: service_healthy
+      postgres:
+        condition: service_healthy
+      clamav:
+        condition: service_healthy
+  clamav:
+    image: clamav/clamav:1.5
+    environment:
+      CLAMD_CONF_StreamMaxLength: 200M
+      CLAMD_CONF_MaxFileSize: 200M
+      CLAMD_CONF_MaxScanSize: 400M
+      CLAMD_CONF_AlertExceedsMax: "yes"
+    volumes:
+      - clamav_data:/var/lib/clamav
   web:
     build:
       context: .
@@ -69,3 +91,5 @@ services:
 
 volumes:
   redis_data:
+  studio_objects:
+  clamav_data:

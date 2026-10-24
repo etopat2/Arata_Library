@@ -1,5 +1,24 @@
 # Validation results
 
+## Publishing Studio local checks - 2026-10-25
+
+Scope: partial `FR-PUB-001`–`016`, `FR-AST-001`–`012`, and `BR-003/010/012/015` contributions. Wireframe references: `studio`, `publication-tree`, `book-editor`, `volume-editor`, `edition-editor`, `revision-history-admin`, `chapter-editor`, `asset-upload`, `bulk-import`, `review-queue`, `release-schedule`, and `licensing`. Paths and remaining acceptance gaps are listed in `PROGRESS.md` and `apps/api/STUDIO.md`.
+
+| Check | Result | Evidence and limit |
+|---|---|---|
+| `prisma format`, `prisma validate`, `prisma generate`, migration status and physical drift | Passed locally | Both additive migrations applied to named development/test databases; 15 migrations up to date, no schema drift. No reset. |
+| `npm run db:verify` and `npm run db:test` | Passed locally | 87 tables, 150 FKs, 70 checks, 39 triggers, 28 enums; isolated roles intact; 8/8 constraint tests. |
+| Labelled development seeds | Passed locally | `ARATA_ENABLE_DEV_SEED=1 npm run db:seed:dev` and `db:seed:catalogue:dev`; no production data. |
+| `npm run foundation:check` | Passed locally | Lint, strict types, 28/28 Vitest tests (including PDF/DOCX/EPUB previews), and API/PWA/worker production builds. |
+| `npm run test:e2e:studio` | Passed locally | 1/1 isolated PostgreSQL Chromium test; persistent draft, desktop/mobile layout with no horizontal overflow, automated WCAG 2.2 AA tagged axe scan. |
+| Existing `npm run test:e2e` | Passed locally | 9/9 browser regressions on isolated built-preview/API ports 5188/3111. Earlier runs reused a pre-existing Vite development server on 5173 and therefore lacked the built PWA manifest; dedicated ports and no server reuse removed that false failure. |
+| Import and scanner unit tests | Passed locally | 6/6 tests: structured ZIP validation, ClamAV reply classification, sanitized EPUB preview, and synthetic PDF/DOCX extraction. |
+| Real scanner dependency | Passed for daemon smoke | Local ClamAV 1.5.4 container became healthy; `clamdscan -` returned `stream: OK` for a synthetic benign sample. Worker-to-daemon integration remains open. |
+| Compose and dependency audit | Passed locally | Foundation Compose config valid; `npm audit --audit-level=high` found zero reported vulnerabilities. |
+| Requirement traceability | Passed locally | Reconciliation check retained 287 SRS IDs, 90 screens, 102 source design operations and 87 Prisma models; Studio rows explicitly remain partial/open. |
+
+These results do not establish complete SRS acceptance. A live worker/ClamAV integration, full package fidelity, derived asset authorization, collection plurality, retention and runtime OpenAPI acceptance remain open in `BLOCKERS.md`.
+
 ## Public portal and catalogue - 2026-10-24
 
 Scope: FR-CAT-001–008/010, FR-SRC-001–004/006 and NFR-UX-001/003/005 contributions. Wireframes: `home`, `collections`, `catalogue`, `search`, `series-detail`, `volume-detail`, `free-library`, `resource-detail`. Paths: `apps/api/src/catalogue/`, `apps/web-pwa/src/PublicPortal.tsx`, `packages/api-client/src/index.ts`, three catalogue migrations, `prisma/seed.catalogue.dev.ts`, `tests/integration/catalogue.test.ts`, `tests/e2e/catalogue.spec.ts`.

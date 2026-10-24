@@ -43,6 +43,15 @@ const publicationFields = `p.id,p.slug,p.title,p.subtitle,p.description,p.subjec
 const publicationJoin = `LEFT JOIN app."ContentPolicy" pol ON pol."publicationId"=p.id
   AND pol."isActive"=true AND pol."approvedAt" IS NOT NULL`;
 
+const resourceScopeJoin = `LEFT JOIN app."Revision" sr ON sr.id=r."revisionId"
+  LEFT JOIN app."Chapter" sc ON sc.id=r."chapterId"
+  LEFT JOIN app."Lesson" sl ON sl.id=r."lessonId"
+  LEFT JOIN app."Chapter" slc ON slc.id=sl."chapterId"
+  LEFT JOIN app."Revision" scr ON scr.id=COALESCE(sc."revisionId",slc."revisionId")
+  LEFT JOIN app."Edition" se ON se.id=COALESCE(r."editionId",sr."editionId",scr."editionId")
+  LEFT JOIN app."Volume" sv ON sv.id=r."volumeId"
+  LEFT JOIN app."Publication" p ON p.id=COALESCE(r."publicationId",sv."publicationId",se."publicationId")`;
+
 const resourceVisible = `r."publishedAt" IS NOT NULL AND r."publishedAt"<=now()
   AND (r."withdrawnAt" IS NULL OR r."withdrawnAt">now())
   AND ((r."publicationId" IS NULL AND r."volumeId" IS NULL AND r."editionId" IS NULL
@@ -50,6 +59,10 @@ const resourceVisible = `r."publishedAt" IS NOT NULL AND r."publishedAt"<=now()
     OR (p.status='PUBLISHED' AND EXISTS (
       SELECT 1 FROM app."Edition" ed JOIN app."Revision" rv ON rv.id=ed."currentRevisionId"
       WHERE ed."publicationId"=p.id AND rv.status='PUBLISHED'
+        AND (r."volumeId" IS NULL OR ed."volumeId"=r."volumeId")
+        AND (r."editionId" IS NULL OR ed.id=r."editionId")
+        AND (COALESCE(r."revisionId",sc."revisionId",slc."revisionId") IS NULL
+          OR rv.id=COALESCE(r."revisionId",sc."revisionId",slc."revisionId"))
     )))
   AND pol."isActive"=true AND pol."approvedAt" IS NOT NULL
   AND pol."accessClass"=r."accessClass"`;
@@ -90,7 +103,7 @@ export class CatalogueService {
         `SELECT DISTINCT ed.id,ed.label FROM app."Edition" ed JOIN app."Publication" p ON p.id=ed."publicationId" JOIN app."Revision" rv ON rv.id=ed."currentRevisionId" WHERE p.status='PUBLISHED' AND rv.status='PUBLISHED' ORDER BY ed.label`,
       ),
       this.pool.query<{ value: string }>(
-        `SELECT DISTINCT r.format AS value FROM app."Resource" r LEFT JOIN app."Publication" p ON p.id=r."publicationId" JOIN app."ContentPolicy" pol ON pol."resourceId"=r.id WHERE ${resourceVisible} AND r.format IS NOT NULL ORDER BY value`,
+        `SELECT DISTINCT r.format AS value FROM app."Resource" r ${resourceScopeJoin} JOIN app."ContentPolicy" pol ON pol."resourceId"=r.id WHERE ${resourceVisible} AND r.format IS NOT NULL ORDER BY value`,
       ),
     ]);
     return {
@@ -270,7 +283,7 @@ export class CatalogueService {
     }[query.sort ?? 'newest'];
     const result = await this.pool.query(
       `SELECT ${resourceFields},count(*) OVER()::int AS "totalCount"
-       FROM app."Resource" r LEFT JOIN app."Publication" p ON p.id=r."publicationId"
+       FROM app."Resource" r ${resourceScopeJoin}
        JOIN app."ContentPolicy" pol ON pol."resourceId"=r.id
        WHERE ${conditions.join(' AND ')} ORDER BY ${order}
        LIMIT $${values.length + 1} OFFSET $${values.length + 2}`,
@@ -292,7 +305,7 @@ export class CatalogueService {
   async resource(id: string) {
     const result = await this.pool.query(
       `SELECT ${resourceFields},pol."allowRead",r."bodyText" IS NOT NULL AS "textAvailable"
-       FROM app."Resource" r LEFT JOIN app."Publication" p ON p.id=r."publicationId"
+       FROM app."Resource" r ${resourceScopeJoin}
        JOIN app."ContentPolicy" pol ON pol."resourceId"=r.id
        WHERE r.id=$1 AND ${resourceVisible}`,
       [id],
@@ -309,7 +322,7 @@ export class CatalogueService {
       licenceCode: string | null;
     }>(
       `SELECT r.id,r.title,r."bodyText",r."licenceCode"
-       FROM app."Resource" r LEFT JOIN app."Publication" p ON p.id=r."publicationId"
+       FROM app."Resource" r ${resourceScopeJoin}
        JOIN app."ContentPolicy" pol ON pol."resourceId"=r.id
        WHERE r.id=$1 AND ${resourceVisible} AND pol."allowRead"=true
          AND r."bodyText" IS NOT NULL

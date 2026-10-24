@@ -52,8 +52,8 @@ try {
     report: await checkRole(local.RESEARCH_REPORT_DATABASE_URL, 'SELECT 1 FROM research."ResearchEvent" LIMIT 0', 'SELECT 1 FROM research_private."PseudonymLink" LIMIT 0'),
     identity: await checkRole(local.RESEARCH_IDENTITY_DATABASE_URL, 'SELECT 1 FROM research_private."PseudonymLink" LIMIT 0', 'SELECT 1 FROM research."ResearchEvent" LIMIT 0'),
   };
-  if (!row || row.tables !== 78 || row.enums !== 23 || row.foreign_keys < 125 || row.checks < 40 || row.triggers < 20
-    || migrations.rows.length !== 13 || migrations.rows.some(m => !m.complete)
+  if (!row || row.tables !== 87 || row.enums !== 28 || row.foreign_keys < 150 || row.checks < 70 || row.triggers < 39
+    || migrations.rows.length !== 15 || migrations.rows.some(m => !m.complete)
     || !perms || perms.app_can_research || perms.report_can_link || !perms.identity_can_link || !snapshotView.rows[0]?.present
     || Object.values(directRoleChecks).some(passed => !passed)) {
     throw new Error("Database structure, migration history or role isolation did not match expected baseline");

@@ -1,5 +1,20 @@
 # Database validation report
 
+## Publishing Studio extension - 2026-10-24
+
+Two additive migrations (`202610250001_publishing_studio` and
+`202610250002_review_freeze`) were reviewed and applied to the named local
+development and isolated test databases without reset. They add Library root,
+revision rights and correction history, bibliography and cross-references,
+private upload/scan/import jobs, and scheduled release records. SQL triggers
+freeze review and published content and preserve rights evidence. The physical
+design now has 87 tables, 150 foreign keys, 28 enums, 70 checks, 39 triggers and
+15 applied migrations. Prisma format/validate/generate, drift comparison,
+`db:verify`, 8/8 database tests, both labelled development seeds, and ERD
+regeneration passed locally. Source SRS acceptance remains separate; see
+`apps/api/STUDIO.md` and GAP-021–024. Fresh-container CI and live ClamAV
+validation remain open.
+
 ## Public catalogue extension - 2026-10-24
 
 Three additive migrations add public bibliographic metadata, contributor relationships, approved chapter preview text, text-resource summaries and editorial featured selection. Local PostgreSQL 18.4 development and isolated test databases now have 78 tables, 125 foreign keys and 13 completed migrations; UTC, least-privilege role isolation and eight existing constraint tests pass. `prisma format`, `prisma validate`, `prisma generate`, `migrate status`, database-to-schema diff, `db:verify` and physical ERD regeneration passed. Synthetic published examples are permitted only by the explicit development seed guard.

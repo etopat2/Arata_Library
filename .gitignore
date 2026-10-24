@@ -21,3 +21,5 @@ prisma/generated/
 __pycache__/
 *.pyc
 .secrets/
+.private-objects/
+.tmp/
