@@ -16,3 +16,64 @@
 [data-theme='light'] .border-slate-700 {
   border-color: #cbd5e1;
 }
+.portal-card {
+  display: flex;
+  min-height: 11rem;
+  flex-direction: column;
+  gap: 0.8rem;
+  border: 1px solid #d8e0e6;
+  border-radius: 0.8rem;
+  background: #fff;
+  padding: 1.25rem;
+}
+.portal-card:hover,
+.portal-card:focus-visible {
+  border-color: #087d78;
+}
+.portal-card strong {
+  font-size: 1.15rem;
+}
+.portal-card p {
+  color: #475569;
+}
+.portal-card span {
+  margin-top: auto;
+  color: #087d78;
+  font-weight: 700;
+}
+.page-kicker {
+  color: #087d78;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.page-title {
+  margin-top: 0.65rem;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800;
+  line-height: 1.15;
+}
+.page-lead {
+  margin-top: 0.7rem;
+  max-width: 52rem;
+  color: #475569;
+  font-size: 1.1rem;
+}
+.filter-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: #334155;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.filter-label select,
+.filter-label input {
+  min-height: 2.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.45rem;
+  padding: 0.5rem 0.75rem;
+  background: #fff;
+  color: #183443;
+}

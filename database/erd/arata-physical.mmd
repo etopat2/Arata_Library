@@ -83,6 +83,7 @@ erDiagram
     integer ordinal
     character_varying_200_ slug
     character_varying_400_ title
+    text previewText
   }
   app_Cohort {
     uuid id PK
@@ -124,6 +125,12 @@ erDiagram
     boolean isActive
     timestamp_6__with_time_zone approvedAt
     timestamp_6__with_time_zone createdAt
+  }
+  app_Contributor {
+    uuid id PK
+    character_varying_240_ displayName
+    character_varying_200_ slug
+    text biography
   }
   app_Edition {
     uuid id PK
@@ -391,10 +398,23 @@ erDiagram
     text copyrightNotice
     timestamp_6__with_time_zone createdAt
     timestamp_6__with_time_zone updatedAt
+    character_varying_400_ subtitle
+    text description
+    character_varying_160_ subject
+    text__ keywords
+    character_varying_100_ licenceCode
+    timestamp_6__with_time_zone releaseAt
+    timestamp_6__with_time_zone featuredAt
   }
   app_PublicationCollection {
     uuid publicationId PK,FK
     uuid collectionId PK,FK
+  }
+  app_PublicationContributor {
+    uuid publicationId PK,FK
+    uuid contributorId PK,FK
+    character_varying_60_ role PK
+    integer ordinal
   }
   app_Quiz {
     uuid id PK
@@ -477,6 +497,11 @@ erDiagram
     uuid chapterId FK
     uuid lessonId FK
     timestamp_6__with_time_zone createdAt
+    text description
+    character_varying_40_ format
+    text bodyText
+    text attribution
+    text copyrightNotice
   }
   app_ResourceAttachment {
     uuid resourceId PK,FK
@@ -782,6 +807,8 @@ erDiagram
   app_User ||--o{ app_Publication : "Publication_ownerId_fkey"
   app_Collection ||--o{ app_PublicationCollection : "PublicationCollection_collectionId_fkey"
   app_Publication ||--o{ app_PublicationCollection : "PublicationCollection_publicationId_fkey"
+  app_Contributor ||--o{ app_PublicationContributor : "PublicationContributor_contributorId_fkey"
+  app_Publication ||--o{ app_PublicationContributor : "PublicationContributor_publicationId_fkey"
   app_Lesson ||--o{ app_Quiz : "Quiz_lessonId_fkey"
   app_Revision ||--o{ app_Quiz : "Quiz_revisionId_fkey"
   app_QuizAttempt ||--o{ app_QuizAnswer : "QuizAnswer_attemptId_fkey"

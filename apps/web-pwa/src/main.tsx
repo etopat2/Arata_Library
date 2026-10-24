@@ -4,23 +4,33 @@ import { createApiClient } from '@arata/api-client';
 import { Button, StatusBadge } from '@arata/ui';
 import { getTheme, setTheme } from './preferences.js';
 import { registerSW } from 'virtual:pwa-register';
-import './style.css';
 import { AccountScreens } from './AccountScreens.js';
+import { PublicPortal } from './PublicPortal.js';
+import './style.css';
 
+const accountScreens = new Set([
+  'register',
+  'login',
+  'verify-email',
+  'recovery',
+  'profile',
+  'privacy',
+  'my-sessions',
+  'user-admin',
+  'roles-admin',
+]);
 const updateSW = registerSW({
   onNeedRefresh() {
     window.dispatchEvent(new Event('arata-update-ready'));
   },
 });
-const applyUpdate = async () => {
-  await updateSW(true);
-};
 
 function App() {
   const [online, setOnline] = useState(false);
   const [checked, setChecked] = useState(false);
   const [theme, chooseTheme] = useState<'dark' | 'light'>('dark');
   const [updateReady, setUpdateReady] = useState(false);
+  const account = accountScreens.has(new URLSearchParams(location.search).get('screen') ?? '');
 
   useEffect(() => {
     void getTheme().then(chooseTheme);
@@ -43,6 +53,15 @@ function App() {
     chooseTheme(next);
     void setTheme(next);
   }
+  if (!account)
+    return (
+      <PublicPortal
+        online={online}
+        checked={checked}
+        updateReady={updateReady}
+        onUpdate={() => void updateSW(true)}
+      />
+    );
 
   return (
     <div
@@ -57,9 +76,9 @@ function App() {
       </a>
       <header className="border-b border-slate-700/50 px-6 py-5">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
-          <strong className="text-lg tracking-tight">
+          <a href="/" className="text-lg font-bold tracking-tight">
             Arata <span className="text-cyan-400">TechLibrary</span>
-          </strong>
+          </a>
           <Button
             onClick={toggleTheme}
             aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
@@ -68,39 +87,34 @@ function App() {
           </Button>
         </div>
       </header>
-      <main id="main" className="mx-auto max-w-5xl px-6 py-20">
+      <main id="main" className="mx-auto max-w-5xl px-6 py-12">
         <p className="mb-4 font-semibold uppercase tracking-[.2em] text-cyan-400">
-          Development foundation
+          Account and access
         </p>
-        <h1 className="max-w-3xl text-5xl font-bold leading-tight">
-          A home for technology books and learning.
-        </h1>
-        <p className="mt-6 max-w-2xl text-lg text-slate-400">
-          Manage your account below. Catalogue, reading, and learning features will appear as their
-          services are implemented and verified.
+        <h1 className="max-w-3xl text-4xl font-bold leading-tight">Your library account</h1>
+        <p className="mt-4 max-w-2xl text-slate-400">
+          Manage your sign in, profile and privacy settings.
         </p>
         {updateReady && (
           <div role="status" className="mt-6 rounded-xl border border-cyan-400 p-4">
-            An update is ready. <Button onClick={() => void applyUpdate()}>Apply update</Button>
+            An update is ready. <Button onClick={() => void updateSW(true)}>Apply update</Button>
           </div>
         )}
         <section
           aria-labelledby="system-heading"
-          className="mt-12 rounded-2xl border border-slate-700 p-6"
+          className="mt-8 rounded-2xl border border-slate-700 p-6"
         >
           <h2 id="system-heading" className="text-xl font-semibold">
             Local system status
           </h2>
           <p className="mt-3">{checked ? <StatusBadge online={online} /> : 'Checking API…'}</p>
-          <p className="mt-3 text-sm text-slate-400">
-            Status is based on the public API liveness endpoint. Database readiness is checked
-            separately by service credentials.
-          </p>
         </section>
         <AccountScreens />
       </main>
       <footer className="mx-auto max-w-5xl px-6 py-8 text-sm text-slate-400">
-        Arata TechLibrary development build
+        <a className="underline" href="/">
+          Browse public library
+        </a>
       </footer>
     </div>
   );

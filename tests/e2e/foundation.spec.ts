@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test';
 
-test('renders the development shell and API status', async ({ page }) => {
+test('renders the public portal and API status', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: /a home for technology books/i })).toBeVisible();
-  await expect(page.getByRole('status')).toHaveText('API available');
+  await expect(page.getByRole('heading', { name: /knowledge that moves with you/i })).toBeVisible();
+  await expect(page.getByText('API available')).toBeVisible();
+  await page.goto('/?screen=login');
   await page.getByRole('button', { name: 'Switch to light theme' }).click();
   await expect(page.locator('[data-theme="light"]')).toBeVisible();
   const contrast = await page.evaluate(() => {
@@ -45,13 +46,16 @@ test('built PWA installs its service worker and loads its shell offline', async 
   await page.reload();
   await context.setOffline(true);
   await page.reload();
-  await expect(page.getByRole('heading', { name: /a home for technology books/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /knowledge that moves with you/i })).toBeVisible();
   await context.setOffline(false);
 });
 
 test('account screens expose recovery and guard registration until approved policies are configured', async ({
   page,
+  request,
 }) => {
+  expect((await request.get('/api/v1/auth/policy-versions')).status()).toBe(503);
+  expect((await request.get('/api/v1/me/profile')).status()).toBe(401);
   await page.goto('/?screen=register');
   await expect(page.getByRole('heading', { name: 'Create your account' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Create account' })).toBeDisabled();
