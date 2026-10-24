@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
   Req,
   Res,
@@ -29,7 +30,7 @@ const publication = z.strictObject({
   slug,
   title: text(),
   kind: z.enum(['STANDALONE', 'SERIES']),
-  collectionId: uuid,
+  collectionId: uuid.optional(),
   languageCode: z.string().regex(/^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/),
   licenceCode: text(100),
   sourceRef: text(500),
@@ -44,6 +45,12 @@ const publicationPatch = z.strictObject({
   licenceCode: text(100).optional(),
   sourceRef: text(500).optional(),
   copyrightNotice: text(2000).optional(),
+});
+const publicationCollections = z.strictObject({
+  collectionIds: z
+    .array(uuid)
+    .max(100)
+    .refine((ids) => new Set(ids).size === ids.length),
 });
 const contributor = z.strictObject({
   displayName: text(240),
@@ -244,6 +251,21 @@ export class StudioController {
         await this.auth(req, true),
         parse(uuid, id),
         parse(publicationPatch, body),
+        req.id,
+      ),
+    );
+  }
+  @Put('publications/:id/collections') async replaceCollections(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    return wrap(
+      req,
+      await this.studio.replaceCollections(
+        await this.auth(req, true),
+        parse(uuid, id),
+        parse(publicationCollections, body).collectionIds,
         req.id,
       ),
     );

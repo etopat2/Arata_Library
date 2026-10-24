@@ -224,6 +224,57 @@ export function PublishingStudio() {
       </button>
     );
   }
+  function PublicationTree({
+    pub,
+    depth,
+  }: {
+    pub: StudioTree['publications'][number];
+    depth: number;
+  }) {
+    return (
+      <div>
+        <TreeButton
+          depth={depth}
+          item={{ type: 'publication', id: pub.id, label: pub.title, publicationId: pub.id }}
+        />
+        {tree?.volumes
+          .filter((v) => v.publicationId === pub.id)
+          .map((volume) => (
+            <div key={volume.id}>
+              <TreeButton
+                depth={depth + 1}
+                item={{
+                  type: 'volume',
+                  id: volume.id,
+                  label: `Volume ${volume.ordinal}: ${volume.title}`,
+                  publicationId: pub.id,
+                }}
+              />
+              {tree.editions
+                .filter((ed) => ed.volumeId === volume.id)
+                .map((edition) => (
+                  <EditionTree
+                    key={edition.id}
+                    edition={edition}
+                    publicationId={pub.id}
+                    depth={depth + 2}
+                  />
+                ))}
+            </div>
+          ))}
+        {tree?.editions
+          .filter((ed) => ed.publicationId === pub.id && !ed.volumeId)
+          .map((edition) => (
+            <EditionTree
+              key={edition.id}
+              edition={edition}
+              publicationId={pub.id}
+              depth={depth + 1}
+            />
+          ))}
+      </div>
+    );
+  }
   const treeView = tree ? (
     <div className="space-y-1">
       <TreeButton item={{ type: 'library', id: tree.library.id, label: tree.library.title }} />
@@ -236,55 +287,22 @@ export function PublishingStudio() {
           {tree.publications
             .filter((pub) => pub.collectionId === collection.id)
             .map((pub) => (
-              <div key={pub.id}>
-                <TreeButton
-                  depth={2}
-                  item={{
-                    type: 'publication',
-                    id: pub.id,
-                    label: pub.title,
-                    publicationId: pub.id,
-                  }}
-                />
-                {tree.volumes
-                  .filter((v) => v.publicationId === pub.id)
-                  .map((volume) => (
-                    <div key={volume.id}>
-                      <TreeButton
-                        depth={3}
-                        item={{
-                          type: 'volume',
-                          id: volume.id,
-                          label: `Volume ${volume.ordinal}: ${volume.title}`,
-                          publicationId: pub.id,
-                        }}
-                      />
-                      {tree.editions
-                        .filter((ed) => ed.volumeId === volume.id)
-                        .map((edition) => (
-                          <EditionTree
-                            key={edition.id}
-                            edition={edition}
-                            publicationId={pub.id}
-                            depth={4}
-                          />
-                        ))}
-                    </div>
-                  ))}
-                {tree.editions
-                  .filter((ed) => ed.publicationId === pub.id && !ed.volumeId)
-                  .map((edition) => (
-                    <EditionTree
-                      key={edition.id}
-                      edition={edition}
-                      publicationId={pub.id}
-                      depth={3}
-                    />
-                  ))}
-              </div>
+              <PublicationTree key={pub.id} pub={pub} depth={2} />
             ))}
         </div>
       ))}
+      {tree.publications.some((pub) => pub.collectionId === null) && (
+        <div>
+          <p className="px-3 pt-3 text-xs font-bold uppercase tracking-wide text-slate-500">
+            Uncategorised
+          </p>
+          {tree.publications
+            .filter((pub) => pub.collectionId === null)
+            .map((pub) => (
+              <PublicationTree key={pub.id} pub={pub} depth={1} />
+            ))}
+        </div>
+      )}
     </div>
   ) : null;
   function EditionTree({
@@ -543,8 +561,12 @@ export function PublishingStudio() {
               </form>
             </FormBox>
           )}
-          {selected?.type === 'collection' && (
-            <FormBox title="New publication">
+          {(selected?.type === 'collection' || selected?.type === 'library') && (
+            <FormBox
+              title={
+                selected.type === 'library' ? 'New uncategorised publication' : 'New publication'
+              }
+            >
               <form
                 className="grid gap-3 sm:grid-cols-2"
                 onSubmit={(event) =>
@@ -552,7 +574,7 @@ export function PublishingStudio() {
                     event,
                     (form) =>
                       api.studio.create('publications', {
-                        collectionId: selected.id,
+                        collectionId: selected.type === 'collection' ? selected.id : undefined,
                         slug: value(form, 'slug'),
                         title: value(form, 'title'),
                         kind: value(form, 'kind'),
@@ -631,6 +653,46 @@ export function PublishingStudio() {
                       .join(', ') || 'Add an author before publishing'}
                   </dd>
                 </dl>
+                <form
+                  key={detail.collections
+                    .map((collection) => collection.id)
+                    .sort()
+                    .join(',')}
+                  className="mt-5 grid gap-3 border-t border-slate-200 pt-4"
+                  onSubmit={(event) =>
+                    submit(
+                      event,
+                      (form) =>
+                        api.studio.replace(`publications/${publicationId}/collections`, {
+                          collectionIds: form.getAll('collectionIds').map(String),
+                        }),
+                      'Publication collections updated',
+                    )
+                  }
+                >
+                  <fieldset className="grid gap-2">
+                    <legend className="mb-2 font-semibold">Collections</legend>
+                    {tree?.collections.map((collection) => (
+                      <label key={collection.id} className="flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          name="collectionIds"
+                          value={collection.id}
+                          defaultChecked={detail.collections.some(
+                            (item) => item.id === collection.id,
+                          )}
+                        />
+                        {collection.title}
+                      </label>
+                    ))}
+                    {!tree?.collections.length && (
+                      <span className="text-sm text-slate-600">No collections exist yet.</span>
+                    )}
+                  </fieldset>
+                  <button disabled={busy} className={secondary}>
+                    Save collections
+                  </button>
+                </form>
                 {detail.publication.status === 'PUBLISHED' && (
                   <form
                     className="mt-5 grid gap-3"

@@ -318,6 +318,81 @@ describe('Publishing Studio editorial boundaries', () => {
     expect(erratum.status).toBe(201);
   }, 30000);
 
+  it('supports zero or multiple collection memberships with scoped authorization', async () => {
+    const secondCollection = (
+      await fixture.query<{ id: string }>(
+        `INSERT INTO app."Collection" (id,"libraryId",slug,title) VALUES (gen_random_uuid(),(SELECT id FROM app."Library" WHERE slug='arata-techlibrary'),$1,'[TEST] Second Studio collection') RETURNING id`,
+        [`studio-second-${suffix}`],
+      )
+    ).rows[0]!;
+    const uncategorised = await call('author', '/studio/publications', 'POST', {
+      slug: `studio-uncategorised-${suffix}`,
+      title: '[TEST] Uncategorized publication',
+      kind: 'STANDALONE',
+      languageCode: 'en',
+      licenceCode: 'TEST-ONLY',
+      sourceRef: 'TEST-SOURCE',
+      copyrightNotice: '[TEST] Synthetic rights',
+    });
+    expect(uncategorised.status).toBe(201);
+    const targetId = uncategorised.data.id;
+    const tree = await call('author', '/studio/tree');
+    expect(tree.data.publications).toContainEqual(
+      expect.objectContaining({ id: targetId, collectionId: null }),
+    );
+    expect(
+      (
+        await call('author', `/studio/publications/${publicationId}/collections`, 'PUT', {
+          collectionIds: [collectionId, secondCollection.id],
+        })
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await call('publisher', `/studio/publications/${publicationId}/collections`, 'PUT', {
+          collectionIds: [collectionId],
+        })
+      ).status,
+    ).toBe(200);
+    expect(
+      (
+        await call('outsider', `/studio/publications/${targetId}/collections`, 'PUT', {
+          collectionIds: [collectionId],
+        })
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await call('author', `/studio/publications/${targetId}/collections`, 'PUT', {
+          collectionIds: [collectionId, collectionId],
+        })
+      ).status,
+    ).toBe(400);
+    const assigned = await call('author', `/studio/publications/${targetId}/collections`, 'PUT', {
+      collectionIds: [collectionId, secondCollection.id],
+    });
+    expect(assigned.status).toBe(200);
+    const detail = await call('author', `/studio/publications/${targetId}`);
+    expect(detail.data.collections.map((item: { id: string }) => item.id).sort()).toEqual(
+      [collectionId, secondCollection.id].sort(),
+    );
+    expect(
+      (
+        await call('author', `/studio/publications/${targetId}/collections`, 'PUT', {
+          collectionIds: [],
+        })
+      ).status,
+    ).toBe(200);
+    expect((await call('author', `/studio/publications/${targetId}`)).data.collections).toEqual([]);
+    expect(
+      (
+        await call('author', `/studio/publications/${targetId}/collections`, 'PUT', {
+          collectionIds: [collectionId],
+        })
+      ).status,
+    ).toBe(200);
+  });
+
   it('quarantines uploaded originals and rejects author rights approval', async () => {
     const bytes = Buffer.from('synthetic test attachment');
     const digest = createHash('sha256').update(bytes).digest('hex');

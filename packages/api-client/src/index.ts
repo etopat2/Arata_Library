@@ -216,6 +216,8 @@ export function createApiClient(baseUrl = '') {
         request<ApiData<{ id: string }>>(`/studio/${path}`, 'POST', body),
       change: <T>(path: string, body: T) =>
         request<ApiData<{ id: string }>>(`/studio/${path}`, 'PATCH', body),
+      replace: <T>(path: string, body: T) =>
+        request<ApiData<{ id: string }>>(`/studio/${path}`, 'PUT', body),
       action: (path: string, body?: unknown) =>
         request<ApiData<{ id: string; status?: string }>>(`/studio/${path}`, 'POST', body),
       uploadStatus: (id: string) =>

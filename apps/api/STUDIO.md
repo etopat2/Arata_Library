@@ -40,6 +40,10 @@ a separate draft; existing published rows remain immutable. Releasing a draft
 requires the exact reviewed manifest, a current rights attestation, required
 metadata, and safe referenced assets. Correction notices append to published
 history. A publisher can withdraw a publication or schedule release/withdrawal.
+Publications may begin without a collection, and an authorized publication role
+can replace their collection memberships with zero or multiple existing library
+collections. Once a publication leaves DRAFT, reclassification requires a publisher role. The
+hierarchy displays uncategorised works under the Library root.
 
 Uploads use a declared SHA-256 digest, a unique idempotency key, and sequential
 8 MiB chunks; the limit is 200 MiB. The returned upload and job IDs drive status,

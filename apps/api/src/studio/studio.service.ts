@@ -245,9 +245,7 @@ export class StudioService {
       ).rows;
       return {
         library,
-        collections: platform
-          ? collections
-          : collections.filter((c) => publications.some((p) => p.collectionId === c.id)),
+        collections,
         publications,
         volumes,
         editions,
@@ -354,7 +352,7 @@ export class StudioService {
       slug: string;
       title: string;
       kind: 'STANDALONE' | 'SERIES';
-      collectionId: string;
+      collectionId?: string | undefined;
       languageCode: string;
       licenceCode: string;
       sourceRef: string;
@@ -365,10 +363,12 @@ export class StudioService {
   ) {
     return this.transaction(async (client) => {
       await this.role(client, context, null, ['AUTHOR', 'PUBLISHER']);
-      const collection = await client.query(`SELECT 1 FROM app."Collection" WHERE id=$1`, [
-        data.collectionId,
-      ]);
-      if (!collection.rowCount) throw new HttpException('Collection not found', 404);
+      if (data.collectionId) {
+        const collection = await client.query(`SELECT 1 FROM app."Collection" WHERE id=$1`, [
+          data.collectionId,
+        ]);
+        if (!collection.rowCount) throw new HttpException('Collection not found', 404);
+      }
       const id = randomUUID();
       await client.query(
         `INSERT INTO app."Publication" (id,slug,title,kind,status,"ownerId","languageCode","licenceCode","sourceRef","copyrightNotice",description,"createdAt","updatedAt")
@@ -386,10 +386,11 @@ export class StudioService {
           data.description ?? null,
         ],
       );
-      await client.query(
-        `INSERT INTO app."PublicationCollection" ("publicationId","collectionId") VALUES ($1,$2)`,
-        [id, data.collectionId],
-      );
+      if (data.collectionId)
+        await client.query(
+          `INSERT INTO app."PublicationCollection" ("publicationId","collectionId") VALUES ($1,$2)`,
+          [id, data.collectionId],
+        );
       const authorRole = await client.query<{ id: string }>(
         `SELECT id FROM app."Role" WHERE code='AUTHOR'`,
       );
@@ -400,6 +401,47 @@ export class StudioService {
         );
       await this.audit(client, context, 'studio.publication_created', 'Publication', id, requestId);
       return { id };
+    });
+  }
+
+  async replaceCollections(
+    context: AuthContext,
+    publicationId: string,
+    collectionIds: string[],
+    requestId: string,
+  ) {
+    return this.transaction(async (client) => {
+      await this.role(client, context, publicationId, ['AUTHOR', 'EDITOR', 'PUBLISHER']);
+      const publication = await client.query<{ status: string }>(
+        `SELECT status FROM app."Publication" WHERE id=$1 FOR UPDATE`,
+        [publicationId],
+      );
+      if (!publication.rowCount) throw new HttpException('Publication not found', 404);
+      if (publication.rows[0]!.status !== 'DRAFT')
+        await this.role(client, context, publicationId, ['PUBLISHER']);
+      const matches = await client.query<{ id: string }>(
+        `SELECT id FROM app."Collection" WHERE id=ANY($1::uuid[]) AND "libraryId"=(SELECT id FROM app."Library" WHERE slug='arata-techlibrary')`,
+        [collectionIds],
+      );
+      if (matches.rowCount !== collectionIds.length)
+        throw new HttpException('Collection outside this library or not found', 400);
+      await client.query(`DELETE FROM app."PublicationCollection" WHERE "publicationId"=$1`, [
+        publicationId,
+      ]);
+      for (const collectionId of collectionIds)
+        await client.query(
+          `INSERT INTO app."PublicationCollection" ("publicationId","collectionId") VALUES ($1,$2)`,
+          [publicationId, collectionId],
+        );
+      await this.audit(
+        client,
+        context,
+        'studio.publication_collections_replaced',
+        'Publication',
+        publicationId,
+        requestId,
+      );
+      return { id: publicationId, collectionIds };
     });
   }
 

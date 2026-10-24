@@ -16,8 +16,9 @@ Scope: partial `FR-PUB-001`–`016`, `FR-AST-001`–`012`, and `BR-003/010/012/0
 | Real scanner dependency | Passed for daemon smoke | Local ClamAV 1.5.4 container became healthy; `clamdscan -` returned `stream: OK` for a synthetic benign sample. Worker-to-daemon integration remains open. |
 | Compose and dependency audit | Passed locally | Foundation Compose config valid; `npm audit --audit-level=high` found zero reported vulnerabilities. |
 | Requirement traceability | Passed locally | Reconciliation check retained 287 SRS IDs, 90 screens, 102 source design operations and 87 Prisma models; Studio rows explicitly remain partial/open. |
+| Hosted checks for `38a5712` | Passed | [Foundation](https://github.com/etopat2/Arata_Library/actions/runs/40135154490), [database](https://github.com/etopat2/Arata_Library/actions/runs/40135154496), and [contracts](https://github.com/etopat2/Arata_Library/actions/runs/40135154585) succeeded on the draft PR; corresponding branch-push runs also succeeded. This validates the first Studio slice, not the subsequent collection-membership follow-up. |
 
-These results do not establish complete SRS acceptance. A live worker/ClamAV integration, full package fidelity, derived asset authorization, collection plurality, retention and runtime OpenAPI acceptance remain open in `BLOCKERS.md`.
+The follow-up `FR-PUB-002` collection membership test passed 6/6 Studio integration cases, including uncategorised creation, multiple memberships, duplicate rejection, scope denial, published-author denial and removal. The updated Studio browser passed 1/1 with uncategorised creation and mobile/axe checks. `npm run foundation:check` passed lint, strict types, 29/29 tests and API/PWA/worker builds. Reconciliation `--check` retained all 287 SRS IDs and 90 screens. These results do not establish complete SRS acceptance. A live worker/ClamAV integration, full package fidelity, derived asset authorization, reorder/edit workflows, retention and runtime OpenAPI acceptance remain open in `BLOCKERS.md`.
 
 ## Public portal and catalogue - 2026-10-24
 

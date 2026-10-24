@@ -84,4 +84,27 @@ test('uses the hierarchical Studio to create a persistent standalone draft', asy
     true,
   );
   await page.screenshot({ path: '.tmp/studio-mobile.png', fullPage: true });
+  await page.getByRole('button', { name: 'Arata TechLibrary' }).click();
+  const uncategorised = page
+    .getByRole('heading', { name: 'New uncategorised publication' })
+    .locator('..');
+  await uncategorised.getByLabel('Title', { exact: true }).fill(`[TEST] Uncategorised ${suffix}`);
+  await uncategorised.getByLabel('Slug', { exact: true }).fill(`uncategorised-${suffix}`);
+  await uncategorised.getByLabel('Licence code').fill('TEST-ONLY');
+  await uncategorised.getByLabel('Content source reference').fill('TEST-SOURCE');
+  await uncategorised.getByLabel('Copyright notice').fill('[TEST] Synthetic rights');
+  await uncategorised.getByRole('button', { name: 'Create draft' }).click();
+  await expect(page.getByRole('status')).toContainText('Draft publication created');
+  await expect(page.getByText('Uncategorised', { exact: true })).toBeVisible();
+  const verify = new pg.Client({ connectionString: env.TEST_DATABASE_URL });
+  await verify.connect();
+  try {
+    const memberships = await verify.query(
+      `SELECT pc."collectionId" FROM app."Publication" p LEFT JOIN app."PublicationCollection" pc ON pc."publicationId"=p.id WHERE p.slug=$1`,
+      [`uncategorised-${suffix}`],
+    );
+    expect(memberships.rows).toEqual([{ collectionId: null }]);
+  } finally {
+    await verify.end();
+  }
 });
