@@ -102,7 +102,7 @@ export class IdentityService implements OnModuleDestroy {
   constructor(
     @Inject('DB_POOL') private readonly pool: Pool,
     @Inject('APP_CONFIG') readonly config: ApiConfig,
-    readonly mailer: IdentityMailer,
+    @Inject(IdentityMailer) readonly mailer: IdentityMailer,
   ) {
     this.redis = new Redis(config.REDIS_URL, {
       lazyConnect: true,

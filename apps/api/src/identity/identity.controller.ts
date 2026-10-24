@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpException,
+  Inject,
   Param,
   Patch,
   Post,
@@ -70,7 +71,7 @@ const sessionView = (session: { id: string; createdAt: Date; expiresAt: Date }) 
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly identity: IdentityService) {}
+  constructor(@Inject(IdentityService) private readonly identity: IdentityService) {}
 
   @Get('policy-versions')
   policyVersions(@Req() request: Request) {
@@ -326,7 +327,7 @@ export class AuthController {
 
 @Controller('me')
 export class AccountController {
-  constructor(private readonly identity: IdentityService) {}
+  constructor(@Inject(IdentityService) private readonly identity: IdentityService) {}
   private async protected(request: Request, mutate = false) {
     const context = await this.identity.context(request.headers.cookie);
     if (mutate)
@@ -408,7 +409,7 @@ export class AccountController {
 
 @Controller('admin')
 export class IdentityAdminController {
-  constructor(private readonly identity: IdentityService) {}
+  constructor(@Inject(IdentityService) private readonly identity: IdentityService) {}
   private async protected(request: Request, mutate = false) {
     const context = await this.identity.context(request.headers.cookie);
     if (mutate)

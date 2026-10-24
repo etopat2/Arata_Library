@@ -9,11 +9,12 @@ digraph ArataPhysicalERD {
   "app_AuthSession" [label="app.AuthSession\nPK id\nFK userId\ntokenHash\nexpiresAt\nrevokedAt?\nmfaVerifiedAt?\ncreatedAt\ndeviceLabel?\nlastSeenAt?", fillcolor="#f7f9fc"];
   "app_Authenticator" [label="app.Authenticator\nPK id\nFK userId\nkind\ncredentialHash\nlastUsedAt?\ncreatedAt\nrevokedAt?\ncredentialId?\nsignCount\ntransports\nconfirmedAt?", fillcolor="#f7f9fc"];
   "app_Bookmark" [label="app.Bookmark\nPK id\nFK userId\nFK editionId\nFK revisionId\nanchor\ncreatedAt", fillcolor="#f7f9fc"];
-  "app_Chapter" [label="app.Chapter\nPK id\nFK revisionId\nordinal\nslug\ntitle", fillcolor="#f7f9fc"];
+  "app_Chapter" [label="app.Chapter\nPK id\nFK revisionId\nordinal\nslug\ntitle\npreviewText?", fillcolor="#f7f9fc"];
   "app_Cohort" [label="app.Cohort\nPK id\nFK institutionId\nname\ncreatedAt", fillcolor="#f7f9fc"];
   "app_CohortMember" [label="app.CohortMember\nPK cohortId\nPK userId\njoinedAt\nleftAt?", fillcolor="#f7f9fc"];
   "app_Collection" [label="app.Collection\nPK id\nslug\ntitle\ndescription?\ncreatedAt", fillcolor="#f7f9fc"];
   "app_ContentPolicy" [label="app.ContentPolicy\nPK id\nFK publicationId?\nFK volumeId?\nFK editionId?\nFK revisionId?\nFK chapterId?\nFK lessonId?\nFK resourceId?\naccessClass?\nallowRead?\nallowDownload?\nallowCopy?\nallowPrint?\nallowOffline?\nallowShare?\nwatermark?\nversion\nisActive\napprovedAt?\ncreatedAt", fillcolor="#f7f9fc"];
+  "app_Contributor" [label="app.Contributor\nPK id\ndisplayName\nslug\nbiography?", fillcolor="#f7f9fc"];
   "app_Edition" [label="app.Edition\nPK id\nFK publicationId\nFK volumeId?\neditionCode\nlabel\nFK currentRevisionId?\nisDefault\ncreatedAt", fillcolor="#f7f9fc"];
   "app_EditorialReview" [label="app.EditorialReview\nPK id\nFK revisionId\nFK reviewerId\ndecision\nmanifestHash\ncomment?\ndecidedAt", fillcolor="#f7f9fc"];
   "app_EligibilityPolicy" [label="app.EligibilityPolicy\nPK id\nFK institutionId\ncategory\nscope\nscopeId?\nverificationMode\nvalidityDays\nactive", fillcolor="#f7f9fc"];
@@ -41,8 +42,9 @@ digraph ArataPhysicalERD {
   "app_ProcessingPurpose" [label="app.ProcessingPurpose\nPK id\ncode\ndescription\nlawfulBasis\noptional", fillcolor="#f7f9fc"];
   "app_Project" [label="app.Project\nPK id\nFK lessonId\nversion\ntitle\nbriefAssetId?", fillcolor="#f7f9fc"];
   "app_ProjectSubmission" [label="app.ProjectSubmission\nPK id\nFK projectId\nFK userId\nFK assetId\nsubmittedAt\nstatus", fillcolor="#f7f9fc"];
-  "app_Publication" [label="app.Publication\nPK id\nslug\ntitle\nkind\nstatus\nFK ownerId\ncopyrightNotice?\ncreatedAt\nupdatedAt", fillcolor="#f7f9fc"];
+  "app_Publication" [label="app.Publication\nPK id\nslug\ntitle\nkind\nstatus\nFK ownerId\ncopyrightNotice?\ncreatedAt\nupdatedAt\nsubtitle?\ndescription?\nsubject?\nkeywords\nlicenceCode?\nreleaseAt?\nfeaturedAt?", fillcolor="#f7f9fc"];
   "app_PublicationCollection" [label="app.PublicationCollection\nPK publicationId\nPK collectionId", fillcolor="#f7f9fc"];
+  "app_PublicationContributor" [label="app.PublicationContributor\nPK publicationId\nPK contributorId\nPK role\nordinal", fillcolor="#f7f9fc"];
   "app_Quiz" [label="app.Quiz\nPK id\nFK lessonId\nFK revisionId\nversion\ntitle\npublishedAt?", fillcolor="#f7f9fc"];
   "app_QuizAnswer" [label="app.QuizAnswer\nPK attemptId\nPK questionId\nresponse\nawarded?", fillcolor="#f7f9fc"];
   "app_QuizAttempt" [label="app.QuizAttempt\nPK id\nFK userId\nFK quizId\nstatus\nstartedAt\nsubmittedAt?\nscore?", fillcolor="#f7f9fc"];
@@ -51,7 +53,7 @@ digraph ArataPhysicalERD {
   "app_ReconciliationItem" [label="app.ReconciliationItem\nPK id\nFK runId\nFK paymentAttemptId?\nproviderRef\noutcome\ndetail?", fillcolor="#f7f9fc"];
   "app_ReconciliationRun" [label="app.ReconciliationRun\nPK id\nprovider\nperiodFrom\nperiodTo\nstartedAt\nendedAt?", fillcolor="#f7f9fc"];
   "app_Refund" [label="app.Refund\nPK id\nFK paymentAttemptId\nproviderRefundId?\nidempotencyKey\namountMinor\nstatus\napprovedAt?\nsettledAt?", fillcolor="#f7f9fc"];
-  "app_Resource" [label="app.Resource\nPK id\ntitle\naccessClass\nlicenceCode\npublishedAt?\nwithdrawnAt?\nFK publicationId?\nFK volumeId?\nFK editionId?\nFK revisionId?\nFK chapterId?\nFK lessonId?\ncreatedAt", fillcolor="#f7f9fc"];
+  "app_Resource" [label="app.Resource\nPK id\ntitle\naccessClass\nlicenceCode\npublishedAt?\nwithdrawnAt?\nFK publicationId?\nFK volumeId?\nFK editionId?\nFK revisionId?\nFK chapterId?\nFK lessonId?\ncreatedAt\ndescription?\nformat?\nbodyText?\nattribution?\ncopyrightNotice?", fillcolor="#f7f9fc"];
   "app_ResourceAttachment" [label="app.ResourceAttachment\nPK resourceId\nPK assetId\nordinal", fillcolor="#f7f9fc"];
   "app_RetentionPolicy" [label="app.RetentionPolicy\nPK id\nFK purposeId\ndataClass\ndays?\nlegalBasis\napprovedAt?\nversion", fillcolor="#f7f9fc"];
   "app_Revision" [label="app.Revision\nPK id\nFK editionId\nnumber\nstatus\nmanifestHash?\nchangeSummary?\npublishedAt?\ncreatedAt", fillcolor="#f7f9fc"];
@@ -150,6 +152,8 @@ digraph ArataPhysicalERD {
   "app_User" -> "app_Publication" [label="Publication_ownerId_fkey (ownerId)\n1 : 0..many"];
   "app_Collection" -> "app_PublicationCollection" [label="PublicationCollection_collectionId_fkey (collectionId)\n1 : 0..many"];
   "app_Publication" -> "app_PublicationCollection" [label="PublicationCollection_publicationId_fkey (publicationId)\n1 : 0..many"];
+  "app_Contributor" -> "app_PublicationContributor" [label="PublicationContributor_contributorId_fkey (contributorId)\n1 : 0..many"];
+  "app_Publication" -> "app_PublicationContributor" [label="PublicationContributor_publicationId_fkey (publicationId)\n1 : 0..many"];
   "app_Lesson" -> "app_Quiz" [label="Quiz_lessonId_fkey (lessonId)\n1 : 0..many"];
   "app_Revision" -> "app_Quiz" [label="Quiz_revisionId_fkey (revisionId)\n1 : 0..many"];
   "app_QuizAttempt" -> "app_QuizAnswer" [label="QuizAnswer_attemptId_fkey (attemptId)\n1 : 0..many"];

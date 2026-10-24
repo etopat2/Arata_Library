@@ -14,6 +14,12 @@ import {
   IdentityAdminController,
 } from './identity/identity.controller.js';
 import { IdentityMailer, IdentityService } from './identity/identity.service.js';
+import {
+  CatalogueController,
+  PublicResourceController,
+  PublicationShareController,
+} from './catalogue/catalogue.controller.js';
+import { CatalogueService } from './catalogue/catalogue.service.js';
 
 export type ApiConfig = ReturnType<typeof loadConfig>;
 export function loadConfig() {
@@ -61,7 +67,15 @@ class HealthController {
 }
 
 @Module({
-  controllers: [HealthController, AuthController, AccountController, IdentityAdminController],
+  controllers: [
+    HealthController,
+    AuthController,
+    AccountController,
+    IdentityAdminController,
+    CatalogueController,
+    PublicResourceController,
+    PublicationShareController,
+  ],
   providers: [
     { provide: 'APP_CONFIG', useFactory: loadConfig },
     {
@@ -72,6 +86,7 @@ class HealthController {
     },
     IdentityMailer,
     IdentityService,
+    CatalogueService,
   ],
 })
 class AppModule {}
@@ -117,6 +132,17 @@ export async function createApp() {
       const response = context.getResponse<Response>();
       const request = context.getRequest<Request>();
       const status = error instanceof HttpException ? error.getStatus() : 500;
+      if (status >= 500)
+        console.error(
+          JSON.stringify({
+            event: 'api.unhandled_error',
+            requestId: request.id,
+            errorName: error instanceof Error ? error.name : 'UnknownError',
+            ...(config.NODE_ENV === 'development' && error instanceof Error
+              ? { message: error.message }
+              : {}),
+          }),
+        );
       const title =
         status >= 500
           ? 'Service unavailable'

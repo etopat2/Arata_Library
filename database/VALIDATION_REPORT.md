@@ -1,5 +1,11 @@
 # Database validation report
 
+## Public catalogue extension - 2026-10-24
+
+Three additive migrations add public bibliographic metadata, contributor relationships, approved chapter preview text, text-resource summaries and editorial featured selection. Local PostgreSQL 18.4 development and isolated test databases now have 78 tables, 125 foreign keys and 13 completed migrations; UTC, least-privilege role isolation and eight existing constraint tests pass. `prisma format`, `prisma validate`, `prisma generate`, `migrate status`, database-to-schema diff, `db:verify` and physical ERD regeneration passed. Synthetic published examples are permitted only by the explicit development seed guard.
+
+The first local attempt at `202610240001_public_catalogue` stopped on a non-immutable expression index after earlier additive DDL had applied. Both named databases were inspected; only two missing indexes were created. Prisma retains the failed attempt as rolled-back history and records the corrected migration as applied. No existing data was reset or deleted. Fresh container validation of the corrected migration is pending the branch CI run. See `apps/api/CATALOGUE.md` and `Documentation/Implementation/DECISIONS.md`.
+
 ## Identity extension - 2026-10-24
 
 Seven additive migrations (`202610230001`–`202610230007`) extend the baseline to 76 tables, 123 foreign keys and 10 applied migrations. `prisma format`, `prisma validate`, `prisma generate`, both migration drift comparisons, `db:verify` and eight database constraint tests passed locally. The migrations were applied only after the duplicate/noncanonical email preflight. No database reset was used. The physical ERD was regenerated as Mermaid, DOT and SVG. This verifies physical integrity, not operational identity acceptance; see `apps/api/IDENTITY.md` and `Documentation/Implementation/TEST_RESULTS.md`.

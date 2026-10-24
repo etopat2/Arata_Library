@@ -34,6 +34,7 @@ enum PublicationKind {
 
 enum PublicationStatus {
   DRAFT
+  FORTHCOMING
   PUBLISHED
   ARCHIVED
   WITHDRAWN
@@ -466,17 +467,25 @@ model PublicationCollection {
 }
 
 model Publication {
-  id              String                  @id @default(uuid()) @db.Uuid
-  slug            String                  @unique @db.VarChar(200)
-  title           String                  @db.VarChar(400)
+  id              String                   @id @default(uuid()) @db.Uuid
+  slug            String                   @unique @db.VarChar(200)
+  title           String                   @db.VarChar(400)
+  subtitle        String?                  @db.VarChar(400)
+  description     String?
+  subject         String?                  @db.VarChar(160)
+  keywords        String[]                 @default([])
+  licenceCode     String?                  @db.VarChar(100)
+  releaseAt       DateTime?                @db.Timestamptz(6)
+  featuredAt      DateTime?                @db.Timestamptz(6)
   kind            PublicationKind
-  status          PublicationStatus       @default(DRAFT)
-  ownerId         String                  @db.Uuid
+  status          PublicationStatus        @default(DRAFT)
+  ownerId         String                   @db.Uuid
   copyrightNotice String?
-  createdAt       DateTime                @default(now()) @db.Timestamptz(6)
-  updatedAt       DateTime                @updatedAt @db.Timestamptz(6)
-  owner           User                    @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  createdAt       DateTime                 @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime                 @updatedAt @db.Timestamptz(6)
+  owner           User                     @relation(fields: [ownerId], references: [id], onDelete: Restrict)
   collections     PublicationCollection[]
+  contributors    PublicationContributor[]
   volumes         Volume[]
   editions        Edition[]
   resources       Resource[]
@@ -485,6 +494,31 @@ model Publication {
   researchEvents  ResearchEvent[]
 
   @@index([status, kind])
+  @@index([status, kind, subject, releaseAt], map: "publication_public_facet")
+  @@index([featuredAt], map: "publication_featured_at")
+  @@schema("app")
+}
+
+model Contributor {
+  id           String                   @id @default(uuid()) @db.Uuid
+  displayName  String                   @db.VarChar(240)
+  slug         String                   @unique @db.VarChar(200)
+  biography    String?
+  publications PublicationContributor[]
+
+  @@schema("app")
+}
+
+model PublicationContributor {
+  publicationId String      @db.Uuid
+  contributorId String      @db.Uuid
+  role          String      @db.VarChar(60)
+  ordinal       Int         @default(0)
+  publication   Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  contributor   Contributor @relation(fields: [contributorId], references: [id], onDelete: Restrict)
+
+  @@id([publicationId, contributorId, role])
+  @@index([contributorId, role], map: "publication_contributor_person_role")
   @@schema("app")
 }
 
@@ -557,15 +591,16 @@ model Revision {
 }
 
 model Chapter {
-  id         String          @id @default(uuid()) @db.Uuid
-  revisionId String          @db.Uuid
-  ordinal    Int
-  slug       String          @db.VarChar(200)
-  title      String          @db.VarChar(400)
-  revision   Revision        @relation(fields: [revisionId], references: [id], onDelete: Restrict)
-  lessons    Lesson[]
-  resources  Resource[]
-  policies   ContentPolicy[]
+  id          String          @id @default(uuid()) @db.Uuid
+  revisionId  String          @db.Uuid
+  ordinal     Int
+  slug        String          @db.VarChar(200)
+  title       String          @db.VarChar(400)
+  previewText String?
+  revision    Revision        @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  lessons     Lesson[]
+  resources   Resource[]
+  policies    ContentPolicy[]
 
   @@unique([revisionId, ordinal])
   @@unique([revisionId, slug])
@@ -614,28 +649,33 @@ model Asset {
 }
 
 model Resource {
-  id            String               @id @default(uuid()) @db.Uuid
-  title         String               @db.VarChar(400)
-  accessClass   AccessClass          @default(RESTRICTED)
-  licenceCode   String               @db.VarChar(100)
-  publishedAt   DateTime?            @db.Timestamptz(6)
-  withdrawnAt   DateTime?            @db.Timestamptz(6)
-  publicationId String?              @db.Uuid
-  volumeId      String?              @db.Uuid
-  editionId     String?              @db.Uuid
-  revisionId    String?              @db.Uuid
-  chapterId     String?              @db.Uuid
-  lessonId      String?              @db.Uuid
-  createdAt     DateTime             @default(now()) @db.Timestamptz(6)
-  publication   Publication?         @relation(fields: [publicationId], references: [id], onDelete: Restrict)
-  volume        Volume?              @relation(fields: [volumeId], references: [id], onDelete: Restrict)
-  edition       Edition?             @relation(fields: [editionId], references: [id], onDelete: Restrict)
-  revision      Revision?            @relation(fields: [revisionId], references: [id], onDelete: Restrict)
-  chapter       Chapter?             @relation(fields: [chapterId], references: [id], onDelete: Restrict)
-  lesson        Lesson?              @relation(fields: [lessonId], references: [id], onDelete: Restrict)
-  attachments   ResourceAttachment[]
-  policies      ContentPolicy[]
-  entitlements  Entitlement[]
+  id              String               @id @default(uuid()) @db.Uuid
+  title           String               @db.VarChar(400)
+  description     String?
+  format          String?              @db.VarChar(40)
+  bodyText        String?
+  attribution     String?
+  copyrightNotice String?
+  accessClass     AccessClass          @default(RESTRICTED)
+  licenceCode     String               @db.VarChar(100)
+  publishedAt     DateTime?            @db.Timestamptz(6)
+  withdrawnAt     DateTime?            @db.Timestamptz(6)
+  publicationId   String?              @db.Uuid
+  volumeId        String?              @db.Uuid
+  editionId       String?              @db.Uuid
+  revisionId      String?              @db.Uuid
+  chapterId       String?              @db.Uuid
+  lessonId        String?              @db.Uuid
+  createdAt       DateTime             @default(now()) @db.Timestamptz(6)
+  publication     Publication?         @relation(fields: [publicationId], references: [id], onDelete: Restrict)
+  volume          Volume?              @relation(fields: [volumeId], references: [id], onDelete: Restrict)
+  edition         Edition?             @relation(fields: [editionId], references: [id], onDelete: Restrict)
+  revision        Revision?            @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  chapter         Chapter?             @relation(fields: [chapterId], references: [id], onDelete: Restrict)
+  lesson          Lesson?              @relation(fields: [lessonId], references: [id], onDelete: Restrict)
+  attachments     ResourceAttachment[]
+  policies        ContentPolicy[]
+  entitlements    Entitlement[]
 
   @@index([accessClass, publishedAt])
   @@schema("app")

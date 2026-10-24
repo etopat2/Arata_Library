@@ -1,0 +1,145 @@
+import { test, expect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+
+test('navigates real published series, edition and sample from the catalogue', async ({ page }) => {
+  await page.goto('/?screen=catalogue');
+  await expect(page.getByRole('heading', { name: 'Books and series catalogue' })).toBeVisible();
+  await page
+    .getByRole('link', { name: /\[DEV SAMPLE\] Web Engineering Series/i })
+    .first()
+    .click();
+  await expect(
+    page.getByRole('heading', { name: '[DEV SAMPLE] Web Engineering Series' }),
+  ).toBeVisible();
+  await page.getByRole('link', { name: /browse chapters/i }).click();
+  await expect(page.getByRole('heading', { name: 'Table of contents' })).toBeVisible();
+  await page.getByRole('link', { name: /read free sample/i }).click();
+  await expect(
+    page.getByText(/synthetic chapter preview contains no production manuscript/i),
+  ).toBeVisible();
+});
+
+test('searches real records and keeps premium body text out of public responses', async ({
+  page,
+  request,
+}) => {
+  await page.goto('/?screen=search');
+  await page.getByRole('searchbox', { name: 'Search books and resources' }).fill('Web Engineering');
+  await page.getByRole('button', { name: 'Search' }).click();
+  await expect(
+    page.getByRole('link', { name: /\[DEV SAMPLE\] Web Engineering Series/i }).first(),
+  ).toBeVisible();
+  const premium = await request.get(
+    '/api/v1/catalogue/search?q=DEV_PREMIUM_SECRET_EXERCISE_CONTENT',
+  );
+  expect(premium.ok()).toBeTruthy();
+  expect(await premium.text()).not.toContain('DEV_PREMIUM_SECRET_EXERCISE_CONTENT');
+});
+
+test('filters standalone books and forthcoming releases using live catalogue records', async ({
+  page,
+}) => {
+  await page.goto('/?screen=catalogue');
+  await page.getByLabel('Publication type').selectOption('STANDALONE');
+  await page.getByLabel('Status').selectOption('PUBLISHED');
+  await page.getByRole('button', { name: 'Apply filters' }).click();
+  await expect(
+    page.getByRole('link', { name: /\[DEV SAMPLE\] Accessible Web Basics/i }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('link', { name: /\[DEV SAMPLE\] Web Engineering Series/i }),
+  ).toHaveCount(0);
+
+  await page.getByLabel('Status').selectOption('FORTHCOMING');
+  await page.getByRole('button', { name: 'Apply filters' }).click();
+  await expect(
+    page.getByRole('link', { name: /\[DEV SAMPLE\] Future Technology Book/i }),
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole('article')
+      .filter({ hasText: '[DEV SAMPLE] Future Technology Book' })
+      .getByText('Forthcoming', { exact: true }),
+  ).toBeVisible();
+});
+
+test('opens public-free text anonymously and shows registered-free access truthfully', async ({
+  page,
+}) => {
+  await page.goto('/?screen=free-library');
+  await expect(
+    page.getByRole('link', { name: /\[DEV SAMPLE\] Open Web Checklist/i }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('link', { name: /\[DEV SAMPLE\] Premium Exercise Guide/i }),
+  ).toHaveCount(0);
+  await page.goto('/?screen=free-library&access=PUBLIC_FREE');
+  await page
+    .getByRole('link', { name: /\[DEV SAMPLE\] Open Web Checklist/i })
+    .first()
+    .click();
+  await expect(
+    page.getByRole('heading', { name: '[DEV SAMPLE] Open Web Checklist' }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Open resource' }).click();
+  await expect(page.getByText(/Check headings, labels, keyboard focus/i)).toBeVisible();
+  await page.goto('/?screen=free-library&access=REGISTERED_FREE');
+  await page
+    .getByRole('link', { name: /\[DEV SAMPLE\] Registered Study Notes/i })
+    .first()
+    .click();
+  await page.getByRole('button', { name: 'Open resource' }).click();
+  await expect(page.getByRole('alert')).toContainText('Sign in to open');
+});
+
+test('works at phone, tablet and desktop widths with accessible navigation and SEO metadata', async ({
+  page,
+  request,
+}) => {
+  for (const width of [320, 390, 768, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+    await expect(
+      page.getByRole('heading', { name: /knowledge that moves with you/i }),
+    ).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(
+      true,
+    );
+    if (width < 768) {
+      await page.getByText('Browse library').click();
+      await expect(
+        page
+          .getByRole('navigation', { name: 'Mobile' })
+          .getByRole('link', { name: 'Books and series' }),
+      ).toBeVisible();
+    } else {
+      await expect(
+        page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Books' }),
+      ).toBeVisible();
+    }
+  }
+  const accessibility = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+    .analyze();
+  expect(accessibility.violations).toEqual([]);
+  for (const path of [
+    '/?screen=catalogue',
+    '/?screen=free-library',
+    '/?screen=series-detail&slug=dev-published-series',
+  ]) {
+    await page.goto(path);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    const result = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+      .analyze();
+    expect(result.violations).toEqual([]);
+  }
+  const share = await request.get('/api/v1/share/publications/dev-published-series');
+  expect(share.ok()).toBeTruthy();
+  expect(await share.text()).toContain('property="og:title"');
+  await page.goto('/?screen=series-detail&slug=dev-published-series');
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
+    'content',
+    /Web Engineering Series/,
+  );
+});

@@ -45,7 +45,7 @@ MODULES = {
 # below is checked against the current Prisma schema before files are written.
 MODELS = {
     "FR-IAM": "User;UserProfile;AuthSession;Authenticator;VerificationToken;Role;RoleAssignment;PrivacyPreference",
-    "FR-CAT": "Collection;Publication;Volume;Edition;Revision;Resource",
+    "FR-CAT": "Collection;Publication;PublicationContributor;Contributor;Volume;Edition;Revision;Chapter;Resource;ContentPolicy",
     "FR-PUB": "Publication;Volume;Edition;Revision;Chapter;Lesson;EditorialReview;Asset",
     "FR-AST": "Asset;Resource;ResourceAttachment;ContentPolicy",
     "FR-ENT": "Entitlement;EntitlementEvent;ContentPolicy;PolicyChange;GrantApproval",
@@ -269,7 +269,7 @@ def main(check: bool) -> None:
     for path, method, _ in operations:
         operation_by_path[path].append(method)
     models = set(re.findall(r"(?m)^model (\w+) \{", (ROOT / "prisma/schema.prisma").read_text(encoding="utf-8")))
-    if len(models) != 76:
+    if len(models) != 78:
         raise ValueError(f"unexpected Prisma model count: {len(models)}")
 
     prior = rows(OUT / "REQUIREMENT_TRACEABILITY.csv")
@@ -350,7 +350,7 @@ def main(check: bool) -> None:
         test_id = f"T-{ident}"
         criteria.append({"requirement_id": ident, "test_id": test_id, "acceptance_criterion": criterion,
                          "boundary_or_negative_case": boundary, "evidence_method": method,
-                         "execution_status": "Partial live identity checks; full criterion open" if prior_row["implementation_status"].startswith("Partially implemented") else "Not run; criterion needs scenario refinement before implementation"})
+                         "execution_status": "Partial live checks; full criterion open" if prior_row["implementation_status"].startswith("Partially implemented") else "Not run; criterion needs scenario refinement before implementation"})
         matrix.append({
             "requirement_id": ident, "source": "ATL-SRS-001 v1.0 §8.1" if family == "BR" else prior_row["source"], "priority_release": priority,
             "delivery_stage": stage, "planned_sprint": sprint, "module": module,

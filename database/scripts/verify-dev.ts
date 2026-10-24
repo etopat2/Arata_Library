@@ -38,7 +38,7 @@ try {
       (SELECT count(*)::int FROM pg_type t JOIN pg_namespace n ON n.oid = t.typnamespace WHERE n.nspname IN ('app', 'research', 'research_private') AND t.typtype = 'e') AS enums`);
   const migrations = await client.query<{ migration_name: string; complete: boolean }>(`
     SELECT migration_name, finished_at IS NOT NULL AND rolled_back_at IS NULL AS complete
-    FROM public._prisma_migrations ORDER BY migration_name`);
+    FROM public._prisma_migrations WHERE rolled_back_at IS NULL ORDER BY migration_name`);
   const access = await client.query<{ app_can_research: boolean; report_can_link: boolean; identity_can_link: boolean }>(`
     SELECT has_schema_privilege('arata_app_dev', 'research', 'USAGE') AS app_can_research,
       has_schema_privilege('arata_research_report_dev', 'research_private', 'USAGE') AS report_can_link,
@@ -52,8 +52,8 @@ try {
     report: await checkRole(local.RESEARCH_REPORT_DATABASE_URL, 'SELECT 1 FROM research."ResearchEvent" LIMIT 0', 'SELECT 1 FROM research_private."PseudonymLink" LIMIT 0'),
     identity: await checkRole(local.RESEARCH_IDENTITY_DATABASE_URL, 'SELECT 1 FROM research_private."PseudonymLink" LIMIT 0', 'SELECT 1 FROM research."ResearchEvent" LIMIT 0'),
   };
-  if (!row || row.tables !== 76 || row.enums !== 23 || row.foreign_keys < 70 || row.checks < 40 || row.triggers < 20
-    || migrations.rows.length !== 10 || migrations.rows.some(m => !m.complete)
+  if (!row || row.tables !== 78 || row.enums !== 23 || row.foreign_keys < 125 || row.checks < 40 || row.triggers < 20
+    || migrations.rows.length !== 13 || migrations.rows.some(m => !m.complete)
     || !perms || perms.app_can_research || perms.report_can_link || !perms.identity_can_link || !snapshotView.rows[0]?.present
     || Object.values(directRoleChecks).some(passed => !passed)) {
     throw new Error("Database structure, migration history or role isolation did not match expected baseline");

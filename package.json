@@ -38,6 +38,7 @@
     "db:erd": "tsx database/scripts/generate-erd.ts",
     "db:test": "tsx --test database/tests/*.test.ts",
     "db:seed:dev": "tsx prisma/seed.dev.ts",
+    "db:seed:catalogue:dev": "tsx prisma/seed.catalogue.dev.ts",
     "api:build": "python api/build_contracts.py",
     "api:validate": "python api/validate_contracts.py",
     "api:types": "openapi-typescript api/openapi.v1.yaml -o api/generated/v1.ts",
@@ -52,6 +53,7 @@
     "pg": "8.16.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@eslint/js": "^9.39.1",
     "@playwright/test": "^1.57.0",
     "@types/node": "22.18.6",

@@ -32,6 +32,7 @@ jobs:
       - run: docker compose --env-file .env.compose.local --env-file .env.foundation.local -f compose.foundation.yaml up -d --wait postgres redis
       - run: npm run foundation:check
       - run: npm run db:verify && npm run db:test
+      - run: ARATA_ENABLE_DEV_SEED=1 npm run db:seed:dev && ARATA_ENABLE_DEV_SEED=1 npm run db:seed:catalogue:dev
       - run: |
           python3 -m venv .venv-contract
           .venv-contract/bin/python -m pip install --disable-pip-version-check -r api/requirements-contract.txt
