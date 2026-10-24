@@ -43,6 +43,7 @@ erDiagram
     character_varying_128_ afterHash
     character_varying_120_ correlationId
     timestamp_6__with_time_zone occurredAt
+    character_varying_1000_ reason
   }
   app_AuthSession {
     uuid id PK
@@ -52,6 +53,8 @@ erDiagram
     timestamp_6__with_time_zone revokedAt
     timestamp_6__with_time_zone mfaVerifiedAt
     timestamp_6__with_time_zone createdAt
+    character_varying_160_ deviceLabel
+    timestamp_6__with_time_zone lastSeenAt
   }
   app_Authenticator {
     uuid id PK
@@ -61,6 +64,10 @@ erDiagram
     timestamp_6__with_time_zone lastUsedAt
     timestamp_6__with_time_zone createdAt
     timestamp_6__with_time_zone revokedAt
+    character_varying_512_ credentialId
+    integer signCount
+    text__ transports
+    timestamp_6__with_time_zone confirmedAt
   }
   app_Bookmark {
     uuid id PK
@@ -257,6 +264,12 @@ erDiagram
     character_varying_100_ templateCode
     timestamp_6__with_time_zone createdAt
     timestamp_6__with_time_zone sentAt
+  }
+  app_NotificationPreference {
+    uuid userId PK,FK
+    boolean email
+    boolean inApp
+    timestamp_6__with_time_zone updatedAt
   }
   app_OfflineLicence {
     uuid id PK
@@ -554,6 +567,10 @@ erDiagram
     character_varying_64_ privacyVersion
     timestamp_6__with_time_zone createdAt
     timestamp_6__with_time_zone updatedAt
+    integer failedLoginCount
+    timestamp_6__with_time_zone lockedUntil
+    timestamp_6__with_time_zone closedAt
+    character_varying_64_ termsVersion
   }
   app_UserProfile {
     uuid userId PK,FK
@@ -746,6 +763,7 @@ erDiagram
   app_Institution ||--o{ app_Membership : "Membership_institutionId_fkey"
   app_User ||--o{ app_Membership : "Membership_userId_fkey"
   app_User ||--o{ app_Notification : "Notification_userId_fkey"
+  app_User ||--o| app_NotificationPreference : "NotificationPreference_userId_fkey"
   app_Edition ||--o{ app_OfflineLicence : "OfflineLicence_editionId_fkey"
   app_Revision ||--o{ app_OfflineLicence : "OfflineLicence_revisionId_editionId_fkey"
   app_User ||--o{ app_OfflineLicence : "OfflineLicence_userId_fkey"

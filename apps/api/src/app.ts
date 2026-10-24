@@ -8,6 +8,12 @@ import { mayAccess } from '@arata/access-policy';
 import { apiEnvironment, parseEnvironment } from '@arata/validation';
 import type { HealthResponse, ApiProblem } from '@arata/shared-types';
 import type { Request, Response } from 'express';
+import {
+  AuthController,
+  AccountController,
+  IdentityAdminController,
+} from './identity/identity.controller.js';
+import { IdentityMailer, IdentityService } from './identity/identity.service.js';
 
 export type ApiConfig = ReturnType<typeof loadConfig>;
 export function loadConfig() {
@@ -55,7 +61,7 @@ class HealthController {
 }
 
 @Module({
-  controllers: [HealthController],
+  controllers: [HealthController, AuthController, AccountController, IdentityAdminController],
   providers: [
     { provide: 'APP_CONFIG', useFactory: loadConfig },
     {
@@ -64,6 +70,8 @@ class HealthController {
       useFactory: (config: ApiConfig) =>
         new Pool({ connectionString: config.DATABASE_URL, max: 5, connectionTimeoutMillis: 3000 }),
     },
+    IdentityMailer,
+    IdentityService,
   ],
 })
 class AppModule {}
@@ -80,8 +88,9 @@ export async function createApp() {
   app.use(helmet());
   app.enableCors({
     origin: config.WEB_ORIGIN,
-    methods: ['GET'],
-    allowedHeaders: ['Authorization', 'X-Request-Id'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
+    allowedHeaders: ['Authorization', 'X-Request-Id', 'X-CSRF-Token', 'Content-Type'],
   });
   app.use((request: Request, response: Response, next: () => void) => {
     const started = performance.now();
@@ -109,13 +118,19 @@ export async function createApp() {
       const request = context.getRequest<Request>();
       const status = error instanceof HttpException ? error.getStatus() : 500;
       const title =
-        status === 401
-          ? 'Authentication required'
-          : status === 503
-            ? 'Service unavailable'
-            : status === 404
-              ? 'Not found'
-              : 'Internal server error';
+        status >= 500
+          ? 'Service unavailable'
+          : status === 401
+            ? 'Authentication required'
+            : status === 403
+              ? 'Access denied'
+              : status === 404
+                ? 'Not found'
+                : status === 429
+                  ? 'Too many requests'
+                  : status === 409
+                    ? 'State conflict'
+                    : 'Invalid request';
       const problem: ApiProblem = {
         type: `https://api.arata.example/problems/${status}`,
         title,
@@ -123,9 +138,13 @@ export async function createApp() {
         code:
           status === 401
             ? 'AUTHENTICATION_REQUIRED'
-            : status === 503
-              ? 'SERVICE_UNAVAILABLE'
-              : 'REQUEST_ERROR',
+            : status === 403
+              ? 'ACCESS_DENIED'
+              : status === 429
+                ? 'RATE_LIMITED'
+                : status >= 500
+                  ? 'SERVICE_UNAVAILABLE'
+                  : 'REQUEST_ERROR',
         requestId: request.id ?? randomUUID(),
       };
       response.status(status).type('application/problem+json').json(problem);

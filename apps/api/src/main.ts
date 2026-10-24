@@ -7,6 +7,7 @@ config({
   quiet: true,
 });
 config({ path: resolve(process.cwd(), '../../.env.foundation.local'), quiet: true });
+config({ path: resolve(process.cwd(), '../../.env.redis.local'), quiet: true, override: true });
 
 const settings = loadConfig();
 const app = await createApp();

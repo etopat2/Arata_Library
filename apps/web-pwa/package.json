@@ -12,6 +12,7 @@
   "dependencies": {
     "@arata/api-client": "0.1.0",
     "@arata/ui": "0.1.0",
+    "@simplewebauthn/browser": "^14.0.0",
     "idb": "^8.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"

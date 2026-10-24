@@ -8,6 +8,7 @@ import { createApp } from '../../apps/api/src/app.js';
 
 config({ path: resolve(process.env.ARATA_ENV_FILE ?? '.env.local'), quiet: true });
 config({ path: resolve('.env.foundation.local'), quiet: true });
+config({ path: resolve('.env.redis.local'), quiet: true, override: true });
 
 let app: INestApplication;
 let base: string;
