@@ -8,6 +8,7 @@ The NestJS API serves identity routes under `/api/v1`. It uses the `app` Postgre
 2. Start the local PostgreSQL and Redis services documented in `database/README.md` and `infrastructure/README.md`. Set `AUTH_SMTP_HOST` to a development mail sink (Compose uses Mailpit). Never use a production recipient with a development sink.
 3. Set `AUTH_TERMS_VERSION`, `AUTH_PRIVACY_VERSION`, `AUTH_TERMS_URL` and `AUTH_PRIVACY_URL` only after approved, hosted documents exist. Registration and invitation acceptance reject missing or stale versions. Tests use clearly labelled synthetic versions and `example.invalid` URLs.
 4. Start `npm run dev`; open `http://127.0.0.1:5173/?screen=register`. Verification and recovery links return to the corresponding account screens.
+   The `user-admin` and `roles-admin` views appear only when the server confirms current administrator access and MFA. Sensitive changes require a fresh MFA verification from `my-sessions`.
 5. To create the first development administrator, register and verify a real development account, enroll and confirm TOTP, then run `npm run identity:bootstrap-admin -- account@example.org`. The script uses the ignored migration URL, refuses other databases and refuses if an active administrator already exists. Later SYSTEM_ADMIN changes require an independently approved workflow and are denied by the public API.
 
 ## Checks

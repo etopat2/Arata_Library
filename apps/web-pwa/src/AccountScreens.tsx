@@ -1,9 +1,18 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { startAuthentication, startRegistration } from '@simplewebauthn/browser';
 import { createApiClient, ApiError } from '@arata/api-client';
+import { AdminScreens } from './AdminScreens.js';
 
 type Screen =
-  'register' | 'login' | 'verify-email' | 'recovery' | 'profile' | 'privacy' | 'my-sessions';
+  | 'register'
+  | 'login'
+  | 'verify-email'
+  | 'recovery'
+  | 'profile'
+  | 'privacy'
+  | 'my-sessions'
+  | 'user-admin'
+  | 'roles-admin';
 type Profile = {
   id: string;
   email: string;
@@ -30,9 +39,17 @@ const client = createApiClient();
 const initialScreen = (): Screen => {
   const value = new URLSearchParams(location.search).get('screen');
   return value &&
-    ['register', 'login', 'verify-email', 'recovery', 'profile', 'privacy', 'my-sessions'].includes(
-      value,
-    )
+    [
+      'register',
+      'login',
+      'verify-email',
+      'recovery',
+      'profile',
+      'privacy',
+      'my-sessions',
+      'user-admin',
+      'roles-admin',
+    ].includes(value)
     ? (value as Screen)
     : 'login';
 };
@@ -43,6 +60,7 @@ export function AccountScreens() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [admin, setAdmin] = useState(false);
   const [policy, setPolicy] = useState<{
     termsVersion: string;
     privacyVersion: string;
@@ -98,6 +116,12 @@ export function AccountScreens() {
   async function loadProfile() {
     const result = await client.request<{ data: Profile }>('/me/profile');
     setProfile(result.data);
+    setAdmin(
+      await client
+        .request('/admin/users?limit=1')
+        .then(() => true)
+        .catch(() => false),
+    );
   }
   useEffect(() => {
     void loadProfile().catch(() => setProfile(null));
@@ -142,19 +166,20 @@ export function AccountScreens() {
         Account and security
       </h2>
       <nav aria-label="Account screens" className="mt-4 flex flex-wrap gap-3">
-        {(profile ? ['profile', 'privacy', 'my-sessions'] : ['login', 'register', 'recovery']).map(
-          (item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => navigate(item as Screen)}
-              aria-current={screen === item ? 'page' : undefined}
-              className="rounded-lg border border-slate-500 px-3 py-2 capitalize hover:border-cyan-400"
-            >
-              {item === 'my-sessions' ? 'Devices and sessions' : item}
-            </button>
-          ),
-        )}
+        {(profile
+          ? ['profile', 'privacy', 'my-sessions', ...(admin ? ['user-admin', 'roles-admin'] : [])]
+          : ['login', 'register', 'recovery']
+        ).map((item) => (
+          <button
+            key={item}
+            type="button"
+            onClick={() => navigate(item as Screen)}
+            aria-current={screen === item ? 'page' : undefined}
+            className="rounded-lg border border-slate-500 px-3 py-2 capitalize hover:border-cyan-400"
+          >
+            {item === 'my-sessions' ? 'Devices and sessions' : item}
+          </button>
+        ))}
       </nav>
       {error && (
         <p role="alert" className="mt-4 rounded-lg border border-red-400 p-3 text-red-300">
@@ -682,6 +707,7 @@ export function AccountScreens() {
               onSubmit={(event) =>
                 submit(event, async () => {
                   await client.request('/auth/mfa/confirm', 'POST', { id: totp.id, code });
+                  await loadProfile();
                   setTotp(null);
                   setCode('');
                   setMessage('Authenticator enrolled.');
@@ -759,6 +785,7 @@ export function AccountScreens() {
                 onSubmit={(event) =>
                   submit(event, async () => {
                     await client.request('/auth/mfa/verify', 'POST', { challengeId, code });
+                    await loadProfile();
                     setChallengeId('');
                     setCode('');
                     setMessage('Security verification complete.');
@@ -783,6 +810,9 @@ export function AccountScreens() {
             )}
           </details>
         </div>
+      )}
+      {profile && admin && (screen === 'user-admin' || screen === 'roles-admin') && (
+        <AdminScreens mode={screen} currentUserId={profile.id} />
       )}
     </section>
   );
