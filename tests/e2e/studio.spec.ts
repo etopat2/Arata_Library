@@ -238,11 +238,28 @@ test('uses the hierarchical Studio to create a persistent standalone draft', asy
   await newVolume.getByLabel('Title').fill('[TEST] First browser volume');
   await newVolume.getByRole('button', { name: 'Create volume' }).click();
   await expect(page.getByRole('status')).toContainText('Volume created');
-  await page.getByRole('button', { name: 'Volume 1: [TEST] First browser volume' }).click();
+  const volumeLookup = new pg.Client({ connectionString: env.TEST_DATABASE_URL });
+  await volumeLookup.connect();
+  let browserVolumeId = '';
+  try {
+    const volume = await volumeLookup.query<{ id: string }>(
+      `SELECT v.id FROM app."Volume" v JOIN app."Publication" p ON p.id=v."publicationId" WHERE p.slug=$1`,
+      [`studio-browser-series-${suffix}`],
+    );
+    expect(volume.rowCount).toBe(1);
+    browserVolumeId = volume.rows[0]!.id;
+  } finally {
+    await volumeLookup.end();
+  }
+  const editedVolumeNode = page.getByTestId(`studio-volume-${browserVolumeId}`);
+  await editedVolumeNode.click();
+  await expect(editedVolumeNode).toHaveAttribute('aria-current', 'page');
   const volumeForm = page.getByRole('heading', { name: 'Edit volume title' }).locator('..');
+  await expect(volumeForm.getByLabel('Volume title')).toHaveValue('[TEST] First browser volume');
   await volumeForm.getByLabel('Volume title').fill('[TEST] Edited browser volume');
   await volumeForm.getByRole('button', { name: 'Save volume' }).click();
   await expect(page.getByRole('status')).toContainText('Volume title saved');
+  await expect(editedVolumeNode).toContainText('[TEST] Edited browser volume');
   const verifyVolume = new pg.Client({ connectionString: env.TEST_DATABASE_URL });
   await verifyVolume.connect();
   try {

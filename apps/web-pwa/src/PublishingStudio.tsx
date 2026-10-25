@@ -260,7 +260,12 @@ export function PublishingStudio() {
         aria-current={selected?.id === item.id ? 'page' : undefined}
         className={`block w-full rounded-lg py-2 pr-3 text-left text-sm hover:bg-[#f2e8ec] focus-visible:bg-[#f2e8ec] ${selected?.id === item.id ? 'bg-[#f2e8ec] font-bold text-[#74233e]' : 'text-[#173647]'}`}
         style={{ paddingLeft: `${12 + depth * 15}px` }}
-        onClick={() => select(item)}
+        onClick={() => {
+          setDetail(null);
+          setRevision(null);
+          setComparison('');
+          select(item);
+        }}
       >
         <span className="mr-2" aria-hidden="true">
           {item.type === 'library'
