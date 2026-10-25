@@ -60,6 +60,18 @@ The [database CI workflow](../.github/workflows/database.yml) runs the same prov
 
 Relational foreign keys, unique constraints, named checks, partial unique indexes, and triggers enforce the database invariants. Published revisions require an approved exact manifest and become immutable with their chapters, lessons, resources, assessments, and referenced assets. Standalone editions and series volumes have disjoint shapes. A current revision must be published and belong to its edition.
 
+Migration `202610250004_reviewed_bibliography_guard` also freezes the publication,
+volume, edition and contributor fields tied to a submitted exact manifest.
+Corrective forward migration `202610250005_restore_review_resource_guard`
+preserves the existing chapter/lesson-linked resource fallback in the child
+guard and corrects cross-reference lookup. Chapter and other manuscript-child
+writes are rejected during IN_REVIEW as well as after approval. A new draft
+edition can still be edited beside a reviewed edition; only ordering shared
+with a reviewed edition is frozen. These guards are additive and do not rewrite existing rows. Preserve the
+database and migration history on failure, then use a corrective forward
+migration or restore a verified database/object backup to a separate recovery
+environment as described below.
+
 Access grants are additive; `app."EffectiveEntitlement"` filters by UTC time, revocation, and status. The application must still evaluate content policy, publication status, role authorization, legal restrictions, and resource access class. The view alone is not a reader authorization decision. Verified payment events and matching amount/currency gate payment state; external signatures must be checked by the payment service before a row is marked verified. Role permissions in PostgreSQL protect schema boundaries, while the future API must enforce user-level authorization.
 
 UTC `timestamptz` columns store instants. Monetary amounts use integer minor units and a three-letter currency code; the payment service must validate provider and currency-specific rules. Idempotency keys and provider event/reference uniqueness prevent repeated writes. The research publication tables require approved disclosure policy and review evidence. No disclosure threshold is seeded pending the SRS business decision.

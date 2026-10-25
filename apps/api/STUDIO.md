@@ -61,8 +61,12 @@ summary, public sample text, learning outcomes and prerequisites. Optional
 edition/chapter fields can be cleared explicitly. The API refuses changes to
 edition or volume metadata after a related revision enters review and refuses
 chapter changes outside DRAFT. Submission and bibliographic edits serialize
-on the publication row. Direct-SQL protection for every manifest-bound
-metadata field remains a release gap (GAP-025).
+on the publication row. Migration `202610250004_reviewed_bibliography_guard`
+blocks direct SQL changes to reviewed publication, volume, edition and
+contributor metadata; corrective migration
+`202610250005_restore_review_resource_guard` keeps chapter/lesson-linked
+resources and cross-references frozen during review. Concurrent
+submission/edit stress validation and wider release acceptance remain open.
 An author may mark the first edition in a draft standalone book or volume as
 the initial default. Changing an existing default requires a publisher, a
 reason and explicit confirmation through `PUT /api/v1/studio/editions/:id/default`.

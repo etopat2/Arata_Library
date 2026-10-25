@@ -1,5 +1,31 @@
 # Database validation report
 
+## Reviewed bibliographic metadata guard - 2026-10-25
+
+The additive `202610250004_reviewed_bibliography_guard` migration was inspected,
+applied first to the isolated `_test` database and then to
+`arata_techlibrary_dev`; neither database was reset and no rows were rewritten.
+Five PostgreSQL triggers now guard reviewed publication, volume, edition and
+contributor metadata. The existing manuscript-child guard already rejected changes
+while a revision is IN_REVIEW. A draft edition created beside a reviewed edition
+remains editable, while an order change to the reviewed scope is rejected.
+An audit found that migration `004` had copied an earlier version of the child
+guard and lost its chapter/lesson fallback for resources. We preserved the
+applied migration and added corrective forward migration
+`202610250005_restore_review_resource_guard`, tested on `_test` before applying
+to development. It restores the fallback and corrects the prior cross-reference
+source lookup; direct SQL tests now reject changes to a chapter-linked resource
+and cross-reference during review.
+`prisma format`, `prisma validate`, `prisma generate`, `migrate status`, and the
+database-to-schema drift comparison passed after migration `005`. `db:verify`
+found 87 tables, 150 foreign keys, 71 checks, 44 triggers, 28 enums, 18
+completed migrations, all five named guards, the in-review child guard and
+the restored resource-parent fallback. SQL constraints passed 9/9;
+the Studio API integration passed 7/7 and the full foundation tests passed
+30/30 against the migrated test database. A concurrent update/submission stress
+test and wider asset/policy release acceptance remain open in GAP-025 and the
+other publishing gaps. The entity relationship graph did not change.
+
 ## Edition order extension - 2026-10-25
 
 The additive `202610250003_edition_order` migration was reviewed and applied to

@@ -129,28 +129,16 @@ test('uses the hierarchical Studio to create a persistent standalone draft', asy
   await defaultForm.getByLabel('Confirm default edition change').check();
   await defaultForm.getByRole('button', { name: 'Set as default' }).click();
   await expect(page.getByRole('status')).toContainText('Default edition changed');
-  const editionNode = page.getByRole('button', {
-    name: `2. [TEST] Browser edition ${suffix}`,
-    exact: true,
-  });
-  await editionNode.click();
+  await page.getByTestId(`studio-edition-${browserEditionIds[0]}`).click();
   const editionForm = page.getByRole('heading', { name: 'Edit edition metadata' }).locator('..');
   await editionForm.getByLabel('Edition label').fill(`[TEST] Edited edition ${suffix}`);
   await editionForm.getByRole('button', { name: 'Save edition' }).click();
   await expect(page.getByRole('status')).toContainText('Edition metadata saved');
-  await page
-    .getByRole('button', { name: `2. [TEST] Edited edition ${suffix}`, exact: true })
-    .locator('..')
-    .getByRole('button', { name: 'Revision 1 · DRAFT' })
-    .click();
+  await page.getByTestId(`studio-revision-${browserRevisionId}`).click();
   await expect(page.getByRole('heading', { name: 'Chapter order' })).toBeVisible();
   await page.getByRole('button', { name: 'Move Beta up' }).click();
   await expect(page.getByRole('status')).toContainText('Chapter order saved');
-  await page
-    .getByRole('button', { name: `2. [TEST] Edited edition ${suffix}`, exact: true })
-    .locator('..')
-    .getByRole('button', { name: '2. Alpha', exact: true })
-    .click();
+  await page.getByTestId(`studio-chapter-${browserChapterIds[0]}`).click();
   const chapterForm = page.getByRole('heading', { name: 'Edit chapter metadata' }).locator('..');
   await chapterForm.getByLabel('Chapter title').fill('[TEST] Edited Alpha');
   await chapterForm.getByLabel('Chapter summary (optional)').fill('Synthetic revised summary');

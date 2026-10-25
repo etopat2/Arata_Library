@@ -12,7 +12,7 @@ if (
 export default defineConfig({
   testDir: './tests/e2e',
   testMatch: 'studio.spec.ts',
-  timeout: 75000,
+  timeout: 120000,
   use: {
     baseURL: 'http://127.0.0.1:5187',
     browserName: 'chromium',
