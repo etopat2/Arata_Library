@@ -96,6 +96,7 @@ test("duplicate identities, volume order and standalone edition codes are reject
   const pubId = await addPublication(client, userId);
   await addEdition(client, pubId);
   await rejectSql(client, `INSERT INTO app."Edition" (id, "publicationId", "editionCode", label) VALUES ($1, $2, 'E1', 'Duplicate')`, [randomUUID(), pubId], "23505");
+  await rejectSql(client, `INSERT INTO app."Edition" (id, "publicationId", "editionCode", label) VALUES ($1, $2, 'E2', 'Duplicate order')`, [randomUUID(), pubId], "23505");
   const series = await addPublication(client, userId, "SERIES");
   await client.query(`INSERT INTO app."Volume" (id, "publicationId", ordinal, title) VALUES ($1, $2, 1, 'One')`, [randomUUID(), series]);
   await rejectSql(client, `INSERT INTO app."Volume" (id, "publicationId", ordinal, title) VALUES ($1, $2, 1, 'Two')`, [randomUUID(), series], "23505");
@@ -124,7 +125,7 @@ test("published revisions and their children are immutable and current pointers 
   await rejectSql(client, `DELETE FROM app."Chapter" WHERE id = $1`, [chapterId], "23514");
   await client.query(`UPDATE app."Edition" SET "currentRevisionId" = $1 WHERE id = $2`, [revisionId, editionId]);
   const anotherEdition = randomUUID();
-  await client.query(`INSERT INTO app."Edition" (id, "publicationId", "editionCode", label) VALUES ($1, $2, 'E2', 'Second')`, [anotherEdition, pubId]);
+  await client.query(`INSERT INTO app."Edition" (id, "publicationId", ordinal, "editionCode", label) VALUES ($1, $2, 2, 'E2', 'Second')`, [anotherEdition, pubId]);
   await rejectSql(client, `UPDATE app."Edition" SET "currentRevisionId" = $1 WHERE id = $2`, [revisionId, anotherEdition], "23514");
 }));
 

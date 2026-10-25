@@ -18,7 +18,7 @@ digraph ArataPhysicalERD {
   "app_ContentPolicy" [label="app.ContentPolicy\nPK id\nFK publicationId?\nFK volumeId?\nFK editionId?\nFK revisionId?\nFK chapterId?\nFK lessonId?\nFK resourceId?\naccessClass?\nallowRead?\nallowDownload?\nallowCopy?\nallowPrint?\nallowOffline?\nallowShare?\nwatermark?\nversion\nisActive\napprovedAt?\ncreatedAt", fillcolor="#f7f9fc"];
   "app_Contributor" [label="app.Contributor\nPK id\ndisplayName\nslug\nbiography?", fillcolor="#f7f9fc"];
   "app_CrossReference" [label="app.CrossReference\nPK id\nFK sourceLessonId\nFK targetPublicationId?\nFK targetChapterId?\nFK targetLessonId?\nlabel\ncreatedAt", fillcolor="#f7f9fc"];
-  "app_Edition" [label="app.Edition\nPK id\nFK publicationId\nFK volumeId?\neditionCode\nlabel\nFK currentRevisionId?\nisDefault\ncreatedAt\nisbn13?\npublicationDate?", fillcolor="#f7f9fc"];
+  "app_Edition" [label="app.Edition\nPK id\nFK publicationId\nFK volumeId?\neditionCode\nlabel\nFK currentRevisionId?\nisDefault\ncreatedAt\nisbn13?\npublicationDate?\nordinal", fillcolor="#f7f9fc"];
   "app_EditorialReview" [label="app.EditorialReview\nPK id\nFK revisionId\nFK reviewerId\ndecision\nmanifestHash\ncomment?\ndecidedAt", fillcolor="#f7f9fc"];
   "app_EligibilityPolicy" [label="app.EligibilityPolicy\nPK id\nFK institutionId\ncategory\nscope\nscopeId?\nverificationMode\nvalidityDays\nactive", fillcolor="#f7f9fc"];
   "app_EligibilityReview" [label="app.EligibilityReview\nPK id\nFK membershipId\nFK reviewerId\ndecision\nreason\nreviewedAt", fillcolor="#f7f9fc"];

@@ -65,7 +65,9 @@ test('uses the hierarchical Studio to create a persistent standalone draft', asy
   await expect(page.getByText('DRAFT', { exact: true })).toBeVisible();
   const client = new pg.Client({ connectionString: env.TEST_DATABASE_URL });
   await client.connect();
+  let browserPublicationId = '';
   let browserRevisionId = '';
+  const browserEditionIds: string[] = [];
   const browserChapterIds: string[] = [];
   try {
     const rows = await client.query<{ id: string }>(
@@ -74,10 +76,17 @@ test('uses the hierarchical Studio to create a persistent standalone draft', asy
     );
     expect(rows.rowCount).toBe(1);
     const publicationId = rows.rows[0]!.id;
+    browserPublicationId = publicationId;
     const edition = await client.query<{ id: string }>(
       `INSERT INTO app."Edition" (id,"publicationId","editionCode",label) VALUES (gen_random_uuid(),$1,'1',$2) RETURNING id`,
       [publicationId, `[TEST] Browser edition ${suffix}`],
     );
+    browserEditionIds.push(edition.rows[0]!.id);
+    const laterEdition = await client.query<{ id: string }>(
+      `INSERT INTO app."Edition" (id,"publicationId",ordinal,"editionCode",label) VALUES (gen_random_uuid(),$1,2,'2',$2) RETURNING id`,
+      [publicationId, `[TEST] Later edition ${suffix}`],
+    );
+    browserEditionIds.push(laterEdition.rows[0]!.id);
     const revision = await client.query<{ id: string }>(
       `INSERT INTO app."Revision" (id,"editionId",number,status) VALUES (gen_random_uuid(),$1,1,'DRAFT') RETURNING id`,
       [edition.rows[0]!.id],
@@ -97,7 +106,14 @@ test('uses the hierarchical Studio to create a persistent standalone draft', asy
     await client.end();
   }
   await page.reload();
-  const editionNode = page.getByRole('button', { name: `[TEST] Browser edition ${suffix}` });
+  await page.getByRole('button', { name: `[TEST] Browser publication ${suffix}` }).click();
+  await expect(page.getByRole('heading', { name: 'Edition order' })).toBeVisible();
+  await page.getByRole('button', { name: `Move [TEST] Later edition ${suffix} up` }).click();
+  await expect(page.getByRole('status')).toContainText('Edition order saved');
+  const editionNode = page.getByRole('button', {
+    name: `2. [TEST] Browser edition ${suffix}`,
+    exact: true,
+  });
   await editionNode.click();
   await editionNode.locator('..').getByRole('button', { name: 'Revision 1 · DRAFT' }).click();
   await expect(page.getByRole('heading', { name: 'Chapter order' })).toBeVisible();
@@ -106,6 +122,12 @@ test('uses the hierarchical Studio to create a persistent standalone draft', asy
   const ordered = new pg.Client({ connectionString: env.TEST_DATABASE_URL });
   await ordered.connect();
   try {
+    const editions = await ordered.query<{ id: string; ordinal: number }>(
+      `SELECT id,ordinal FROM app."Edition" WHERE "publicationId"=$1 ORDER BY ordinal`,
+      [browserPublicationId],
+    );
+    expect(editions.rows.map((row) => row.id)).toEqual([...browserEditionIds].reverse());
+    expect(editions.rows.map((row) => row.ordinal)).toEqual([1, 2]);
     const rows = await ordered.query<{ id: string; ordinal: number }>(
       `SELECT id,ordinal FROM app."Chapter" WHERE "revisionId"=$1 ORDER BY ordinal`,
       [browserRevisionId],

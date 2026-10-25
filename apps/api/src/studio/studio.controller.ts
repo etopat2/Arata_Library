@@ -35,6 +35,7 @@ const order = z.strictObject({
     .max(1000)
     .refine((ids) => new Set(ids).size === ids.length),
 });
+const editionOrder = order.extend({ volumeId: uuid.nullable() });
 const collection = z.strictObject({ slug, title: text(300), description: text(2000).optional() });
 const publication = z.strictObject({
   slug,
@@ -338,6 +339,24 @@ export class StudioController {
         await this.auth(req, true),
         parse(uuid, id),
         parse(edition, body),
+        req.id,
+      ),
+    );
+  }
+  @Put('publications/:id/editions/order') async reorderEditions(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    const data = parse(editionOrder, body);
+    return wrap(
+      req,
+      await this.studio.reorderEditions(
+        await this.auth(req, true),
+        parse(uuid, id),
+        data.volumeId,
+        data.ids,
+        data.expectedIds,
         req.id,
       ),
     );

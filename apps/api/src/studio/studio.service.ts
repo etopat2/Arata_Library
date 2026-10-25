@@ -265,7 +265,7 @@ export class StudioService {
       ).rows;
       const editions = (
         await client.query(
-          `SELECT id,"publicationId","volumeId","editionCode",label,"isDefault","currentRevisionId" FROM app."Edition" WHERE "publicationId"=ANY($1::uuid[]) ORDER BY "editionCode"`,
+          `SELECT id,"publicationId","volumeId",ordinal,"editionCode",label,"isDefault","currentRevisionId" FROM app."Edition" WHERE "publicationId"=ANY($1::uuid[]) ORDER BY "volumeId",ordinal,id`,
           [ids],
         )
       ).rows;
@@ -323,7 +323,7 @@ export class StudioService {
       ).rows;
       const editions = (
         await client.query(
-          `SELECT id,"volumeId","editionCode",label,isbn13,"publicationDate","isDefault","currentRevisionId" FROM app."Edition" WHERE "publicationId"=$1 ORDER BY "editionCode"`,
+          `SELECT id,"publicationId","volumeId",ordinal,"editionCode",label,isbn13,"publicationDate","isDefault","currentRevisionId" FROM app."Edition" WHERE "publicationId"=$1 ORDER BY "volumeId",ordinal,id`,
           [publicationId],
         )
       ).rows;
@@ -668,13 +668,23 @@ export class StudioService {
           `UPDATE app."Edition" SET "isDefault"=false WHERE "publicationId"=$1 AND "volumeId" IS NOT DISTINCT FROM $2::uuid`,
           [publicationId, data.volumeId ?? null],
         );
+      const ordinal = Number(
+        (
+          await client.query<{ ordinal: number }>(
+            `SELECT COALESCE(MAX(ordinal),0)+1 AS ordinal FROM app."Edition"
+         WHERE "publicationId"=$1 AND "volumeId" IS NOT DISTINCT FROM $2::uuid`,
+            [publicationId, data.volumeId ?? null],
+          )
+        ).rows[0]!.ordinal,
+      );
       const id = randomUUID();
       await client.query(
-        `INSERT INTO app."Edition" (id,"publicationId","volumeId","editionCode",label,isbn13,"isDefault") VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+        `INSERT INTO app."Edition" (id,"publicationId","volumeId",ordinal,"editionCode",label,isbn13,"isDefault") VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
         [
           id,
           publicationId,
           data.volumeId ?? null,
+          ordinal,
           data.editionCode,
           data.label,
           data.isbn13 ?? null,
@@ -683,6 +693,75 @@ export class StudioService {
       );
       await this.audit(client, context, 'studio.edition_created', 'Edition', id, requestId);
       return { id };
+    });
+  }
+
+  async reorderEditions(
+    context: AuthContext,
+    publicationId: string,
+    volumeId: string | null,
+    ids: string[],
+    expectedIds: string[],
+    requestId: string,
+  ) {
+    return this.transaction(async (client) => {
+      await this.role(client, context, publicationId, ['AUTHOR', 'EDITOR', 'PUBLISHER']);
+      const publication = await client.query<{ kind: string }>(
+        `SELECT kind FROM app."Publication" WHERE id=$1 FOR UPDATE`,
+        [publicationId],
+      );
+      if (!publication.rows[0]) throw new HttpException('Publication not found', 404);
+      if ((publication.rows[0].kind === 'SERIES') !== !!volumeId)
+        throw new HttpException('Edition scope does not match publication kind', 409);
+      if (volumeId) {
+        const volume = await client.query(
+          `SELECT 1 FROM app."Volume" WHERE id=$1 AND "publicationId"=$2`,
+          [volumeId, publicationId],
+        );
+        if (!volume.rowCount) throw new HttpException('Volume outside this publication', 404);
+      }
+      const current = (
+        await client.query<{ id: string; ordinal: number }>(
+          `SELECT id,ordinal FROM app."Edition" WHERE "publicationId"=$1
+         AND "volumeId" IS NOT DISTINCT FROM $2::uuid ORDER BY ordinal,id FOR UPDATE`,
+          [publicationId, volumeId],
+        )
+      ).rows;
+      if (
+        current.length !== expectedIds.length ||
+        current.some((row, index) => row.id !== expectedIds[index])
+      )
+        throw new HttpException('Order changed; reload the hierarchy and retry', 409);
+      if (current.length !== ids.length || ids.some((id) => !current.some((row) => row.id === id)))
+        throw new HttpException('Order must include exactly the current editions', 409);
+      const frozen = await client.query(
+        `SELECT 1 FROM app."Revision" r JOIN app."Edition" e ON e.id=r."editionId"
+         WHERE e."publicationId"=$1 AND e."volumeId" IS NOT DISTINCT FROM $2::uuid
+         AND r.status IN ('IN_REVIEW','APPROVED','PUBLISHED') LIMIT 1`,
+        [publicationId, volumeId],
+      );
+      if (frozen.rowCount) throw new HttpException('Reviewed edition order cannot be changed', 409);
+      if (ids.some((id, index) => id !== current[index]?.id)) {
+        const maxOrdinal = Math.max(0, ...current.map((row) => row.ordinal));
+        if (maxOrdinal > 1_000_000_000)
+          throw new HttpException('Order exceeds the supported range', 409);
+        await client.query(
+          `UPDATE app."Edition" SET ordinal=ordinal+$3 WHERE "publicationId"=$1
+           AND "volumeId" IS NOT DISTINCT FROM $2::uuid`,
+          [publicationId, volumeId, maxOrdinal + 1],
+        );
+        for (const [index, id] of ids.entries())
+          await client.query(`UPDATE app."Edition" SET ordinal=$2 WHERE id=$1`, [id, index + 1]);
+      }
+      await this.audit(
+        client,
+        context,
+        'studio.editions_reordered',
+        'Publication',
+        publicationId,
+        requestId,
+      );
+      return { ids };
     });
   }
 

@@ -679,6 +679,58 @@ describe('Publishing Studio editorial boundaries', () => {
       label: 'First edition',
     });
     expect(edition.status).toBe(201);
+    const laterEdition = await call('author', `/studio/publications/${pub}/editions`, 'POST', {
+      volumeId: first.data.id,
+      editionCode: '2',
+      label: 'Second edition',
+    });
+    expect(laterEdition.status).toBe(201);
+    const editions = [edition.data.id, laterEdition.data.id];
+    const editionPath = `/studio/publications/${pub}/editions/order`;
+    expect(
+      (
+        await call('outsider', editionPath, 'PUT', {
+          volumeId: first.data.id,
+          ids: [...editions].reverse(),
+          expectedIds: editions,
+        })
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await call('author', editionPath, 'PUT', {
+          volumeId: second.data.id,
+          ids: [...editions].reverse(),
+          expectedIds: editions,
+        })
+      ).status,
+    ).toBe(409);
+    expect(
+      (
+        await call('author', editionPath, 'PUT', {
+          volumeId: first.data.id,
+          ids: [...editions].reverse(),
+          expectedIds: editions,
+        })
+      ).status,
+    ).toBe(200);
+    expect(
+      (
+        await call('author', editionPath, 'PUT', {
+          volumeId: first.data.id,
+          ids: editions,
+          expectedIds: editions,
+        })
+      ).status,
+    ).toBe(409);
+    const editionRows = (
+      await fixture.query<{ id: string; ordinal: number }>(
+        `SELECT id,ordinal FROM app."Edition" WHERE "volumeId"=$1 ORDER BY ordinal`,
+        [first.data.id],
+      )
+    ).rows;
+    expect(editionRows.map((row) => row.id)).toEqual([...editions].reverse());
+    expect(editionRows.map((row) => row.ordinal)).toEqual([1, 2]);
     const draft = await call('author', `/studio/editions/${edition.data.id}/revisions`, 'POST', {
       changeSummary: '[TEST] order',
     });
@@ -749,6 +801,15 @@ describe('Publishing Studio editorial boundaries', () => {
         await call('author', `/studio/revisions/${revisionId}/chapters/order`, 'PUT', {
           ids: [],
           expectedIds: [],
+        })
+      ).status,
+    ).toBe(409);
+    expect(
+      (
+        await call('author', `/studio/publications/${publicationId}/editions/order`, 'PUT', {
+          volumeId: null,
+          ids: [editionId],
+          expectedIds: [editionId],
         })
       ).status,
     ).toBe(409);

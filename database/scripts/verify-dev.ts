@@ -44,6 +44,9 @@ try {
       has_schema_privilege('arata_research_report_dev', 'research_private', 'USAGE') AS report_can_link,
       has_table_privilege('arata_research_identity_dev', 'research_private."PseudonymLink"', 'SELECT') AS identity_can_link`);
   const snapshotView = await client.query<{ present: boolean }>("SELECT to_regclass('app.\"PublicInsightSnapshot\"') IS NOT NULL AS present");
+  const editionOrder = await client.query<{ standalone: boolean; volume: boolean }>(`
+    SELECT to_regclass('app.edition_standalone_order') IS NOT NULL AS standalone,
+      to_regclass('app.edition_volume_order') IS NOT NULL AS volume`);
   const row = counts.rows[0];
   const perms = access.rows[0];
   const directRoleChecks = {
@@ -52,13 +55,14 @@ try {
     report: await checkRole(local.RESEARCH_REPORT_DATABASE_URL, 'SELECT 1 FROM research."ResearchEvent" LIMIT 0', 'SELECT 1 FROM research_private."PseudonymLink" LIMIT 0'),
     identity: await checkRole(local.RESEARCH_IDENTITY_DATABASE_URL, 'SELECT 1 FROM research_private."PseudonymLink" LIMIT 0', 'SELECT 1 FROM research."ResearchEvent" LIMIT 0'),
   };
-  if (!row || row.tables !== 87 || row.enums !== 28 || row.foreign_keys < 150 || row.checks < 70 || row.triggers < 39
-    || migrations.rows.length !== 15 || migrations.rows.some(m => !m.complete)
+  if (!row || row.tables !== 87 || row.enums !== 28 || row.foreign_keys < 150 || row.checks < 71 || row.triggers < 39
+    || migrations.rows.length !== 16 || migrations.rows.some(m => !m.complete)
     || !perms || perms.app_can_research || perms.report_can_link || !perms.identity_can_link || !snapshotView.rows[0]?.present
+    || !editionOrder.rows[0]?.standalone || !editionOrder.rows[0].volume
     || Object.values(directRoleChecks).some(passed => !passed)) {
     throw new Error("Database structure, migration history or role isolation did not match expected baseline");
   }
-  console.log(JSON.stringify({ database: database.rows[0], counts: row, migrations: migrations.rows, roleIsolation: perms, directRoleChecks, publicSnapshotView: true }, null, 2));
+  console.log(JSON.stringify({ database: database.rows[0], counts: row, migrations: migrations.rows, roleIsolation: perms, directRoleChecks, publicSnapshotView: true, editionOrder: editionOrder.rows[0] }, null, 2));
 } catch (error) {
   const message = error instanceof Error && !('code' in error) ? error.message : `database error ${String((error as { code?: unknown }).code ?? "unknown")}`;
   console.error(message);

@@ -198,10 +198,12 @@ export function PublishingStudio() {
     title,
     items,
     path,
+    volumeId,
   }: {
     title: string;
     items: { id: string; ordinal: number; title: string }[];
     path: string;
+    volumeId?: string | null;
   }) {
     const ordered = [...items].sort((a, b) => a.ordinal - b.ordinal);
     if (ordered.length < 2) return null;
@@ -229,7 +231,12 @@ export function PublishingStudio() {
                       const ids = [...expectedIds];
                       [ids[index], ids[index + direction]] = [ids[index + direction]!, ids[index]!];
                       void run(
-                        () => api.studio.replace(path, { ids, expectedIds }),
+                        () =>
+                          api.studio.replace(path, {
+                            ids,
+                            expectedIds,
+                            ...(volumeId === undefined ? {} : { volumeId }),
+                          }),
                         `${title} saved`,
                       );
                     }}
@@ -372,7 +379,7 @@ export function PublishingStudio() {
           item={{
             type: 'edition',
             id: edition.id,
-            label: `${edition.label}${edition.isDefault ? ' ★' : ''}`,
+            label: `${edition.ordinal}. ${edition.label}${edition.isDefault ? ' ★' : ''}`,
             publicationId,
             editionId: edition.id,
           }}
@@ -692,6 +699,19 @@ export function PublishingStudio() {
                     path={`publications/${publicationId}/volumes/order`}
                   />
                 )}
+              {detail.publication.kind === 'STANDALONE' &&
+                !detail.revisions.some((item) =>
+                  ['IN_REVIEW', 'APPROVED', 'PUBLISHED'].includes(item.status),
+                ) && (
+                  <ReorderList
+                    title="Edition order"
+                    items={detail.editions
+                      .filter((item) => !item.volumeId)
+                      .map((item) => ({ ...item, title: item.label }))}
+                    path={`publications/${publicationId}/editions/order`}
+                    volumeId={null}
+                  />
+                )}
               <FormBox title="Publication metadata">
                 <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-2 text-sm">
                   <dt>Status</dt>
@@ -928,14 +948,33 @@ export function PublishingStudio() {
             </div>
           )}
           {selected?.type === 'volume' && publicationId && (
-            <FormBox title="Add an edition to this volume">
-              <EditionForm
-                publicationId={publicationId}
-                volumeId={selected.id}
-                busy={busy}
-                submit={submit}
-              />
-            </FormBox>
+            <div className="space-y-5">
+              <FormBox title="Add an edition to this volume">
+                <EditionForm
+                  publicationId={publicationId}
+                  volumeId={selected.id}
+                  busy={busy}
+                  submit={submit}
+                />
+              </FormBox>
+              {detail &&
+                !detail.revisions.some(
+                  (item) =>
+                    detail.editions.some(
+                      (edition) =>
+                        edition.id === item.editionId && edition.volumeId === selected.id,
+                    ) && ['IN_REVIEW', 'APPROVED', 'PUBLISHED'].includes(item.status),
+                ) && (
+                  <ReorderList
+                    title="Edition order"
+                    items={detail.editions
+                      .filter((item) => item.volumeId === selected.id)
+                      .map((item) => ({ ...item, title: item.label }))}
+                    path={`publications/${publicationId}/editions/order`}
+                    volumeId={selected.id}
+                  />
+                )}
+            </div>
           )}
           {selected?.type === 'edition' && editionId && (
             <div className="grid gap-5 xl:grid-cols-2">

@@ -621,6 +621,7 @@ model Edition {
   id                String            @id @default(uuid()) @db.Uuid
   publicationId     String            @db.Uuid
   volumeId          String?           @db.Uuid
+  ordinal           Int               @default(1)
   editionCode       String            @db.VarChar(60)
   label             String            @db.VarChar(200)
   isbn13            String?           @unique @db.VarChar(13)
@@ -642,6 +643,7 @@ model Edition {
   imports           ImportJob[]
 
   @@index([publicationId, volumeId])
+  @@index([publicationId, volumeId, ordinal], map: "edition_publication_volume_ordinal_idx")
   @@schema("app")
 }
 

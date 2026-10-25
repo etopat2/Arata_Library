@@ -102,6 +102,7 @@ export interface StudioTree {
     id: string;
     publicationId: string;
     volumeId: string | null;
+    ordinal: number;
     label: string;
     editionCode: string;
     isDefault: boolean;

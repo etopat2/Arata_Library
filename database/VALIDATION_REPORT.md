@@ -1,5 +1,18 @@
 # Database validation report
 
+## Edition order extension - 2026-10-25
+
+The additive `202610250003_edition_order` migration was reviewed and applied to
+`arata_techlibrary_dev` and the isolated `_test` database without a reset. It
+backfilled existing editions in stable creation order within each standalone
+publication or volume. Positive ordinals and separate partial unique indexes
+prevent duplicate positions in each scope. Prisma format, validate and generate
+passed; migration-to-database and migration-to-schema comparisons found no
+drift. `db:verify` passed with 87 tables, 150 foreign keys, 71 checks, 39
+triggers, 28 enums and 16 completed migrations; 8/8 SQL constraint tests and
+physical ERD regeneration passed. Full publishing acceptance remains open in
+GAP-021–024.
+
 ## Publishing Studio extension - 2026-10-24
 
 Two additive migrations (`202610250001_publishing_studio` and
