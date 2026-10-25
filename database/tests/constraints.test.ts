@@ -48,8 +48,11 @@ async function addUser(client: Client, verified = true): Promise<string> {
 
 async function addPublication(client: Client, ownerId: string, kind: "STANDALONE" | "SERIES" = "STANDALONE"): Promise<string> {
   const id = randomUUID();
-  await client.query(`INSERT INTO app."Publication" (id, slug, title, kind, status, "ownerId", "createdAt", "updatedAt")
-    VALUES ($1, $2, '[TEST ONLY] Unpublished book', $3, 'DRAFT', $4, now(), now())`, [id, `test-${id}`, kind, ownerId]);
+  await client.query(`INSERT INTO app."Publication" (id, slug, title, kind, status, "ownerId", "languageCode", "sourceRef", "licenceCode", "copyrightNotice", "createdAt", "updatedAt")
+    VALUES ($1, $2, '[TEST ONLY] Unpublished book', $3, 'DRAFT', $4, 'en', 'TEST-SOURCE', 'TEST-ONLY', '[TEST ONLY] Synthetic rights', now(), now())`, [id, `test-${id}`, kind, ownerId]);
+  const contributorId = randomUUID();
+  await client.query(`INSERT INTO app."Contributor" (id,"displayName",slug) VALUES ($1,'[TEST ONLY] Author',$2)`, [contributorId, `test-${contributorId}`]);
+  await client.query(`INSERT INTO app."PublicationContributor" ("publicationId","contributorId",role,ordinal) VALUES ($1,$2,'AUTHOR',0)`, [id, contributorId]);
   return id;
 }
 
@@ -93,6 +96,7 @@ test("duplicate identities, volume order and standalone edition codes are reject
   const pubId = await addPublication(client, userId);
   await addEdition(client, pubId);
   await rejectSql(client, `INSERT INTO app."Edition" (id, "publicationId", "editionCode", label) VALUES ($1, $2, 'E1', 'Duplicate')`, [randomUUID(), pubId], "23505");
+  await rejectSql(client, `INSERT INTO app."Edition" (id, "publicationId", "editionCode", label) VALUES ($1, $2, 'E2', 'Duplicate order')`, [randomUUID(), pubId], "23505");
   const series = await addPublication(client, userId, "SERIES");
   await client.query(`INSERT INTO app."Volume" (id, "publicationId", ordinal, title) VALUES ($1, $2, 1, 'One')`, [randomUUID(), series]);
   await rejectSql(client, `INSERT INTO app."Volume" (id, "publicationId", ordinal, title) VALUES ($1, $2, 1, 'Two')`, [randomUUID(), series], "23505");
@@ -105,21 +109,60 @@ test("published revisions and their children are immutable and current pointers 
   const editionId = await addEdition(client, pubId);
   const revisionId = randomUUID();
   const hash = "b".repeat(64);
-  await client.query(`INSERT INTO app."Revision" (id, "editionId", number, status, "manifestHash") VALUES ($1, $2, 1, 'DRAFT', $3)`, [revisionId, editionId, hash]);
+  await client.query(`INSERT INTO app."Revision" (id, "editionId", number, status, "manifestHash", "createdById") VALUES ($1, $2, 1, 'DRAFT', $3, $4)`, [revisionId, editionId, hash, author]);
   const chapterId = randomUUID();
   await client.query(`INSERT INTO app."Chapter" (id, "revisionId", ordinal, slug, title) VALUES ($1, $2, 1, 'intro', 'Intro')`, [chapterId, revisionId]);
   const lessonId = randomUUID();
   await client.query(`INSERT INTO app."Lesson" (id, "chapterId", ordinal, title) VALUES ($1, $2, 1, 'Lesson')`, [lessonId, chapterId]);
   await rejectSql(client, `UPDATE app."Revision" SET status = 'PUBLISHED', "publishedAt" = now() WHERE id = $1`, [revisionId], "23514");
+  await client.query(`UPDATE app."Revision" SET status='IN_REVIEW',"submittedAt"=now() WHERE id=$1`, [revisionId]);
   await client.query(`INSERT INTO app."EditorialReview" (id, "revisionId", "reviewerId", decision, "manifestHash") VALUES ($1, $2, $3, 'APPROVED', $4)`, [randomUUID(), revisionId, reviewer, hash]);
-  await client.query(`UPDATE app."Revision" SET status = 'PUBLISHED', "publishedAt" = now() WHERE id = $1`, [revisionId]);
+  await client.query(`UPDATE app."Revision" SET status='APPROVED' WHERE id=$1`, [revisionId]);
+  await client.query(`INSERT INTO app."RightsAttestation" (id,"publicationId","revisionId","actorId","manifestHash","licenceCode","sourceRef") VALUES ($1,$2,$3,$4,$5,'TEST-ONLY','TEST-SOURCE')`, [randomUUID(),pubId,revisionId,author,hash]);
+  await client.query(`UPDATE app."Revision" SET status = 'PUBLISHED', "publishedAt" = now(),"publishedById"=$2 WHERE id = $1`, [revisionId,reviewer]);
   await rejectSql(client, `UPDATE app."Revision" SET "changeSummary" = 'changed' WHERE id = $1`, [revisionId], "23514");
   await rejectSql(client, `UPDATE app."Lesson" SET title = 'changed' WHERE id = $1`, [lessonId], "23514");
   await rejectSql(client, `DELETE FROM app."Chapter" WHERE id = $1`, [chapterId], "23514");
   await client.query(`UPDATE app."Edition" SET "currentRevisionId" = $1 WHERE id = $2`, [revisionId, editionId]);
   const anotherEdition = randomUUID();
-  await client.query(`INSERT INTO app."Edition" (id, "publicationId", "editionCode", label) VALUES ($1, $2, 'E2', 'Second')`, [anotherEdition, pubId]);
+  await client.query(`INSERT INTO app."Edition" (id, "publicationId", ordinal, "editionCode", label) VALUES ($1, $2, 2, 'E2', 'Second')`, [anotherEdition, pubId]);
   await rejectSql(client, `UPDATE app."Edition" SET "currentRevisionId" = $1 WHERE id = $2`, [revisionId, anotherEdition], "23514");
+}));
+
+test("submitted editorial metadata and manuscript rows reject direct SQL edits while new editions remain editable", async () => inTransaction(async client => {
+  const author = await addUser(client);
+  const pubId = await addPublication(client, author, "SERIES");
+  const volumeId = randomUUID();
+  await client.query(`INSERT INTO app."Volume" (id,"publicationId",ordinal,title) VALUES ($1,$2,1,'Draft volume')`, [volumeId,pubId]);
+  const editionId = await addEdition(client, pubId, volumeId);
+  const revisionId = randomUUID();
+  await client.query(`INSERT INTO app."Revision" (id,"editionId",number,status,"createdById") VALUES ($1,$2,1,'DRAFT',$3)`, [revisionId,editionId,author]);
+  const chapterId = randomUUID();
+  await client.query(`INSERT INTO app."Chapter" (id,"revisionId",ordinal,slug,title) VALUES ($1,$2,1,'intro','Draft chapter')`, [chapterId,revisionId]);
+  const lessonId = randomUUID();
+  await client.query(`INSERT INTO app."Lesson" (id,"chapterId",ordinal,title) VALUES ($1,$2,1,'Draft lesson')`, [lessonId,chapterId]);
+  const resourceId = randomUUID();
+  await client.query(`INSERT INTO app."Resource" (id,title,"licenceCode","chapterId") VALUES ($1,'[TEST ONLY] Chapter resource','TEST-ONLY',$2)`, [resourceId,chapterId]);
+  const referenceId = randomUUID();
+  await client.query(`INSERT INTO app."CrossReference" (id,"sourceLessonId","targetPublicationId",label) VALUES ($1,$2,$3,'See book')`, [referenceId,lessonId,pubId]);
+  await client.query(`UPDATE app."Publication" SET title='Edited draft' WHERE id=$1`, [pubId]);
+  await client.query(`UPDATE app."Volume" SET title='Edited draft volume' WHERE id=$1`, [volumeId]);
+  await client.query(`UPDATE app."Edition" SET label='Edited draft edition' WHERE id=$1`, [editionId]);
+  await client.query(`UPDATE app."Chapter" SET title='Edited draft chapter' WHERE id=$1`, [chapterId]);
+  await client.query(`UPDATE app."Revision" SET status='IN_REVIEW',"manifestHash"=$2,"submittedAt"=now() WHERE id=$1`, [revisionId,"e".repeat(64)]);
+  await rejectSql(client, `UPDATE app."Publication" SET title='Changed after submit' WHERE id=$1`, [pubId], "23514");
+  await rejectSql(client, `UPDATE app."Volume" SET title='Changed after submit' WHERE id=$1`, [volumeId], "23514");
+  await rejectSql(client, `UPDATE app."Edition" SET label='Changed after submit' WHERE id=$1`, [editionId], "23514");
+  await rejectSql(client, `UPDATE app."Chapter" SET title='Changed after submit' WHERE id=$1`, [chapterId], "23514");
+  await rejectSql(client, `UPDATE app."Resource" SET title='Changed after submit' WHERE id=$1`, [resourceId], "23514");
+  await rejectSql(client, `UPDATE app."CrossReference" SET label='Changed after submit' WHERE id=$1`, [referenceId], "23514");
+  const contributor = await client.query<{ contributorId: string }>(`SELECT "contributorId" FROM app."PublicationContributor" WHERE "publicationId"=$1`, [pubId]);
+  await rejectSql(client, `UPDATE app."Contributor" SET "displayName"='Changed after submit' WHERE id=$1`, [contributor.rows[0]!.contributorId], "23514");
+  await rejectSql(client, `UPDATE app."PublicationContributor" SET ordinal=2 WHERE "publicationId"=$1`, [pubId], "23514");
+  const nextEdition = await client.query<{ id: string }>(`INSERT INTO app."Edition" (id,"publicationId","volumeId",ordinal,"editionCode",label) VALUES (gen_random_uuid(),$1,$2,2,'E2','Next draft edition') RETURNING id`, [pubId,volumeId]);
+  await client.query(`UPDATE app."Edition" SET label='Editable next edition' WHERE id=$1`, [nextEdition.rows[0]!.id]);
+  await client.query(`UPDATE app."Revision" SET status='DRAFT' WHERE id=$1`, [revisionId]);
+  await client.query(`UPDATE app."Chapter" SET title='Editable after review return' WHERE id=$1`, [chapterId]);
 }));
 
 test("entitlement expiry is computed from UTC time and overlapping grants remain additive", async () => inTransaction(async client => {

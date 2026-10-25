@@ -64,7 +64,60 @@ enum AssetStatus {
   QUARANTINED
   SCANNING
   CLEAN
+  APPROVED
   REJECTED
+  ARCHIVED
+  DELETED
+
+  @@schema("app")
+}
+
+enum UploadStatus {
+  INITIATED
+  RECEIVING
+  QUEUED
+  PROCESSING
+  CLEAN
+  REJECTED
+  EXPIRED
+
+  @@schema("app")
+}
+
+enum ProcessingStatus {
+  QUEUED
+  RUNNING
+  RETRY
+  COMPLETE
+  FAILED
+
+  @@schema("app")
+}
+
+enum ImportStatus {
+  PREVIEWING
+  READY
+  CONFIRMED
+  PROCESSING
+  COMPLETE
+  FAILED
+
+  @@schema("app")
+}
+
+enum ScheduleAction {
+  PUBLISH
+  WITHDRAW
+
+  @@schema("app")
+}
+
+enum ScheduleStatus {
+  PENDING
+  RUNNING
+  COMPLETE
+  FAILED
+  CANCELLED
 
   @@schema("app")
 }
@@ -271,6 +324,13 @@ model User {
   publishedInsights      PublicInsight[]
   researchAudits         ResearchAudit[]
   approvedDomains        InstitutionDomain[]
+  createdRevisions       Revision[]              @relation("RevisionCreator")
+  publishedRevisions     Revision[]              @relation("RevisionPublisher")
+  rightsAttestations     RightsAttestation[]
+  uploadSessions         UploadSession[]
+  importJobs             ImportJob[]
+  publicationSchedules   PublicationSchedule[]
+  errata                 RevisionErratum[]
 
   @@schema("app")
 }
@@ -445,12 +505,24 @@ model RetentionPolicy {
   @@schema("app")
 }
 
+model Library {
+  id          String       @id @default(uuid()) @db.Uuid
+  slug        String       @unique @db.VarChar(200)
+  title       String       @db.VarChar(300)
+  createdAt   DateTime     @default(now()) @db.Timestamptz(6)
+  collections Collection[]
+
+  @@schema("app")
+}
+
 model Collection {
   id           String                  @id @default(uuid()) @db.Uuid
+  libraryId    String                  @db.Uuid
   slug         String                  @unique @db.VarChar(200)
   title        String                  @db.VarChar(300)
   description  String?
   createdAt    DateTime                @default(now()) @db.Timestamptz(6)
+  library      Library                 @relation(fields: [libraryId], references: [id], onDelete: Restrict)
   publications PublicationCollection[]
 
   @@schema("app")
@@ -467,31 +539,37 @@ model PublicationCollection {
 }
 
 model Publication {
-  id              String                   @id @default(uuid()) @db.Uuid
-  slug            String                   @unique @db.VarChar(200)
-  title           String                   @db.VarChar(400)
-  subtitle        String?                  @db.VarChar(400)
-  description     String?
-  subject         String?                  @db.VarChar(160)
-  keywords        String[]                 @default([])
-  licenceCode     String?                  @db.VarChar(100)
-  releaseAt       DateTime?                @db.Timestamptz(6)
-  featuredAt      DateTime?                @db.Timestamptz(6)
-  kind            PublicationKind
-  status          PublicationStatus        @default(DRAFT)
-  ownerId         String                   @db.Uuid
-  copyrightNotice String?
-  createdAt       DateTime                 @default(now()) @db.Timestamptz(6)
-  updatedAt       DateTime                 @updatedAt @db.Timestamptz(6)
-  owner           User                     @relation(fields: [ownerId], references: [id], onDelete: Restrict)
-  collections     PublicationCollection[]
-  contributors    PublicationContributor[]
-  volumes         Volume[]
-  editions        Edition[]
-  resources       Resource[]
-  policies        ContentPolicy[]
-  entitlements    Entitlement[]
-  researchEvents  ResearchEvent[]
+  id                 String                   @id @default(uuid()) @db.Uuid
+  slug               String                   @unique @db.VarChar(200)
+  title              String                   @db.VarChar(400)
+  subtitle           String?                  @db.VarChar(400)
+  description        String?
+  subject            String?                  @db.VarChar(160)
+  keywords           String[]                 @default([])
+  licenceCode        String?                  @db.VarChar(100)
+  languageCode       String?                  @db.VarChar(35)
+  sourceRef          String?                  @db.VarChar(500)
+  releaseAt          DateTime?                @db.Timestamptz(6)
+  featuredAt         DateTime?                @db.Timestamptz(6)
+  kind               PublicationKind
+  status             PublicationStatus        @default(DRAFT)
+  ownerId            String                   @db.Uuid
+  copyrightNotice    String?
+  createdAt          DateTime                 @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime                 @updatedAt @db.Timestamptz(6)
+  owner              User                     @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  collections        PublicationCollection[]
+  contributors       PublicationContributor[]
+  volumes            Volume[]
+  editions           Edition[]
+  resources          Resource[]
+  policies           ContentPolicy[]
+  entitlements       Entitlement[]
+  researchEvents     ResearchEvent[]
+  rights             RightsAttestation[]
+  schedules          PublicationSchedule[]
+  incomingReferences CrossReference[]
+  uploadSessions     UploadSession[]
 
   @@index([status, kind])
   @@index([status, kind, subject, releaseAt], map: "publication_public_facet")
@@ -543,8 +621,11 @@ model Edition {
   id                String            @id @default(uuid()) @db.Uuid
   publicationId     String            @db.Uuid
   volumeId          String?           @db.Uuid
+  ordinal           Int               @default(1)
   editionCode       String            @db.VarChar(60)
   label             String            @db.VarChar(200)
+  isbn13            String?           @unique @db.VarChar(13)
+  publicationDate   DateTime?         @db.Timestamptz(6)
   currentRevisionId String?           @db.Uuid
   isDefault         Boolean           @default(false)
   createdAt         DateTime          @default(now()) @db.Timestamptz(6)
@@ -559,31 +640,45 @@ model Edition {
   bookmarks         Bookmark[]
   annotations       Annotation[]
   offlineLicences   OfflineLicence[]
+  imports           ImportJob[]
 
   @@index([publicationId, volumeId])
+  @@index([publicationId, volumeId, ordinal], map: "edition_publication_volume_ordinal_idx")
   @@schema("app")
 }
 
 model Revision {
-  id              String            @id @default(uuid()) @db.Uuid
-  editionId       String            @db.Uuid
-  number          Int
-  status          RevisionStatus    @default(DRAFT)
-  manifestHash    String?           @db.VarChar(128)
-  changeSummary   String?
-  publishedAt     DateTime?         @db.Timestamptz(6)
-  createdAt       DateTime          @default(now()) @db.Timestamptz(6)
-  edition         Edition           @relation("EditionRevisions", fields: [editionId], references: [id], onDelete: Restrict)
-  currentFor      Edition[]         @relation("CurrentRevision")
-  chapters        Chapter[]
-  reviews         EditorialReview[]
-  resources       Resource[]
-  policies        ContentPolicy[]
-  quizzes         Quiz[]
-  researchEvents  ResearchEvent[]
-  bookmarks       Bookmark[]
-  annotations     Annotation[]
-  offlineLicences OfflineLicence[]
+  id               String                @id @default(uuid()) @db.Uuid
+  editionId        String                @db.Uuid
+  number           Int
+  status           RevisionStatus        @default(DRAFT)
+  manifestHash     String?               @db.VarChar(128)
+  changeSummary    String?
+  correctionNotice String?
+  createdById      String?               @db.Uuid
+  publishedById    String?               @db.Uuid
+  submittedAt      DateTime?             @db.Timestamptz(6)
+  scheduledAt      DateTime?             @db.Timestamptz(6)
+  publishedAt      DateTime?             @db.Timestamptz(6)
+  createdAt        DateTime              @default(now()) @db.Timestamptz(6)
+  edition          Edition               @relation("EditionRevisions", fields: [editionId], references: [id], onDelete: Restrict)
+  creator          User?                 @relation("RevisionCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  publisher        User?                 @relation("RevisionPublisher", fields: [publishedById], references: [id], onDelete: Restrict)
+  currentFor       Edition[]             @relation("CurrentRevision")
+  chapters         Chapter[]
+  reviews          EditorialReview[]
+  resources        Resource[]
+  policies         ContentPolicy[]
+  quizzes          Quiz[]
+  researchEvents   ResearchEvent[]
+  bookmarks        Bookmark[]
+  annotations      Annotation[]
+  offlineLicences  OfflineLicence[]
+  bibliography     BibliographyEntry[]
+  rights           RightsAttestation[]
+  errata           RevisionErratum[]
+  schedules        PublicationSchedule[]
+  importJobs       ImportJob[]
 
   @@unique([editionId, number])
   @@unique([id, editionId])
@@ -591,16 +686,20 @@ model Revision {
 }
 
 model Chapter {
-  id          String          @id @default(uuid()) @db.Uuid
-  revisionId  String          @db.Uuid
-  ordinal     Int
-  slug        String          @db.VarChar(200)
-  title       String          @db.VarChar(400)
-  previewText String?
-  revision    Revision        @relation(fields: [revisionId], references: [id], onDelete: Restrict)
-  lessons     Lesson[]
-  resources   Resource[]
-  policies    ContentPolicy[]
+  id                 String           @id @default(uuid()) @db.Uuid
+  revisionId         String           @db.Uuid
+  ordinal            Int
+  slug               String           @db.VarChar(200)
+  title              String           @db.VarChar(400)
+  previewText        String?
+  summary            String?
+  learningOutcomes   String[]         @default([])
+  prerequisites      String[]         @default([])
+  revision           Revision         @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  lessons            Lesson[]
+  resources          Resource[]
+  policies           ContentPolicy[]
+  incomingReferences CrossReference[]
 
   @@unique([revisionId, ordinal])
   @@unique([revisionId, slug])
@@ -608,43 +707,212 @@ model Chapter {
 }
 
 model Lesson {
-  id          String            @id @default(uuid()) @db.Uuid
-  chapterId   String            @db.Uuid
-  ordinal     Int
-  title       String            @db.VarChar(400)
-  bodyAssetId String?           @db.Uuid
-  contentHash String?           @db.VarChar(128)
-  chapter     Chapter           @relation(fields: [chapterId], references: [id], onDelete: Restrict)
-  bodyAsset   Asset?            @relation("LessonBody", fields: [bodyAssetId], references: [id], onDelete: Restrict)
-  resources   Resource[]
-  policies    ContentPolicy[]
-  progress    ReadingProgress[]
-  quizzes     Quiz[]
-  projects    Project[]
+  id                 String            @id @default(uuid()) @db.Uuid
+  chapterId          String            @db.Uuid
+  ordinal            Int
+  title              String            @db.VarChar(400)
+  bodyAssetId        String?           @db.Uuid
+  contentHash        String?           @db.VarChar(128)
+  bodyMarkdown       String?
+  blocks             Json?
+  updatedAt          DateTime          @default(now()) @updatedAt @db.Timestamptz(6)
+  chapter            Chapter           @relation(fields: [chapterId], references: [id], onDelete: Restrict)
+  bodyAsset          Asset?            @relation("LessonBody", fields: [bodyAssetId], references: [id], onDelete: Restrict)
+  resources          Resource[]
+  policies           ContentPolicy[]
+  progress           ReadingProgress[]
+  quizzes            Quiz[]
+  projects           Project[]
+  outgoingReferences CrossReference[]  @relation("CrossReferenceSource")
+  incomingReferences CrossReference[]  @relation("CrossReferenceLessonTarget")
 
   @@unique([chapterId, ordinal])
   @@schema("app")
 }
 
+model BibliographyEntry {
+  id           String   @id @default(uuid()) @db.Uuid
+  revisionId   String   @db.Uuid
+  citationKey  String   @db.VarChar(120)
+  citationText String
+  url          String?  @db.VarChar(2000)
+  ordinal      Int
+  revision     Revision @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+
+  @@unique([revisionId, citationKey])
+  @@unique([revisionId, ordinal])
+  @@schema("app")
+}
+
+model CrossReference {
+  id                  String       @id @default(uuid()) @db.Uuid
+  sourceLessonId      String       @db.Uuid
+  targetPublicationId String?      @db.Uuid
+  targetChapterId     String?      @db.Uuid
+  targetLessonId      String?      @db.Uuid
+  label               String       @db.VarChar(300)
+  createdAt           DateTime     @default(now()) @db.Timestamptz(6)
+  sourceLesson        Lesson       @relation("CrossReferenceSource", fields: [sourceLessonId], references: [id], onDelete: Restrict)
+  targetPublication   Publication? @relation(fields: [targetPublicationId], references: [id], onDelete: Restrict)
+  targetChapter       Chapter?     @relation(fields: [targetChapterId], references: [id], onDelete: Restrict)
+  targetLesson        Lesson?      @relation("CrossReferenceLessonTarget", fields: [targetLessonId], references: [id], onDelete: Restrict)
+
+  @@index([sourceLessonId])
+  @@schema("app")
+}
+
+model RightsAttestation {
+  id            String      @id @default(uuid()) @db.Uuid
+  publicationId String      @db.Uuid
+  revisionId    String      @db.Uuid
+  actorId       String      @db.Uuid
+  manifestHash  String      @db.VarChar(128)
+  licenceCode   String      @db.VarChar(100)
+  sourceRef     String      @db.VarChar(500)
+  attestedAt    DateTime    @default(now()) @db.Timestamptz(6)
+  revokedAt     DateTime?   @db.Timestamptz(6)
+  publication   Publication @relation(fields: [publicationId], references: [id], onDelete: Restrict)
+  revision      Revision    @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  actor         User        @relation(fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([revisionId, manifestHash, revokedAt])
+  @@schema("app")
+}
+
+model RevisionErratum {
+  id         String   @id @default(uuid()) @db.Uuid
+  revisionId String   @db.Uuid
+  authorId   String   @db.Uuid
+  notice     String
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  revision   Revision @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  author     User     @relation(fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([revisionId, createdAt])
+  @@schema("app")
+}
+
 model Asset {
-  id           String               @id @default(uuid()) @db.Uuid
-  uploadedById String               @db.Uuid
-  storageKey   String               @unique @db.VarChar(500)
-  originalName String               @db.VarChar(400)
-  mimeType     String               @db.VarChar(160)
-  sizeBytes    BigInt
-  sha256       String               @db.VarChar(64)
-  status       AssetStatus          @default(QUARANTINED)
-  scanEvidence Json?
-  scannedAt    DateTime?            @db.Timestamptz(6)
-  createdAt    DateTime             @default(now()) @db.Timestamptz(6)
-  uploadedBy   User                 @relation(fields: [uploadedById], references: [id], onDelete: Restrict)
-  lessonBodies Lesson[]             @relation("LessonBody")
-  attachments  ResourceAttachment[]
-  submissions  ProjectSubmission[]
+  id                    String               @id @default(uuid()) @db.Uuid
+  uploadedById          String               @db.Uuid
+  storageKey            String               @unique @db.VarChar(500)
+  originalName          String               @db.VarChar(400)
+  mimeType              String               @db.VarChar(160)
+  sizeBytes             BigInt
+  sha256                String               @db.VarChar(64)
+  status                AssetStatus          @default(QUARANTINED)
+  scanEvidence          Json?
+  scannedAt             DateTime?            @db.Timestamptz(6)
+  licenceCode           String?              @db.VarChar(100)
+  copyrightNotice       String?
+  attribution           String?
+  provenanceRef         String?              @db.VarChar(500)
+  permissionConfirmedAt DateTime?            @db.Timestamptz(6)
+  approvedAt            DateTime?            @db.Timestamptz(6)
+  replacementOfId       String?              @db.Uuid
+  createdAt             DateTime             @default(now()) @db.Timestamptz(6)
+  uploadedBy            User                 @relation(fields: [uploadedById], references: [id], onDelete: Restrict)
+  lessonBodies          Lesson[]             @relation("LessonBody")
+  attachments           ResourceAttachment[]
+  submissions           ProjectSubmission[]
+  uploadSession         UploadSession?
+  processingJob         AssetProcessingJob?
+  importJobs            ImportJob[]
+  replacementOf         Asset?               @relation("AssetReplacement", fields: [replacementOfId], references: [id], onDelete: Restrict)
+  replacements          Asset[]              @relation("AssetReplacement")
 
   @@index([status, createdAt])
   @@index([sha256])
+  @@schema("app")
+}
+
+model UploadSession {
+  id             String       @id @default(uuid()) @db.Uuid
+  actorId        String       @db.Uuid
+  publicationId  String?      @db.Uuid
+  originalName   String       @db.VarChar(400)
+  declaredMime   String       @db.VarChar(160)
+  expectedSize   BigInt
+  expectedSha256 String       @db.VarChar(64)
+  receivedSize   BigInt       @default(0)
+  privateKey     String       @unique @db.VarChar(500)
+  idempotencyKey String       @db.VarChar(160)
+  status         UploadStatus @default(INITIATED)
+  assetId        String?      @unique @db.Uuid
+  failureCode    String?      @db.VarChar(100)
+  expiresAt      DateTime     @db.Timestamptz(6)
+  createdAt      DateTime     @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime     @default(now()) @updatedAt @db.Timestamptz(6)
+  actor          User         @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  publication    Publication? @relation(fields: [publicationId], references: [id], onDelete: Restrict)
+  asset          Asset?       @relation(fields: [assetId], references: [id], onDelete: Restrict)
+
+  @@unique([actorId, idempotencyKey])
+  @@index([status, expiresAt])
+  @@schema("app")
+}
+
+model AssetProcessingJob {
+  id            String           @id @default(uuid()) @db.Uuid
+  assetId       String           @unique @db.Uuid
+  status        ProcessingStatus @default(QUEUED)
+  progress      Int              @default(0)
+  attempts      Int              @default(0)
+  nextAttemptAt DateTime         @default(now()) @db.Timestamptz(6)
+  leaseUntil    DateTime?        @db.Timestamptz(6)
+  failureCode   String?          @db.VarChar(100)
+  createdAt     DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime         @default(now()) @updatedAt @db.Timestamptz(6)
+  asset         Asset            @relation(fields: [assetId], references: [id], onDelete: Restrict)
+
+  @@index([status, nextAttemptAt])
+  @@schema("app")
+}
+
+model ImportJob {
+  id             String       @id @default(uuid()) @db.Uuid
+  assetId        String       @db.Uuid
+  editionId      String       @db.Uuid
+  revisionId     String?      @db.Uuid
+  actorId        String       @db.Uuid
+  idempotencyKey String       @db.VarChar(160)
+  status         ImportStatus @default(PREVIEWING)
+  preview        Json?
+  progress       Int          @default(0)
+  attempts       Int          @default(0)
+  leaseUntil     DateTime?    @db.Timestamptz(6)
+  failureCode    String?      @db.VarChar(100)
+  confirmedAt    DateTime?    @db.Timestamptz(6)
+  createdAt      DateTime     @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime     @default(now()) @updatedAt @db.Timestamptz(6)
+  asset          Asset        @relation(fields: [assetId], references: [id], onDelete: Restrict)
+  edition        Edition      @relation(fields: [editionId], references: [id], onDelete: Restrict)
+  revision       Revision?    @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  actor          User         @relation(fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@unique([actorId, idempotencyKey])
+  @@index([status, createdAt])
+  @@schema("app")
+}
+
+model PublicationSchedule {
+  id            String         @id @default(uuid()) @db.Uuid
+  publicationId String         @db.Uuid
+  revisionId    String?        @db.Uuid
+  requestedById String         @db.Uuid
+  action        ScheduleAction
+  status        ScheduleStatus @default(PENDING)
+  scheduledAt   DateTime       @db.Timestamptz(6)
+  leaseUntil    DateTime?      @db.Timestamptz(6)
+  completedAt   DateTime?      @db.Timestamptz(6)
+  failureCode   String?        @db.VarChar(100)
+  reason        String
+  createdAt     DateTime       @default(now()) @db.Timestamptz(6)
+  publication   Publication    @relation(fields: [publicationId], references: [id], onDelete: Restrict)
+  revision      Revision?      @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  requestedBy   User           @relation(fields: [requestedById], references: [id], onDelete: Restrict)
+
+  @@index([status, scheduledAt])
   @@schema("app")
 }
 

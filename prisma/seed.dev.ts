@@ -22,8 +22,8 @@ try {
   const userId = user.rows[0]?.id;
   if (!userId) throw new Error("Could not create development sample identity");
   const collection = await client.query<{ id: string }>(`
-    INSERT INTO app."Collection" (id, slug, title, description)
-    VALUES (gen_random_uuid(), 'dev-sample-collection', '[DEV SAMPLE] Technology books', 'Fictional development-only catalogue')
+    INSERT INTO app."Collection" (id, "libraryId", slug, title, description)
+    VALUES (gen_random_uuid(), (SELECT id FROM app."Library" WHERE slug='arata-techlibrary'), 'dev-sample-collection', '[DEV SAMPLE] Technology books', 'Fictional development-only catalogue')
     ON CONFLICT (slug) DO UPDATE SET slug = EXCLUDED.slug RETURNING id`);
   const publication = await client.query<{ id: string }>(`
     INSERT INTO app."Publication" (id, slug, title, kind, status, "ownerId", "createdAt", "updatedAt")

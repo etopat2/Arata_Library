@@ -32,6 +32,25 @@ erDiagram
     jsonb scanEvidence
     timestamp_6__with_time_zone scannedAt
     timestamp_6__with_time_zone createdAt
+    timestamp_6__with_time_zone approvedAt
+    text attribution
+    text copyrightNotice
+    character_varying_100_ licenceCode
+    timestamp_6__with_time_zone permissionConfirmedAt
+    character_varying_500_ provenanceRef
+    uuid replacementOfId FK
+  }
+  app_AssetProcessingJob {
+    uuid id PK
+    uuid assetId FK
+    app__ProcessingStatus_ status
+    integer progress
+    integer attempts
+    timestamp_6__with_time_zone nextAttemptAt
+    timestamp_6__with_time_zone leaseUntil
+    character_varying_100_ failureCode
+    timestamp_6__with_time_zone createdAt
+    timestamp_6__with_time_zone updatedAt
   }
   app_AuditEvent {
     uuid id PK
@@ -69,6 +88,14 @@ erDiagram
     text__ transports
     timestamp_6__with_time_zone confirmedAt
   }
+  app_BibliographyEntry {
+    uuid id PK
+    uuid revisionId FK
+    character_varying_120_ citationKey
+    text citationText
+    character_varying_2000_ url
+    integer ordinal
+  }
   app_Bookmark {
     uuid id PK
     uuid userId FK
@@ -84,6 +111,9 @@ erDiagram
     character_varying_200_ slug
     character_varying_400_ title
     text previewText
+    text__ learningOutcomes
+    text__ prerequisites
+    text summary
   }
   app_Cohort {
     uuid id PK
@@ -103,6 +133,7 @@ erDiagram
     character_varying_300_ title
     text description
     timestamp_6__with_time_zone createdAt
+    uuid libraryId FK
   }
   app_ContentPolicy {
     uuid id PK
@@ -132,6 +163,15 @@ erDiagram
     character_varying_200_ slug
     text biography
   }
+  app_CrossReference {
+    uuid id PK
+    uuid sourceLessonId FK
+    uuid targetPublicationId FK
+    uuid targetChapterId FK
+    uuid targetLessonId FK
+    character_varying_300_ label
+    timestamp_6__with_time_zone createdAt
+  }
   app_Edition {
     uuid id PK
     uuid publicationId FK
@@ -141,6 +181,9 @@ erDiagram
     uuid currentRevisionId FK
     boolean isDefault
     timestamp_6__with_time_zone createdAt
+    character_varying_13_ isbn13
+    timestamp_6__with_time_zone publicationDate
+    integer ordinal
   }
   app_EditorialReview {
     uuid id PK
@@ -217,6 +260,23 @@ erDiagram
     timestamp_6__with_time_zone requestedAt
     timestamp_6__with_time_zone decidedAt
   }
+  app_ImportJob {
+    uuid id PK
+    uuid assetId FK
+    uuid editionId FK
+    uuid actorId FK
+    character_varying_160_ idempotencyKey
+    app__ImportStatus_ status
+    jsonb preview
+    integer progress
+    character_varying_100_ failureCode
+    timestamp_6__with_time_zone confirmedAt
+    timestamp_6__with_time_zone createdAt
+    timestamp_6__with_time_zone updatedAt
+    uuid revisionId FK
+    integer attempts
+    timestamp_with_time_zone leaseUntil
+  }
   app_Institution {
     uuid id PK
     character_varying_400_ legalName
@@ -251,6 +311,15 @@ erDiagram
     character_varying_400_ title
     uuid bodyAssetId FK
     character_varying_128_ contentHash
+    jsonb blocks
+    text bodyMarkdown
+    timestamp_6__with_time_zone updatedAt
+  }
+  app_Library {
+    uuid id PK
+    character_varying_200_ slug
+    character_varying_300_ title
+    timestamp_6__with_time_zone createdAt
   }
   app_Membership {
     uuid id PK
@@ -405,6 +474,8 @@ erDiagram
     character_varying_100_ licenceCode
     timestamp_6__with_time_zone releaseAt
     timestamp_6__with_time_zone featuredAt
+    character_varying_35_ languageCode
+    character_varying_500_ sourceRef
   }
   app_PublicationCollection {
     uuid publicationId PK,FK
@@ -415,6 +486,20 @@ erDiagram
     uuid contributorId PK,FK
     character_varying_60_ role PK
     integer ordinal
+  }
+  app_PublicationSchedule {
+    uuid id PK
+    uuid publicationId FK
+    uuid revisionId FK
+    uuid requestedById FK
+    app__ScheduleAction_ action
+    app__ScheduleStatus_ status
+    timestamp_6__with_time_zone scheduledAt
+    timestamp_6__with_time_zone leaseUntil
+    timestamp_6__with_time_zone completedAt
+    character_varying_100_ failureCode
+    text reason
+    timestamp_6__with_time_zone createdAt
   }
   app_Quiz {
     uuid id PK
@@ -526,6 +611,29 @@ erDiagram
     text changeSummary
     timestamp_6__with_time_zone publishedAt
     timestamp_6__with_time_zone createdAt
+    text correctionNotice
+    uuid createdById FK
+    uuid publishedById FK
+    timestamp_6__with_time_zone scheduledAt
+    timestamp_6__with_time_zone submittedAt
+  }
+  app_RevisionErratum {
+    uuid id PK
+    uuid revisionId FK
+    uuid authorId FK
+    text notice
+    timestamp_6__with_time_zone createdAt
+  }
+  app_RightsAttestation {
+    uuid id PK
+    uuid publicationId FK
+    uuid revisionId FK
+    uuid actorId FK
+    character_varying_128_ manifestHash
+    character_varying_100_ licenceCode
+    character_varying_500_ sourceRef
+    timestamp_6__with_time_zone attestedAt
+    timestamp_6__with_time_zone revokedAt
   }
   app_Role {
     uuid id PK
@@ -581,6 +689,24 @@ erDiagram
     character_varying_100_ campaignKey
     timestamp_6__with_time_zone startsAt
     timestamp_6__with_time_zone endsAt
+  }
+  app_UploadSession {
+    uuid id PK
+    uuid actorId FK
+    uuid publicationId FK
+    character_varying_400_ originalName
+    character_varying_160_ declaredMime
+    bigint expectedSize
+    character_varying_64_ expectedSha256
+    bigint receivedSize
+    character_varying_500_ privateKey
+    character_varying_160_ idempotencyKey
+    app__UploadStatus_ status
+    uuid assetId FK
+    character_varying_100_ failureCode
+    timestamp_6__with_time_zone expiresAt
+    timestamp_6__with_time_zone createdAt
+    timestamp_6__with_time_zone updatedAt
   }
   app_User {
     uuid id PK
@@ -740,10 +866,13 @@ erDiagram
   app_User ||--o{ app_Annotation : "Annotation_userId_fkey"
   app_User o|--o{ app_ApprovalRequest : "ApprovalRequest_decidedById_fkey"
   app_User ||--o{ app_ApprovalRequest : "ApprovalRequest_requestedById_fkey"
+  app_Asset o|--o{ app_Asset : "Asset_replacementOfId_fkey"
   app_User ||--o{ app_Asset : "Asset_uploadedById_fkey"
+  app_Asset ||--o{ app_AssetProcessingJob : "AssetProcessingJob_assetId_fkey"
   app_User o|--o{ app_AuditEvent : "AuditEvent_actorId_fkey"
   app_User ||--o{ app_AuthSession : "AuthSession_userId_fkey"
   app_User ||--o{ app_Authenticator : "Authenticator_userId_fkey"
+  app_Revision ||--o{ app_BibliographyEntry : "BibliographyEntry_revisionId_fkey"
   app_Edition ||--o{ app_Bookmark : "Bookmark_editionId_fkey"
   app_Revision ||--o{ app_Bookmark : "Bookmark_revisionId_editionId_fkey"
   app_User ||--o{ app_Bookmark : "Bookmark_userId_fkey"
@@ -751,6 +880,7 @@ erDiagram
   app_Institution ||--o{ app_Cohort : "Cohort_institutionId_fkey"
   app_Cohort ||--o{ app_CohortMember : "CohortMember_cohortId_fkey"
   app_User ||--o{ app_CohortMember : "CohortMember_userId_fkey"
+  app_Library ||--o{ app_Collection : "Collection_libraryId_fkey"
   app_Chapter o|--o{ app_ContentPolicy : "ContentPolicy_chapterId_fkey"
   app_Edition o|--o{ app_ContentPolicy : "ContentPolicy_editionId_fkey"
   app_Lesson o|--o{ app_ContentPolicy : "ContentPolicy_lessonId_fkey"
@@ -758,6 +888,10 @@ erDiagram
   app_Resource o|--o{ app_ContentPolicy : "ContentPolicy_resourceId_fkey"
   app_Revision o|--o{ app_ContentPolicy : "ContentPolicy_revisionId_fkey"
   app_Volume o|--o{ app_ContentPolicy : "ContentPolicy_volumeId_fkey"
+  app_Lesson ||--o{ app_CrossReference : "CrossReference_sourceLessonId_fkey"
+  app_Chapter o|--o{ app_CrossReference : "CrossReference_targetChapterId_fkey"
+  app_Lesson o|--o{ app_CrossReference : "CrossReference_targetLessonId_fkey"
+  app_Publication o|--o{ app_CrossReference : "CrossReference_targetPublicationId_fkey"
   app_Revision o|--o{ app_Edition : "Edition_currentRevisionId_fkey"
   app_Publication ||--o{ app_Edition : "Edition_publicationId_fkey"
   app_Volume o|--o{ app_Edition : "Edition_volumeId_publicationId_fkey"
@@ -780,6 +914,10 @@ erDiagram
   app_User o|--o{ app_GrantApproval : "GrantApproval_approvedById_fkey"
   app_Entitlement ||--o{ app_GrantApproval : "GrantApproval_entitlementId_fkey"
   app_User ||--o{ app_GrantApproval : "GrantApproval_requestedById_fkey"
+  app_User ||--o{ app_ImportJob : "ImportJob_actorId_fkey"
+  app_Asset ||--o{ app_ImportJob : "ImportJob_assetId_fkey"
+  app_Edition ||--o{ app_ImportJob : "ImportJob_editionId_fkey"
+  app_Revision o|--o{ app_ImportJob : "ImportJob_revisionId_fkey"
   app_User o|--o{ app_InstitutionDomain : "InstitutionDomain_approvedById_fkey"
   app_Institution ||--o{ app_InstitutionDomain : "InstitutionDomain_institutionId_fkey"
   app_Order ||--o{ app_Invoice : "Invoice_orderId_fkey"
@@ -809,6 +947,9 @@ erDiagram
   app_Publication ||--o{ app_PublicationCollection : "PublicationCollection_publicationId_fkey"
   app_Contributor ||--o{ app_PublicationContributor : "PublicationContributor_contributorId_fkey"
   app_Publication ||--o{ app_PublicationContributor : "PublicationContributor_publicationId_fkey"
+  app_Publication ||--o{ app_PublicationSchedule : "PublicationSchedule_publicationId_fkey"
+  app_User ||--o{ app_PublicationSchedule : "PublicationSchedule_requestedById_fkey"
+  app_Revision o|--o{ app_PublicationSchedule : "PublicationSchedule_revisionId_fkey"
   app_Lesson ||--o{ app_Quiz : "Quiz_lessonId_fkey"
   app_Revision ||--o{ app_Quiz : "Quiz_revisionId_fkey"
   app_QuizAttempt ||--o{ app_QuizAnswer : "QuizAnswer_attemptId_fkey"
@@ -831,7 +972,14 @@ erDiagram
   app_Asset ||--o{ app_ResourceAttachment : "ResourceAttachment_assetId_fkey"
   app_Resource ||--o{ app_ResourceAttachment : "ResourceAttachment_resourceId_fkey"
   app_ProcessingPurpose ||--o{ app_RetentionPolicy : "RetentionPolicy_purposeId_fkey"
+  app_User o|--o{ app_Revision : "Revision_createdById_fkey"
   app_Edition ||--o{ app_Revision : "Revision_editionId_fkey"
+  app_User o|--o{ app_Revision : "Revision_publishedById_fkey"
+  app_User ||--o{ app_RevisionErratum : "RevisionErratum_authorId_fkey"
+  app_Revision ||--o{ app_RevisionErratum : "RevisionErratum_revisionId_fkey"
+  app_User ||--o{ app_RightsAttestation : "RightsAttestation_actorId_fkey"
+  app_Publication ||--o{ app_RightsAttestation : "RightsAttestation_publicationId_fkey"
+  app_Revision ||--o{ app_RightsAttestation : "RightsAttestation_revisionId_fkey"
   app_Role ||--o{ app_RoleAssignment : "RoleAssignment_roleId_fkey"
   app_User ||--o{ app_RoleAssignment : "RoleAssignment_userId_fkey"
   app_Permission ||--o{ app_RolePermission : "RolePermission_permissionId_fkey"
@@ -841,6 +989,9 @@ erDiagram
   app_User ||--o{ app_Subscription : "Subscription_userId_fkey"
   app_User ||--o{ app_SyncOperation : "SyncOperation_userId_fkey"
   app_User ||--o{ app_TrialUsage : "TrialUsage_userId_fkey"
+  app_User ||--o{ app_UploadSession : "UploadSession_actorId_fkey"
+  app_Asset o|--o{ app_UploadSession : "UploadSession_assetId_fkey"
+  app_Publication o|--o{ app_UploadSession : "UploadSession_publicationId_fkey"
   app_User ||--o| app_UserProfile : "UserProfile_userId_fkey"
   app_User ||--o{ app_VerificationToken : "VerificationToken_userId_fkey"
   app_Publication ||--o{ app_Volume : "Volume_publicationId_fkey"

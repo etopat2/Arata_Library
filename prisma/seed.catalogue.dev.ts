@@ -17,9 +17,14 @@ try {
   );
   if (!owner.rows[0]) throw new Error('Run npm run db:seed:dev first');
   const userId = owner.rows[0].id;
+  const reviewer = await client.query<{ id: string }>(
+    `INSERT INTO app."User" (id,email,status,"termsAcceptedAt","privacyVersion","createdAt","updatedAt")
+     VALUES (gen_random_uuid(),'dev-editor@example.invalid','ACTIVE',now(),'DEV-ONLY',now(),now())
+     ON CONFLICT (email) DO UPDATE SET email=EXCLUDED.email RETURNING id`,
+  );
   const collection = await client.query<{ id: string }>(
-    `INSERT INTO app."Collection" (id,slug,title,description)
-     VALUES (gen_random_uuid(),'dev-public-learning','[DEV SAMPLE] Web and software learning','Synthetic catalogue for local development only')
+    `INSERT INTO app."Collection" (id,"libraryId",slug,title,description)
+     VALUES (gen_random_uuid(),(SELECT id FROM app."Library" WHERE slug='arata-techlibrary'),'dev-public-learning','[DEV SAMPLE] Web and software learning','Synthetic catalogue for local development only')
      ON CONFLICT (slug) DO UPDATE SET title=EXCLUDED.title RETURNING id`,
   );
   const author = await client.query<{ id: string }>(
@@ -48,8 +53,8 @@ try {
     ]);
     if (existing.rowCount) continue;
     const publication = await client.query<{ id: string }>(
-      `INSERT INTO app."Publication" (id,slug,title,subtitle,description,subject,keywords,"licenceCode","featuredAt",kind,status,"ownerId","copyrightNotice","createdAt","updatedAt")
-       VALUES (gen_random_uuid(),$1,$2,'Synthetic technology learning','[DEV SAMPLE] Fictional approved catalogue record for local UI and API testing.','Web development',ARRAY['web','accessibility','typescript']::text[],'DEV-SAMPLE',CASE WHEN $3 THEN now() ELSE NULL END,$4,'DRAFT',$5,'[DEV SAMPLE] No production rights implied.',now(),now()) RETURNING id`,
+      `INSERT INTO app."Publication" (id,slug,title,subtitle,description,subject,keywords,"licenceCode","languageCode","sourceRef","featuredAt",kind,status,"ownerId","copyrightNotice","createdAt","updatedAt")
+       VALUES (gen_random_uuid(),$1,$2,'Synthetic technology learning','[DEV SAMPLE] Fictional approved catalogue record for local UI and API testing.','Web development',ARRAY['web','accessibility','typescript']::text[],'DEV-SAMPLE','en','DEV-SAMPLE-SOURCE',CASE WHEN $3 THEN now() ELSE NULL END,$4,'DRAFT',$5,'[DEV SAMPLE] No production rights implied.',now(),now()) RETURNING id`,
       [item.slug, item.title, item.featured, item.kind, userId],
     );
     const id = publication.rows[0]!.id;
@@ -74,8 +79,8 @@ try {
       [id, volumeId],
     );
     const revision = await client.query<{ id: string }>(
-      `INSERT INTO app."Revision" (id,"editionId",number,status,"manifestHash","changeSummary") VALUES (gen_random_uuid(),$1,1,'DRAFT',$2,'[DEV SAMPLE] Synthetic reviewed revision') RETURNING id`,
-      [edition.rows[0]!.id, item.kind === 'SERIES' ? 'a'.repeat(64) : 'b'.repeat(64)],
+      `INSERT INTO app."Revision" (id,"editionId",number,status,"manifestHash","changeSummary","createdById") VALUES (gen_random_uuid(),$1,1,'DRAFT',$2,'[DEV SAMPLE] Synthetic reviewed revision',$3) RETURNING id`,
+      [edition.rows[0]!.id, item.kind === 'SERIES' ? 'a'.repeat(64) : 'b'.repeat(64), userId],
     );
     const chapter = await client.query<{ id: string }>(
       `INSERT INTO app."Chapter" (id,"revisionId",ordinal,slug,title,"previewText") VALUES (gen_random_uuid(),$1,1,'sample-introduction','[DEV SAMPLE] Introduction','[DEV SAMPLE] This synthetic chapter preview contains no production manuscript.') RETURNING id`,
@@ -89,13 +94,21 @@ try {
       `INSERT INTO app."ContentPolicy" (id,"publicationId","accessClass","allowRead",version,"isActive","approvedAt") VALUES (gen_random_uuid(),$1,$2,true,1,true,now())`,
       [id, item.access],
     );
+    const hash = item.kind === 'SERIES' ? 'a'.repeat(64) : 'b'.repeat(64);
+    await client.query(`UPDATE app."Revision" SET status='IN_REVIEW',"submittedAt"=now() WHERE id=$1`, [revision.rows[0]!.id]);
     await client.query(
       `INSERT INTO app."EditorialReview" (id,"revisionId","reviewerId",decision,"manifestHash",comment) VALUES (gen_random_uuid(),$1,$2,'APPROVED',$3,'[DEV SAMPLE] Synthetic test review')`,
-      [revision.rows[0]!.id, userId, item.kind === 'SERIES' ? 'a'.repeat(64) : 'b'.repeat(64)],
+      [revision.rows[0]!.id, reviewer.rows[0]!.id, hash],
+    );
+    await client.query(`UPDATE app."Revision" SET status='APPROVED' WHERE id=$1`, [revision.rows[0]!.id]);
+    await client.query(
+      `INSERT INTO app."RightsAttestation" (id,"publicationId","revisionId","actorId","manifestHash","licenceCode","sourceRef")
+       VALUES (gen_random_uuid(),$1,$2,$3,$4,'DEV-SAMPLE','DEV-SAMPLE-SOURCE')`,
+      [id, revision.rows[0]!.id, userId, hash],
     );
     await client.query(
-      `UPDATE app."Revision" SET status='PUBLISHED',"publishedAt"=now() WHERE id=$1`,
-      [revision.rows[0]!.id],
+      `UPDATE app."Revision" SET status='PUBLISHED',"publishedAt"=now(),"publishedById"=$2 WHERE id=$1`,
+      [revision.rows[0]!.id, reviewer.rows[0]!.id],
     );
     await client.query(`UPDATE app."Edition" SET "currentRevisionId"=$1 WHERE id=$2`, [
       revision.rows[0]!.id,

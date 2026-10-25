@@ -12,9 +12,16 @@
   "dependencies": {
     "@arata/validation": "0.1.0",
     "bullmq": "^5.61.0",
-    "dotenv": "16.6.1"
+    "dotenv": "16.6.1",
+    "entities": "^8.1.0",
+    "mammoth": "^1.13.0",
+    "pdfjs-dist": "^6.4.299",
+    "pg": "^8.23.1",
+    "yauzl": "^3.4.0"
   },
   "devDependencies": {
+    "@types/pg": "^8.23.1",
+    "@types/yauzl": "^3.4.0",
     "tsx": "4.20.6",
     "typescript": "5.9.3"
   }

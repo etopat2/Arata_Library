@@ -1,17 +1,21 @@
 # Sprint status
 
-Updated: 2026-10-24. The source plan proposes 20 two-week sequencing units; durations are not delivery commitments.
+Updated: 2026-10-25. The source plan proposes 20 two-week sequencing units; durations are not delivery commitments.
 
 | Sprint | Source goal | Status | Current note |
 |---|---|---|---|
 | S01 | Initiation and design/contracts | In progress | Inventory, database CI, reconciliation, v1 API design contract and runnable API/PWA/worker foundation are verified. Product services, threat model and staging environment remain. |
 | S02?S20 | Design system through staging/UAT | S03/S04 in progress; other feature sprints not started | Identity and public catalogue have live partial implementation. Reconciled per-ID allocation remains in `SPRINT_ALLOCATION.md`; release acceptance is open. |
 
-The initial database foundation delivered 75 models and three migrations. Identity and catalogue extensions now bring the physical design to 78 tables, 125 foreign keys and 13 applied migrations in development and test. Product service and release acceptance remain separate.
+The initial database foundation delivered 75 models and three migrations. Identity, catalogue and Studio extensions now bring the physical design to 87 tables, 150 foreign keys and 18 applied migrations in development and test. Product service and release acceptance remain separate.
 
 S01/S02 infrastructure contribution: isolated PostgreSQL Compose service, secret-file bootstrap and database CI workflow passed local checks and [main CI run 39727484615](https://github.com/etopat2/Arata_Library/actions/runs/39727484615). The application foundation passed local lint, type, build, integration and browser checks plus [foundation CI run 39939266083](https://github.com/etopat2/Arata_Library/actions/runs/39939266083), including image build and running-container smoke. Engineering and Step 1 packages assign different sprint numbers; ADR-OPS-001 records the sequencing interpretation.
 
 The reconciled allocation assigns `BR-003/015` to S06 and `BR-007/008` to S12. S20 remains the all-R1 staging/UAT gate without new IDs. All R1/R2/R3 targets are preserved; advanced features in early source sprints remain gated by their SRS release.
+
+S05 Publishing Studio is in progress, with S06/S07 asset and release dependencies brought forward only as technical contributions. Live PostgreSQL hierarchy, zero or multiple collection memberships, audited draft volume/edition/chapter/lesson reordering, validated publication, volume, edition and chapter metadata editing, confirmed publisher-only default-edition changes, Markdown/blocks, scoped editorial review, immutable release, correction draft cloning, private upload quarantine, asynchronous scan/import/schedule jobs, and a connected Studio screen are locally verified. `FR-PUB-001`–`016`, `FR-AST-001`–`012`, and `BR-003/010/012/015` retain their original SRS release targets. Full S05/S07 acceptance is open for remaining rights/ownership metadata lifecycle, archive confirmation, concurrent review-freeze evidence, citation mapping, lossless package import/export, derived assets, production scanner/object storage, reader file authorization, runtime OpenAPI, and approval gates. See `apps/api/STUDIO.md` and GAP-021–025.
+
+S05 browser reliability follow-up: tree selection now clears the prior editor before loading the selected hierarchy node (`FR-PUB-002/003/005`; `studio`, `publication-tree`, `volume-editor`, `edition-editor`, `chapter-editor`). The rebuilt PWA and Studio browser test passed locally; both hosted foundation jobs passed on `b2f392a`.
 
 S03 identity implementation is in progress: verified-email registration, recovery, sessions, TOTP, optional passkeys, account preferences, invitation and administrator controls have live API code and local integration checks. FR-IAM-007 export/retention, FR-IAM-010 institutional SSO, legal policy approval, independent administrator-role approval and live OpenAPI reconciliation remain open. The `register`, `login`, `verify-email`, `recovery`, `profile`, `privacy`, `my-sessions`, `user-admin` and `roles-admin` wireframe flows have a connected PWA implementation.
 

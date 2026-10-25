@@ -39,6 +39,7 @@ jobs:
           .venv-contract/bin/python api/validate_contracts.py
           .venv-contract/bin/python -m pytest -q api/tests
       - run: npx playwright install --with-deps chromium && npm run test:e2e
+      - run: npm run test:e2e:studio
       - run: npm audit --audit-level=high
       - run: npm sbom --package-lock-only --omit=optional --sbom-format=cyclonedx > "$RUNNER_TEMP/arata-foundation-sbom.cdx.json"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
