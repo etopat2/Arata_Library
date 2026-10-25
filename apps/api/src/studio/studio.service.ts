@@ -613,6 +613,33 @@ export class StudioService {
     });
   }
 
+  async updateVolume(context: AuthContext, id: string, data: { title: string }, requestId: string) {
+    return this.transaction(async (client) => {
+      const volume = await client.query<{ publicationId: string }>(
+        `SELECT "publicationId" FROM app."Volume" WHERE id=$1`,
+        [id],
+      );
+      if (!volume.rows[0]) throw new HttpException('Volume not found', 404);
+      const publicationId = volume.rows[0].publicationId;
+      await this.role(client, context, publicationId, ['AUTHOR', 'EDITOR', 'PUBLISHER']);
+      const publication = await client.query<{ status: string }>(
+        `SELECT status FROM app."Publication" WHERE id=$1 FOR UPDATE`,
+        [publicationId],
+      );
+      if (!['DRAFT', 'FORTHCOMING', 'PUBLISHED'].includes(publication.rows[0]?.status ?? ''))
+        throw new HttpException('Volume cannot be edited in this publication state', 409);
+      const frozen = await client.query(
+        `SELECT 1 FROM app."Edition" e JOIN app."Revision" r ON r."editionId"=e.id
+         WHERE e."volumeId"=$1 AND r.status IN ('IN_REVIEW','APPROVED','PUBLISHED') LIMIT 1`,
+        [id],
+      );
+      if (frozen.rowCount) throw new HttpException('Reviewed volume metadata is frozen', 409);
+      await client.query(`UPDATE app."Volume" SET title=$2 WHERE id=$1`, [id, data.title]);
+      await this.audit(client, context, 'studio.volume_updated', 'Volume', id, requestId);
+      return { id };
+    });
+  }
+
   async reorderVolumes(
     context: AuthContext,
     publicationId: string,
@@ -718,6 +745,54 @@ export class StudioService {
         ],
       );
       await this.audit(client, context, 'studio.edition_created', 'Edition', id, requestId);
+      return { id };
+    });
+  }
+
+  async updateEdition(
+    context: AuthContext,
+    id: string,
+    data: {
+      editionCode?: string | undefined;
+      label?: string | undefined;
+      isbn13?: string | null | undefined;
+      publicationDate?: string | null | undefined;
+    },
+    requestId: string,
+  ) {
+    return this.transaction(async (client) => {
+      const publicationId = await this.editionPublication(client, id);
+      await this.role(client, context, publicationId, ['AUTHOR', 'EDITOR', 'PUBLISHER']);
+      const publication = await client.query<{ status: string }>(
+        `SELECT status FROM app."Publication" WHERE id=$1 FOR UPDATE`,
+        [publicationId],
+      );
+      if (!['DRAFT', 'FORTHCOMING', 'PUBLISHED'].includes(publication.rows[0]?.status ?? ''))
+        throw new HttpException('Edition cannot be edited in this publication state', 409);
+      const frozen = await client.query(
+        `SELECT 1 FROM app."Revision" WHERE "editionId"=$1
+         AND status IN ('IN_REVIEW','APPROVED','PUBLISHED') LIMIT 1`,
+        [id],
+      );
+      if (frozen.rowCount) throw new HttpException('Reviewed edition metadata is frozen', 409);
+      const columns = {
+        editionCode: '"editionCode"',
+        label: 'label',
+        isbn13: 'isbn13',
+        publicationDate: '"publicationDate"',
+      } as const;
+      const changes = Object.entries(data).filter(([, value]) => value !== undefined) as [
+        keyof typeof columns,
+        unknown,
+      ][];
+      if (!changes.length) throw new HttpException('No edition changes supplied', 400);
+      const values: unknown[] = [id];
+      const assignments = changes.map(([key, value]) => {
+        values.push(value);
+        return `${columns[key]}=$${values.length}`;
+      });
+      await client.query(`UPDATE app."Edition" SET ${assignments.join(',')} WHERE id=$1`, values);
+      await this.audit(client, context, 'studio.edition_updated', 'Edition', id, requestId);
       return { id };
     });
   }
@@ -1059,6 +1134,48 @@ export class StudioService {
     });
   }
 
+  async updateChapter(
+    context: AuthContext,
+    id: string,
+    data: {
+      slug?: string | undefined;
+      title?: string | undefined;
+      previewText?: string | null | undefined;
+      summary?: string | null | undefined;
+      learningOutcomes?: string[] | undefined;
+      prerequisites?: string[] | undefined;
+    },
+    requestId: string,
+  ) {
+    return this.transaction(async (client) => {
+      const revision = await this.revision(client, await this.chapterRevision(client, id), true);
+      await this.role(client, context, revision.publicationId, ['AUTHOR', 'EDITOR']);
+      if (revision.status !== 'DRAFT')
+        throw new HttpException('Only draft chapters can be edited', 409);
+      const columns = {
+        slug: 'slug',
+        title: 'title',
+        previewText: '"previewText"',
+        summary: 'summary',
+        learningOutcomes: '"learningOutcomes"',
+        prerequisites: 'prerequisites',
+      } as const;
+      const changes = Object.entries(data).filter(([, value]) => value !== undefined) as [
+        keyof typeof columns,
+        unknown,
+      ][];
+      if (!changes.length) throw new HttpException('No chapter changes supplied', 400);
+      const values: unknown[] = [id];
+      const assignments = changes.map(([key, value]) => {
+        values.push(value);
+        return `${columns[key]}=$${values.length}`;
+      });
+      await client.query(`UPDATE app."Chapter" SET ${assignments.join(',')} WHERE id=$1`, values);
+      await this.audit(client, context, 'studio.chapter_updated', 'Chapter', id, requestId);
+      return { id };
+    });
+  }
+
   async reorderChapters(
     context: AuthContext,
     revisionId: string,
@@ -1311,6 +1428,10 @@ export class StudioService {
 
   async submit(context: AuthContext, revisionId: string, requestId: string) {
     return this.transaction(async (client) => {
+      const publicationId = (await this.revision(client, revisionId)).publicationId;
+      await client.query(`SELECT id FROM app."Publication" WHERE id=$1 FOR UPDATE`, [
+        publicationId,
+      ]);
       const revision = await this.revision(client, revisionId, true);
       await this.role(client, context, revision.publicationId, ['AUTHOR', 'EDITOR']);
       if (revision.status !== 'DRAFT') throw new HttpException('Only drafts may be submitted', 409);

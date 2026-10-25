@@ -136,7 +136,10 @@ export interface StudioPublicationDetail {
   collections: { id: string; title: string }[];
   contributors: { id: string; displayName: string; role: string }[];
   volumes: StudioTree['volumes'];
-  editions: StudioTree['editions'];
+  editions: (StudioTree['editions'][number] & {
+    isbn13: string | null;
+    publicationDate: string | null;
+  })[];
   revisions: StudioTree['revisions'];
 }
 export interface StudioRevisionDetail {
@@ -147,7 +150,16 @@ export interface StudioRevisionDetail {
     status: string;
     manifestHash: string | null;
   };
-  chapters: { id: string; ordinal: number; title: string; slug: string }[];
+  chapters: {
+    id: string;
+    ordinal: number;
+    title: string;
+    slug: string;
+    previewText: string | null;
+    summary: string | null;
+    learningOutcomes: string[];
+    prerequisites: string[];
+  }[];
   lessons: {
     id: string;
     chapterId: string;

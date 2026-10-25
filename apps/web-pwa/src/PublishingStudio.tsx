@@ -1072,6 +1072,47 @@ export function PublishingStudio() {
           )}
           {selected?.type === 'volume' && publicationId && (
             <div className="space-y-5">
+              {detail &&
+                !detail.revisions.some(
+                  (item) =>
+                    detail.editions.some(
+                      (edition) =>
+                        edition.id === item.editionId && edition.volumeId === selected.id,
+                    ) && ['IN_REVIEW', 'APPROVED', 'PUBLISHED'].includes(item.status),
+                ) && (
+                  <FormBox title="Edit volume title">
+                    <form
+                      key={selected.id}
+                      className="grid gap-3"
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        const form = new FormData(event.currentTarget);
+                        void run(
+                          () =>
+                            api.studio.change(`volumes/${selected.id}`, {
+                              title: value(form, 'title'),
+                            }),
+                          'Volume title saved',
+                        );
+                      }}
+                    >
+                      <label className={field}>
+                        Volume title
+                        <input
+                          className={input}
+                          name="title"
+                          defaultValue={
+                            detail.volumes.find((item) => item.id === selected.id)?.title ?? ''
+                          }
+                          required
+                        />
+                      </label>
+                      <button disabled={busy} className={button}>
+                        Save volume
+                      </button>
+                    </form>
+                  </FormBox>
+                )}
               <FormBox title="Add an edition to this volume">
                 <EditionForm
                   publicationId={publicationId}
@@ -1107,6 +1148,84 @@ export function PublishingStudio() {
           )}
           {selected?.type === 'edition' && editionId && (
             <div className="grid gap-5 xl:grid-cols-2">
+              {detail &&
+                !detail.revisions.some(
+                  (item) =>
+                    item.editionId === editionId &&
+                    ['IN_REVIEW', 'APPROVED', 'PUBLISHED'].includes(item.status),
+                ) && (
+                  <FormBox title="Edit edition metadata">
+                    <form
+                      key={editionId}
+                      className="grid gap-3"
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        const form = new FormData(event.currentTarget);
+                        const date = value(form, 'publicationDate');
+                        void run(
+                          () =>
+                            api.studio.change(`editions/${editionId}`, {
+                              editionCode: value(form, 'editionCode'),
+                              label: value(form, 'label'),
+                              isbn13: value(form, 'isbn13') || null,
+                              publicationDate: date ? `${date}T00:00:00.000Z` : null,
+                            }),
+                          'Edition metadata saved',
+                        );
+                      }}
+                    >
+                      <label className={field}>
+                        Edition code
+                        <input
+                          className={input}
+                          name="editionCode"
+                          defaultValue={
+                            detail.editions.find((item) => item.id === editionId)?.editionCode ?? ''
+                          }
+                          required
+                        />
+                      </label>
+                      <label className={field}>
+                        Edition label
+                        <input
+                          className={input}
+                          name="label"
+                          defaultValue={
+                            detail.editions.find((item) => item.id === editionId)?.label ?? ''
+                          }
+                          required
+                        />
+                      </label>
+                      <label className={field}>
+                        ISBN-13 (optional)
+                        <input
+                          className={input}
+                          name="isbn13"
+                          pattern="97[89][0-9]{10}"
+                          defaultValue={
+                            detail.editions.find((item) => item.id === editionId)?.isbn13 ?? ''
+                          }
+                        />
+                      </label>
+                      <label className={field}>
+                        Publication date in UTC (optional)
+                        <input
+                          className={input}
+                          name="publicationDate"
+                          type="date"
+                          defaultValue={
+                            detail.editions
+                              .find((item) => item.id === editionId)
+                              ?.publicationDate?.slice(0, 10) ?? ''
+                          }
+                        />
+                      </label>
+                      <button disabled={busy} className={button}>
+                        Save edition
+                      </button>
+                    </form>
+                  </FormBox>
+                )}
               <FormBox title="New draft revision">
                 <form
                   className="grid gap-3"
@@ -1222,6 +1341,109 @@ export function PublishingStudio() {
           )}
           {revisionId && revision && (
             <div className="space-y-5">
+              {selected?.type === 'chapter' &&
+                chapterId &&
+                revision.revision.status === 'DRAFT' && (
+                  <FormBox title="Edit chapter metadata">
+                    <form
+                      key={chapterId}
+                      className="grid gap-3"
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        const form = new FormData(event.currentTarget);
+                        const lines = (name: string) =>
+                          value(form, name)
+                            .split(/\r?\n/)
+                            .map((line) => line.trim())
+                            .filter(Boolean);
+                        void run(
+                          () =>
+                            api.studio.change(`chapters/${chapterId}`, {
+                              slug: value(form, 'slug'),
+                              title: value(form, 'title'),
+                              summary: value(form, 'summary') || null,
+                              previewText: value(form, 'previewText') || null,
+                              learningOutcomes: lines('learningOutcomes'),
+                              prerequisites: lines('prerequisites'),
+                            }),
+                          'Chapter metadata saved',
+                        );
+                      }}
+                    >
+                      <label className={field}>
+                        Chapter slug
+                        <input
+                          className={input}
+                          name="slug"
+                          defaultValue={
+                            revision.chapters.find((item) => item.id === chapterId)?.slug ?? ''
+                          }
+                          required
+                          pattern="[a-z0-9][a-z0-9-]*"
+                        />
+                      </label>
+                      <label className={field}>
+                        Chapter title
+                        <input
+                          className={input}
+                          name="title"
+                          defaultValue={
+                            revision.chapters.find((item) => item.id === chapterId)?.title ?? ''
+                          }
+                          required
+                        />
+                      </label>
+                      <label className={field}>
+                        Chapter summary (optional)
+                        <textarea
+                          className={input}
+                          name="summary"
+                          defaultValue={
+                            revision.chapters.find((item) => item.id === chapterId)?.summary ?? ''
+                          }
+                        />
+                      </label>
+                      <label className={field}>
+                        Public sample preview (optional)
+                        <textarea
+                          className={input}
+                          name="previewText"
+                          defaultValue={
+                            revision.chapters.find((item) => item.id === chapterId)?.previewText ??
+                            ''
+                          }
+                        />
+                      </label>
+                      <label className={field}>
+                        Learning outcomes (one per line)
+                        <textarea
+                          className={input}
+                          name="learningOutcomes"
+                          defaultValue={
+                            revision.chapters
+                              .find((item) => item.id === chapterId)
+                              ?.learningOutcomes.join('\n') ?? ''
+                          }
+                        />
+                      </label>
+                      <label className={field}>
+                        Prerequisites (one per line)
+                        <textarea
+                          className={input}
+                          name="prerequisites"
+                          defaultValue={
+                            revision.chapters
+                              .find((item) => item.id === chapterId)
+                              ?.prerequisites.join('\n') ?? ''
+                          }
+                        />
+                      </label>
+                      <button disabled={busy} className={button}>
+                        Save chapter
+                      </button>
+                    </form>
+                  </FormBox>
+                )}
               {selected?.type === 'revision' && revision.revision.status === 'DRAFT' && (
                 <ReorderList
                   title="Chapter order"

@@ -55,7 +55,14 @@ editing remains open. A draft publication's title, subtitle, description,
 subject, keywords, language, licence, source reference and copyright notice
 can be edited under a scoped Studio role. Optional text may be explicitly
 cleared. The API freezes these fields once a revision enters review and audits
-every update; edition, volume and chapter metadata editing remains open.
+every update. Scoped editors can also rename a volume, edit an edition's code,
+label, ISBN and UTC publication date, and update a draft chapter's slug, title,
+summary, public sample text, learning outcomes and prerequisites. Optional
+edition/chapter fields can be cleared explicitly. The API refuses changes to
+edition or volume metadata after a related revision enters review and refuses
+chapter changes outside DRAFT. Submission and bibliographic edits serialize
+on the publication row. Direct-SQL protection for every manifest-bound
+metadata field remains a release gap (GAP-025).
 An author may mark the first edition in a draft standalone book or volume as
 the initial default. Changing an existing default requires a publisher, a
 reason and explicit confirmation through `PUT /api/v1/studio/editions/:id/default`.

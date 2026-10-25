@@ -215,6 +215,33 @@ describe('Publishing Studio editorial boundaries', () => {
     });
     expect(edition.status).toBe(201);
     editionId = edition.data.id;
+    const editionMetadataPath = `/studio/editions/${editionId}`;
+    expect(
+      (await call('outsider', editionMetadataPath, 'PATCH', { label: 'Tampered' })).status,
+    ).toBe(403);
+    expect((await call('author', editionMetadataPath, 'PATCH', {})).status).toBe(400);
+    expect((await call('author', editionMetadataPath, 'PATCH', { isbn13: 'invalid' })).status).toBe(
+      400,
+    );
+    expect(
+      (
+        await call('author', editionMetadataPath, 'PATCH', {
+          label: '[TEST] Updated first edition',
+          publicationDate: '2026-10-25T00:00:00.000Z',
+        })
+      ).status,
+    ).toBe(200);
+    expect(
+      (await call('author', editionMetadataPath, 'PATCH', { publicationDate: null })).status,
+    ).toBe(200);
+    const editedEdition = await call('author', `/studio/publications/${publicationId}`);
+    expect(
+      editedEdition.data.editions.find((item: { id: string }) => item.id === editionId).label,
+    ).toBe('[TEST] Updated first edition');
+    expect(
+      editedEdition.data.editions.find((item: { id: string }) => item.id === editionId)
+        .publicationDate,
+    ).toBeNull();
     const revision = await call('author', `/studio/editions/${editionId}/revisions`, 'POST', {
       changeSummary: '[TEST] Initial edition',
     });
@@ -227,6 +254,37 @@ describe('Publishing Studio editorial boundaries', () => {
     });
     expect(chapter.status).toBe(201);
     chapterId = chapter.data.id;
+    const chapterMetadataPath = `/studio/chapters/${chapterId}`;
+    expect(
+      (await call('outsider', chapterMetadataPath, 'PATCH', { title: 'Tampered' })).status,
+    ).toBe(403);
+    expect(
+      (await call('author', chapterMetadataPath, 'PATCH', { slug: 'Invalid Slug' })).status,
+    ).toBe(400);
+    expect(
+      (
+        await call('author', chapterMetadataPath, 'PATCH', {
+          title: '[TEST] Revised introduction',
+          summary: 'Draft summary',
+          learningOutcomes: ['Understand revisions'],
+          prerequisites: ['Read the preface'],
+        })
+      ).status,
+    ).toBe(200);
+    expect((await call('author', chapterMetadataPath, 'PATCH', { summary: null })).status).toBe(
+      200,
+    );
+    const editedChapter = await call('author', `/studio/revisions/${revisionId}`);
+    expect(
+      editedChapter.data.chapters.find((item: { id: string }) => item.id === chapterId).title,
+    ).toBe('[TEST] Revised introduction');
+    expect(
+      editedChapter.data.chapters.find((item: { id: string }) => item.id === chapterId).summary,
+    ).toBeNull();
+    expect(
+      editedChapter.data.chapters.find((item: { id: string }) => item.id === chapterId)
+        .learningOutcomes,
+    ).toEqual(['Understand revisions']);
     const lesson = await call('author', `/studio/chapters/${chapterId}/lessons`, 'POST', {
       ordinal: 1,
       title: 'Safe lesson',
@@ -258,6 +316,12 @@ describe('Publishing Studio editorial boundaries', () => {
     ).toBe(201);
     const submitted = await call('author', `/studio/revisions/${revisionId}/submit`, 'POST');
     expect(submitted.status).toBe(201);
+    expect((await call('author', editionMetadataPath, 'PATCH', { label: 'Too late' })).status).toBe(
+      409,
+    );
+    expect((await call('author', chapterMetadataPath, 'PATCH', { title: 'Too late' })).status).toBe(
+      409,
+    );
     expect(
       (
         await call('author', `/studio/revisions/${revisionId}/review`, 'POST', {
@@ -689,6 +753,19 @@ describe('Publishing Studio editorial boundaries', () => {
     });
     expect(first.status).toBe(201);
     expect(second.status).toBe(201);
+    const volumeMetadataPath = `/studio/volumes/${first.data.id}`;
+    expect(
+      (await call('outsider', volumeMetadataPath, 'PATCH', { title: 'Tampered' })).status,
+    ).toBe(403);
+    expect((await call('author', volumeMetadataPath, 'PATCH', { title: '' })).status).toBe(400);
+    expect(
+      (await call('author', volumeMetadataPath, 'PATCH', { title: '[TEST] Renamed first volume' }))
+        .status,
+    ).toBe(200);
+    const renamedVolume = await call('author', `/studio/publications/${pub}`);
+    expect(
+      renamedVolume.data.volumes.find((item: { id: string }) => item.id === first.data.id).title,
+    ).toBe('[TEST] Renamed first volume');
     const volumes = [first.data.id, second.data.id];
     const volumePath = `/studio/publications/${pub}/volumes/order`;
     expect(
@@ -908,6 +985,14 @@ describe('Publishing Studio editorial boundaries', () => {
           expectedIds: [editionId],
         })
       ).status,
+    ).toBe(409);
+    expect((await call('author', `/studio/revisions/${rev}/submit`, 'POST')).status).toBe(201);
+    expect((await call('author', volumeMetadataPath, 'PATCH', { title: 'Too late' })).status).toBe(
+      409,
+    );
+    expect(
+      (await call('author', `/studio/editions/${edition.data.id}`, 'PATCH', { label: 'Too late' }))
+        .status,
     ).toBe(409);
   }, 30000);
 });

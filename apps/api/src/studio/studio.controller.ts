@@ -77,6 +77,7 @@ const contributor = z.strictObject({
   ordinal: z.number().int().min(0).max(10000),
 });
 const volume = z.strictObject({ ordinal: positive, title: text() });
+const volumePatch = z.strictObject({ title: text() });
 const edition = z.strictObject({
   volumeId: uuid.nullable().optional(),
   editionCode: text(60),
@@ -87,6 +88,18 @@ const edition = z.strictObject({
     .optional(),
   isDefault: z.boolean().optional(),
 });
+const editionPatch = z
+  .strictObject({
+    editionCode: text(60).optional(),
+    label: text(200).optional(),
+    isbn13: z
+      .string()
+      .regex(/^97[89]\d{10}$/)
+      .nullable()
+      .optional(),
+    publicationDate: z.iso.datetime({ offset: true }).nullable().optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0);
 const revision = z.strictObject({ changeSummary: text(4000), fromRevisionId: uuid.optional() });
 const chapter = z.strictObject({
   ordinal: positive,
@@ -97,6 +110,16 @@ const chapter = z.strictObject({
   learningOutcomes: z.array(text(500)).max(50).optional(),
   prerequisites: z.array(text(500)).max(50).optional(),
 });
+const chapterPatch = z
+  .strictObject({
+    slug: slug.optional(),
+    title: text().optional(),
+    previewText: text(8000).nullable().optional(),
+    summary: text(5000).nullable().optional(),
+    learningOutcomes: z.array(text(500)).max(50).optional(),
+    prerequisites: z.array(text(500)).max(50).optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0);
 const block = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('paragraph'), text: text(100000) }),
   z.strictObject({
@@ -335,6 +358,21 @@ export class StudioController {
       ),
     );
   }
+  @Patch('volumes/:id') async updateVolume(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    return wrap(
+      req,
+      await this.studio.updateVolume(
+        await this.auth(req, true),
+        parse(uuid, id),
+        parse(volumePatch, body),
+        req.id,
+      ),
+    );
+  }
   @Post('publications/:id/editions') async addEdition(
     @Req() req: Request,
     @Param('id') id: string,
@@ -384,6 +422,21 @@ export class StudioController {
       ),
     );
   }
+  @Patch('editions/:id') async updateEdition(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    return wrap(
+      req,
+      await this.studio.updateEdition(
+        await this.auth(req, true),
+        parse(uuid, id),
+        parse(editionPatch, body),
+        req.id,
+      ),
+    );
+  }
   @Post('editions/:id/revisions') async addRevision(
     @Req() req: Request,
     @Param('id') id: string,
@@ -410,6 +463,21 @@ export class StudioController {
         await this.auth(req, true),
         parse(uuid, id),
         parse(chapter, body),
+        req.id,
+      ),
+    );
+  }
+  @Patch('chapters/:id') async updateChapter(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    return wrap(
+      req,
+      await this.studio.updateChapter(
+        await this.auth(req, true),
+        parse(uuid, id),
+        parse(chapterPatch, body),
         req.id,
       ),
     );

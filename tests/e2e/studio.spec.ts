@@ -134,26 +134,57 @@ test('uses the hierarchical Studio to create a persistent standalone draft', asy
     exact: true,
   });
   await editionNode.click();
-  await editionNode.locator('..').getByRole('button', { name: 'Revision 1 · DRAFT' }).click();
+  const editionForm = page.getByRole('heading', { name: 'Edit edition metadata' }).locator('..');
+  await editionForm.getByLabel('Edition label').fill(`[TEST] Edited edition ${suffix}`);
+  await editionForm.getByRole('button', { name: 'Save edition' }).click();
+  await expect(page.getByRole('status')).toContainText('Edition metadata saved');
+  await page
+    .getByRole('button', { name: `2. [TEST] Edited edition ${suffix}`, exact: true })
+    .locator('..')
+    .getByRole('button', { name: 'Revision 1 · DRAFT' })
+    .click();
   await expect(page.getByRole('heading', { name: 'Chapter order' })).toBeVisible();
   await page.getByRole('button', { name: 'Move Beta up' }).click();
   await expect(page.getByRole('status')).toContainText('Chapter order saved');
+  await page
+    .getByRole('button', { name: `2. [TEST] Edited edition ${suffix}`, exact: true })
+    .locator('..')
+    .getByRole('button', { name: '2. Alpha', exact: true })
+    .click();
+  const chapterForm = page.getByRole('heading', { name: 'Edit chapter metadata' }).locator('..');
+  await chapterForm.getByLabel('Chapter title').fill('[TEST] Edited Alpha');
+  await chapterForm.getByLabel('Chapter summary (optional)').fill('Synthetic revised summary');
+  await chapterForm.getByRole('button', { name: 'Save chapter' }).click();
+  await expect(page.getByRole('status')).toContainText('Chapter metadata saved');
   const ordered = new pg.Client({ connectionString: env.TEST_DATABASE_URL });
   await ordered.connect();
   try {
-    const editions = await ordered.query<{ id: string; ordinal: number; isDefault: boolean }>(
-      `SELECT id,ordinal,"isDefault" FROM app."Edition" WHERE "publicationId"=$1 ORDER BY ordinal`,
+    const editions = await ordered.query<{
+      id: string;
+      ordinal: number;
+      isDefault: boolean;
+      label: string;
+    }>(
+      `SELECT id,ordinal,"isDefault",label FROM app."Edition" WHERE "publicationId"=$1 ORDER BY ordinal`,
       [browserPublicationId],
     );
     expect(editions.rows.map((row) => row.id)).toEqual([...browserEditionIds].reverse());
     expect(editions.rows.map((row) => row.ordinal)).toEqual([1, 2]);
     expect(editions.rows.map((row) => row.isDefault)).toEqual([true, false]);
-    const rows = await ordered.query<{ id: string; ordinal: number }>(
-      `SELECT id,ordinal FROM app."Chapter" WHERE "revisionId"=$1 ORDER BY ordinal`,
+    expect(editions.rows[1]?.label).toBe(`[TEST] Edited edition ${suffix}`);
+    const rows = await ordered.query<{
+      id: string;
+      ordinal: number;
+      title: string;
+      summary: string | null;
+    }>(
+      `SELECT id,ordinal,title,summary FROM app."Chapter" WHERE "revisionId"=$1 ORDER BY ordinal`,
       [browserRevisionId],
     );
     expect(rows.rows.map((row) => row.id)).toEqual([...browserChapterIds].reverse());
     expect(rows.rows.map((row) => row.ordinal)).toEqual([1, 2]);
+    expect(rows.rows[1]?.title).toBe('[TEST] Edited Alpha');
+    expect(rows.rows[1]?.summary).toBe('Synthetic revised summary');
   } finally {
     await ordered.end();
   }
@@ -190,5 +221,37 @@ test('uses the hierarchical Studio to create a persistent standalone draft', asy
     expect(memberships.rows).toEqual([{ collectionId: null }]);
   } finally {
     await verify.end();
+  }
+  await page.getByRole('button', { name: collectionTitle }).click();
+  const seriesForm = page.getByRole('heading', { name: 'New publication' }).locator('..');
+  await seriesForm.getByLabel('Title').fill(`[TEST] Browser series ${suffix}`);
+  await seriesForm.getByLabel('Slug').fill(`studio-browser-series-${suffix}`);
+  await seriesForm.getByLabel('Type').selectOption('SERIES');
+  await seriesForm.getByLabel('Licence code').fill('TEST-ONLY');
+  await seriesForm.getByLabel('Content source reference').fill('TEST-SOURCE');
+  await seriesForm.getByLabel('Copyright notice').fill('[TEST] Synthetic rights');
+  await seriesForm.getByRole('button', { name: 'Create draft' }).click();
+  await expect(page.getByRole('status')).toContainText('Draft publication created');
+  await page.getByRole('button', { name: `[TEST] Browser series ${suffix}` }).click();
+  const newVolume = page.getByRole('heading', { name: 'Add a volume' }).locator('..');
+  await newVolume.getByLabel('Volume number').fill('1');
+  await newVolume.getByLabel('Title').fill('[TEST] First browser volume');
+  await newVolume.getByRole('button', { name: 'Create volume' }).click();
+  await expect(page.getByRole('status')).toContainText('Volume created');
+  await page.getByRole('button', { name: 'Volume 1: [TEST] First browser volume' }).click();
+  const volumeForm = page.getByRole('heading', { name: 'Edit volume title' }).locator('..');
+  await volumeForm.getByLabel('Volume title').fill('[TEST] Edited browser volume');
+  await volumeForm.getByRole('button', { name: 'Save volume' }).click();
+  await expect(page.getByRole('status')).toContainText('Volume title saved');
+  const verifyVolume = new pg.Client({ connectionString: env.TEST_DATABASE_URL });
+  await verifyVolume.connect();
+  try {
+    const volume = await verifyVolume.query<{ title: string }>(
+      `SELECT v.title FROM app."Volume" v JOIN app."Publication" p ON p.id=v."publicationId" WHERE p.slug=$1`,
+      [`studio-browser-series-${suffix}`],
+    );
+    expect(volume.rows).toEqual([{ title: '[TEST] Edited browser volume' }]);
+  } finally {
+    await verifyVolume.end();
   }
 });
