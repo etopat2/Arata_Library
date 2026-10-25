@@ -302,6 +302,36 @@ describe('Publishing Studio editorial boundaries', () => {
     ).toBe(409);
     expect(
       (
+        await call('author', `/studio/publications/${publicationId}/editions`, 'POST', {
+          editionCode: '2',
+          label: 'Unpublished second edition',
+          isDefault: true,
+        })
+      ).status,
+    ).toBe(409);
+    const unpublishedEdition = await call(
+      'author',
+      `/studio/publications/${publicationId}/editions`,
+      'POST',
+      {
+        editionCode: '2',
+        label: 'Unpublished second edition',
+        isDefault: false,
+      },
+    );
+    expect(unpublishedEdition.status).toBe(201);
+    const defaultPath = `/studio/editions/${unpublishedEdition.data.id}/default`;
+    expect(
+      (await call('author', defaultPath, 'PUT', { reason: 'Test', confirm: true })).status,
+    ).toBe(403);
+    expect(
+      (await call('publisher', defaultPath, 'PUT', { reason: 'Test', confirm: false })).status,
+    ).toBe(400);
+    expect(
+      (await call('publisher', defaultPath, 'PUT', { reason: 'Test', confirm: true })).status,
+    ).toBe(409);
+    expect(
+      (
         await call('author', `/studio/chapters/${chapterId}/lessons`, 'POST', {
           ordinal: 2,
           title: 'Tamper',
@@ -709,6 +739,7 @@ describe('Publishing Studio editorial boundaries', () => {
       volumeId: first.data.id,
       editionCode: '1',
       label: 'First edition',
+      isDefault: true,
     });
     expect(edition.status).toBe(201);
     const laterEdition = await call('author', `/studio/publications/${pub}/editions`, 'POST', {
@@ -717,6 +748,39 @@ describe('Publishing Studio editorial boundaries', () => {
       label: 'Second edition',
     });
     expect(laterEdition.status).toBe(201);
+    expect(
+      (
+        await call('author', `/studio/publications/${pub}/editions`, 'POST', {
+          volumeId: first.data.id,
+          editionCode: '3',
+          label: 'Attempted implicit default',
+          isDefault: true,
+        })
+      ).status,
+    ).toBe(409);
+    const publisherRole = (
+      await fixture.query<{ id: string }>(`SELECT id FROM app."Role" WHERE code='PUBLISHER'`)
+    ).rows[0]!;
+    await fixture.query(
+      `INSERT INTO app."RoleAssignment" (id,"userId","roleId","scopeType","scopeId")
+       VALUES (gen_random_uuid(),$1,$2,'PUBLICATION',$3)`,
+      [users.publisher, publisherRole.id, pub],
+    );
+    const defaultPath = `/studio/editions/${laterEdition.data.id}/default`;
+    expect(
+      (await call('author', defaultPath, 'PUT', { reason: 'Test switch', confirm: true })).status,
+    ).toBe(403);
+    expect(
+      (await call('publisher', defaultPath, 'PUT', { reason: 'Test switch', confirm: true }))
+        .status,
+    ).toBe(200);
+    const defaults = (
+      await fixture.query<{ id: string }>(
+        `SELECT id FROM app."Edition" WHERE "volumeId"=$1 AND "isDefault"=true`,
+        [first.data.id],
+      )
+    ).rows;
+    expect(defaults).toEqual([{ id: laterEdition.data.id }]);
     const editions = [edition.data.id, laterEdition.data.id];
     const editionPath = `/studio/publications/${pub}/editions/order`;
     expect(

@@ -670,18 +670,30 @@ export class StudioService {
   ) {
     return this.transaction(async (client) => {
       await this.role(client, context, publicationId, ['AUTHOR', 'EDITOR', 'PUBLISHER']);
-      const pub = await client.query<{ kind: string }>(
-        `SELECT kind FROM app."Publication" WHERE id=$1 FOR UPDATE`,
+      const pub = await client.query<{ kind: string; status: string }>(
+        `SELECT kind,status FROM app."Publication" WHERE id=$1 FOR UPDATE`,
         [publicationId],
       );
       if (!pub.rows[0]) throw new HttpException('Publication not found', 404);
       if ((pub.rows[0].kind === 'SERIES') !== !!data.volumeId)
         throw new HttpException('Edition volume does not match publication kind', 409);
-      if (data.isDefault)
-        await client.query(
-          `UPDATE app."Edition" SET "isDefault"=false WHERE "publicationId"=$1 AND "volumeId" IS NOT DISTINCT FROM $2::uuid`,
+      if (data.isDefault) {
+        if (pub.rows[0].status !== 'DRAFT')
+          throw new HttpException(
+            'Create the edition before requesting a published default change',
+            409,
+          );
+        const existing = await client.query(
+          `SELECT 1 FROM app."Edition" WHERE "publicationId"=$1
+           AND "volumeId" IS NOT DISTINCT FROM $2::uuid AND "isDefault"=true LIMIT 1`,
           [publicationId, data.volumeId ?? null],
         );
+        if (existing.rowCount)
+          throw new HttpException(
+            'Use the confirmed publisher action to change the default edition',
+            409,
+          );
+      }
       const ordinal = Number(
         (
           await client.query<{ ordinal: number }>(
@@ -707,6 +719,64 @@ export class StudioService {
       );
       await this.audit(client, context, 'studio.edition_created', 'Edition', id, requestId);
       return { id };
+    });
+  }
+
+  async setDefaultEdition(
+    context: AuthContext,
+    editionId: string,
+    reason: string,
+    requestId: string,
+  ) {
+    return this.transaction(async (client) => {
+      const found = await client.query<{ publicationId: string }>(
+        `SELECT "publicationId" FROM app."Edition" WHERE id=$1`,
+        [editionId],
+      );
+      if (!found.rows[0]) throw new HttpException('Edition not found', 404);
+      const publicationId = found.rows[0].publicationId;
+      await this.role(client, context, publicationId, ['PUBLISHER']);
+      const publication = await client.query<{ status: string }>(
+        `SELECT status FROM app."Publication" WHERE id=$1 FOR UPDATE`,
+        [publicationId],
+      );
+      const edition = await client.query<{
+        volumeId: string | null;
+        isDefault: boolean;
+        currentStatus: string | null;
+      }>(
+        `SELECT e."volumeId",e."isDefault",r.status AS "currentStatus"
+         FROM app."Edition" e LEFT JOIN app."Revision" r ON r.id=e."currentRevisionId"
+         WHERE e.id=$1 AND e."publicationId"=$2 FOR UPDATE OF e`,
+        [editionId, publicationId],
+      );
+      if (!edition.rows[0]) throw new HttpException('Edition not found', 404);
+      if (edition.rows[0].isDefault) throw new HttpException('Edition is already the default', 409);
+      if (publication.rows[0]?.status === 'PUBLISHED') {
+        if (edition.rows[0].currentStatus !== 'PUBLISHED')
+          throw new HttpException(
+            'Publish the target edition before changing the public default',
+            409,
+          );
+      } else if (publication.rows[0]?.status !== 'DRAFT') {
+        throw new HttpException('Default edition cannot change in this publication state', 409);
+      }
+      await client.query(
+        `UPDATE app."Edition" SET "isDefault"=false WHERE "publicationId"=$1
+         AND "volumeId" IS NOT DISTINCT FROM $2::uuid AND "isDefault"=true`,
+        [publicationId, edition.rows[0].volumeId],
+      );
+      await client.query(`UPDATE app."Edition" SET "isDefault"=true WHERE id=$1`, [editionId]);
+      await this.audit(
+        client,
+        context,
+        'studio.edition_default_changed',
+        'Edition',
+        editionId,
+        requestId,
+        reason,
+      );
+      return { id: editionId };
     });
   }
 

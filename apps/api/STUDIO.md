@@ -56,6 +56,13 @@ subject, keywords, language, licence, source reference and copyright notice
 can be edited under a scoped Studio role. Optional text may be explicitly
 cleared. The API freezes these fields once a revision enters review and audits
 every update; edition, volume and chapter metadata editing remains open.
+An author may mark the first edition in a draft standalone book or volume as
+the initial default. Changing an existing default requires a publisher, a
+reason and explicit confirmation through `PUT /api/v1/studio/editions/:id/default`.
+The change is atomic, scoped to the edition's book or volume and audited. A
+public default can only move to an edition with a published current revision.
+The browser offers the confirmed action on nondefault editions. Archiving and
+its confirmation workflow remain open.
 
 Uploads use a declared SHA-256 digest, a unique idempotency key, and sequential
 8 MiB chunks; the limit is 200 MiB. The returned upload and job IDs drive status,

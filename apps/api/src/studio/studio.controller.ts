@@ -368,6 +368,22 @@ export class StudioController {
       ),
     );
   }
+  @Put('editions/:id/default') async setDefaultEdition(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    const data = parse(reason, body);
+    return wrap(
+      req,
+      await this.studio.setDefaultEdition(
+        await this.auth(req, true),
+        parse(uuid, id),
+        data.reason,
+        req.id,
+      ),
+    );
+  }
   @Post('editions/:id/revisions') async addRevision(
     @Req() req: Request,
     @Param('id') id: string,

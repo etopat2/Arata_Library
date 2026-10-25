@@ -985,7 +985,15 @@ export function PublishingStudio() {
                     </button>
                   </form>
                 ) : (
-                  <EditionForm publicationId={publicationId!} busy={busy} submit={submit} />
+                  <EditionForm
+                    publicationId={publicationId!}
+                    busy={busy}
+                    submit={submit}
+                    allowInitialDefault={
+                      detail.publication.status === 'DRAFT' &&
+                      !detail.editions.some((edition) => !edition.volumeId && edition.isDefault)
+                    }
+                  />
                 )}
               </FormBox>
               <FormBox title="Upload and import">
@@ -1070,6 +1078,12 @@ export function PublishingStudio() {
                   volumeId={selected.id}
                   busy={busy}
                   submit={submit}
+                  allowInitialDefault={
+                    detail?.publication.status === 'DRAFT' &&
+                    !detail.editions.some(
+                      (edition) => edition.volumeId === selected.id && edition.isDefault,
+                    )
+                  }
                 />
               </FormBox>
               {detail &&
@@ -1130,6 +1144,47 @@ export function PublishingStudio() {
                   </button>
                 </form>
               </FormBox>
+              {detail && !detail.editions.find((item) => item.id === editionId)?.isDefault && (
+                <FormBox title="Set default edition">
+                  {detail.publication.status === 'PUBLISHED' &&
+                  !detail.editions.find((item) => item.id === editionId)?.currentRevisionId ? (
+                    <p className="text-sm text-slate-600">
+                      Publish this edition before making it the public default.
+                    </p>
+                  ) : (
+                    <form
+                      className="grid gap-3"
+                      onSubmit={(event) =>
+                        submit(
+                          event,
+                          (form) =>
+                            api.studio.replace(`editions/${editionId}/default`, {
+                              reason: value(form, 'reason'),
+                              confirm: form.get('confirm') === 'on',
+                            }),
+                          'Default edition changed',
+                        )
+                      }
+                    >
+                      <p className="text-sm text-slate-600">
+                        A publisher must confirm this change. For a published book, the target
+                        edition must already be published.
+                      </p>
+                      <label className={field}>
+                        Reason
+                        <input className={input} name="reason" required />
+                      </label>
+                      <label className="flex items-center gap-2 text-sm">
+                        <input name="confirm" type="checkbox" required />
+                        Confirm default edition change
+                      </label>
+                      <button disabled={busy} className={button}>
+                        Set as default
+                      </button>
+                    </form>
+                  )}
+                </FormBox>
+              )}
               {upload?.assetId && (
                 <FormBox title="Import approved document">
                   <form
@@ -1767,10 +1822,12 @@ function EditionForm({
   volumeId,
   busy,
   submit,
+  allowInitialDefault,
 }: {
   publicationId: string;
   volumeId?: string;
   busy: boolean;
+  allowInitialDefault: boolean;
   submit: (
     event: FormEvent<HTMLFormElement>,
     action: (data: FormData) => Promise<unknown>,
@@ -1807,10 +1864,12 @@ function EditionForm({
         ISBN-13, if assigned
         <input className={input} name="isbn13" pattern="97[89][0-9]{10}" />
       </label>
-      <label className="flex items-center gap-2 text-sm">
-        <input name="isDefault" type="checkbox" />
-        Make default edition
-      </label>
+      {allowInitialDefault && (
+        <label className="flex items-center gap-2 text-sm">
+          <input name="isDefault" type="checkbox" />
+          Make initial default edition
+        </label>
+      )}
       <button disabled={busy} className={button}>
         Create edition
       </button>

@@ -32,6 +32,10 @@ test.beforeAll(async () => {
       `INSERT INTO app."RoleAssignment" (id,"userId","roleId","scopeType") VALUES (gen_random_uuid(),$1,(SELECT id FROM app."Role" WHERE code='AUTHOR'),'PLATFORM')`,
       [user.id],
     );
+    await client.query(
+      `INSERT INTO app."RoleAssignment" (id,"userId","roleId","scopeType") VALUES (gen_random_uuid(),$1,(SELECT id FROM app."Role" WHERE code='PUBLISHER'),'PLATFORM')`,
+      [user.id],
+    );
     collectionTitle = `[TEST] Studio browser ${suffix}`;
     await client.query(
       `INSERT INTO app."Collection" (id,"libraryId",slug,title) VALUES (gen_random_uuid(),(SELECT id FROM app."Library" WHERE slug='arata-techlibrary'),$1,$2)`,
@@ -85,7 +89,7 @@ test('uses the hierarchical Studio to create a persistent standalone draft', asy
     const publicationId = rows.rows[0]!.id;
     browserPublicationId = publicationId;
     const edition = await client.query<{ id: string }>(
-      `INSERT INTO app."Edition" (id,"publicationId","editionCode",label) VALUES (gen_random_uuid(),$1,'1',$2) RETURNING id`,
+      `INSERT INTO app."Edition" (id,"publicationId","editionCode",label,"isDefault") VALUES (gen_random_uuid(),$1,'1',$2,true) RETURNING id`,
       [publicationId, `[TEST] Browser edition ${suffix}`],
     );
     browserEditionIds.push(edition.rows[0]!.id);
@@ -117,6 +121,14 @@ test('uses the hierarchical Studio to create a persistent standalone draft', asy
   await expect(page.getByRole('heading', { name: 'Edition order' })).toBeVisible();
   await page.getByRole('button', { name: `Move [TEST] Later edition ${suffix} up` }).click();
   await expect(page.getByRole('status')).toContainText('Edition order saved');
+  await page
+    .getByRole('button', { name: `1. [TEST] Later edition ${suffix}`, exact: true })
+    .click();
+  const defaultForm = page.getByRole('heading', { name: 'Set default edition' }).locator('..');
+  await defaultForm.getByLabel('Reason').fill('[TEST] Switch the default edition');
+  await defaultForm.getByLabel('Confirm default edition change').check();
+  await defaultForm.getByRole('button', { name: 'Set as default' }).click();
+  await expect(page.getByRole('status')).toContainText('Default edition changed');
   const editionNode = page.getByRole('button', {
     name: `2. [TEST] Browser edition ${suffix}`,
     exact: true,
@@ -129,12 +141,13 @@ test('uses the hierarchical Studio to create a persistent standalone draft', asy
   const ordered = new pg.Client({ connectionString: env.TEST_DATABASE_URL });
   await ordered.connect();
   try {
-    const editions = await ordered.query<{ id: string; ordinal: number }>(
-      `SELECT id,ordinal FROM app."Edition" WHERE "publicationId"=$1 ORDER BY ordinal`,
+    const editions = await ordered.query<{ id: string; ordinal: number; isDefault: boolean }>(
+      `SELECT id,ordinal,"isDefault" FROM app."Edition" WHERE "publicationId"=$1 ORDER BY ordinal`,
       [browserPublicationId],
     );
     expect(editions.rows.map((row) => row.id)).toEqual([...browserEditionIds].reverse());
     expect(editions.rows.map((row) => row.ordinal)).toEqual([1, 2]);
+    expect(editions.rows.map((row) => row.isDefault)).toEqual([true, false]);
     const rows = await ordered.query<{ id: string; ordinal: number }>(
       `SELECT id,ordinal FROM app."Chapter" WHERE "revisionId"=$1 ORDER BY ordinal`,
       [browserRevisionId],
