@@ -121,6 +121,9 @@ export interface StudioPublicationDetail {
   publication: {
     id: string;
     title: string;
+    subtitle: string | null;
+    subject: string | null;
+    keywords: string[];
     slug: string;
     kind: string;
     status: string;

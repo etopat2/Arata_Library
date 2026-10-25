@@ -51,7 +51,11 @@ reordered until any revision in the series enters review; the reviewed order is
 then frozen. Standalone and volume-scoped editions have independent positive
 positions and may be reordered within their own scope until any edition in that
 scope enters review. Published revisions cannot be reordered. Broader metadata
-editing remains open.
+editing remains open. A draft publication's title, subtitle, description,
+subject, keywords, language, licence, source reference and copyright notice
+can be edited under a scoped Studio role. Optional text may be explicitly
+cleared. The API freezes these fields once a revision enters review and audits
+every update; edition, volume and chapter metadata editing remains open.
 
 Uploads use a declared SHA-256 digest, a unique idempotency key, and sequential
 8 MiB chunks; the limit is 200 MiB. The returned upload and job IDs drive status,

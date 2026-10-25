@@ -245,13 +245,15 @@ describe('public catalogue and policy boundaries', () => {
     expect(search.text).not.toContain(privatePhrase);
     expect((await get(`/catalogue/search?q=${privatePhrase}`)).text).not.toContain(premiumId);
     expect((await get(`/catalogue/search?q=${draftPhrase}`)).text).not.toContain(draftSlug);
-    const publicText = await get(`/catalogue/search?q=searchable%20lesson`);
+    const publicText = await get(
+      `/catalogue/search?q=${encodeURIComponent(`Open searchable lesson ${suffix}`)}`,
+    );
     expect(publicText.text).toContain(freeId);
     expect(publicText.text).not.toContain(privatePhrase);
   });
 
   it('opens public-free text without a session while denying premium and withdrawn direct URLs', async () => {
-    const listing = await get('/resources?access=PUBLIC_FREE');
+    const listing = await get(`/resources?access=PUBLIC_FREE&q=${suffix}`);
     expect(listing.response.status).toBe(200);
     expect(listing.text).toContain(freeId);
     expect(listing.text).not.toContain(withdrawnId);

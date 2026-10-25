@@ -48,15 +48,22 @@ const publication = z.strictObject({
   copyrightNotice: text(2000),
   description: text(5000).optional(),
 });
-const publicationPatch = z.strictObject({
-  title: text().optional(),
-  subtitle: text().nullable().optional(),
-  description: text(5000).nullable().optional(),
-  languageCode: text(35).optional(),
-  licenceCode: text(100).optional(),
-  sourceRef: text(500).optional(),
-  copyrightNotice: text(2000).optional(),
-});
+const publicationPatch = z
+  .strictObject({
+    title: text().optional(),
+    subtitle: text().nullable().optional(),
+    description: text(5000).nullable().optional(),
+    subject: text(160).nullable().optional(),
+    keywords: z.array(text(100)).max(30).optional(),
+    languageCode: z
+      .string()
+      .regex(/^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/)
+      .optional(),
+    licenceCode: text(100).optional(),
+    sourceRef: text(500).optional(),
+    copyrightNotice: text(2000).optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0);
 const publicationCollections = z.strictObject({
   collectionIds: z
     .array(uuid)

@@ -160,6 +160,35 @@ describe('Publishing Studio editorial boundaries', () => {
       );
     }
     expect((await call('outsider', `/studio/publications/${publicationId}`)).status).toBe(403);
+    const metadataPath = `/studio/publications/${publicationId}`;
+    expect((await call('outsider', metadataPath, 'PATCH', { title: 'Tampered' })).status).toBe(403);
+    expect((await call('author', metadataPath, 'PATCH', {})).status).toBe(400);
+    expect(
+      (await call('author', metadataPath, 'PATCH', { languageCode: 'invalid code' })).status,
+    ).toBe(400);
+    expect(
+      (
+        await call('author', metadataPath, 'PATCH', {
+          subtitle: '[TEST] Draft subtitle',
+          description: 'Draft description',
+          subject: 'Technology',
+          keywords: ['security', 'systems'],
+        })
+      ).status,
+    ).toBe(200);
+    expect(
+      (
+        await call('author', metadataPath, 'PATCH', {
+          subtitle: null,
+          description: null,
+        })
+      ).status,
+    ).toBe(200);
+    const metadata = await call('author', metadataPath);
+    expect(metadata.data.publication.subtitle).toBeNull();
+    expect(metadata.data.publication.description).toBeNull();
+    expect(metadata.data.publication.subject).toBe('Technology');
+    expect(metadata.data.publication.keywords).toEqual(['security', 'systems']);
     expect(
       (
         await call('author', `/studio/publications/${publicationId}/volumes`, 'POST', {
@@ -268,6 +297,9 @@ describe('Publishing Studio editorial boundaries', () => {
     expect(
       (await call('publisher', `/studio/revisions/${revisionId}/publish`, 'POST')).status,
     ).toBe(201);
+    expect(
+      (await call('author', metadataPath, 'PATCH', { title: 'Changed after release' })).status,
+    ).toBe(409);
     expect(
       (
         await call('author', `/studio/chapters/${chapterId}/lessons`, 'POST', {

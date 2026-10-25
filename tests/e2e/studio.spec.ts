@@ -63,6 +63,11 @@ test('uses the hierarchical Studio to create a persistent standalone draft', asy
   await page.getByRole('button', { name: `[TEST] Browser publication ${suffix}` }).click();
   await expect(page.getByRole('heading', { name: 'Publication metadata' })).toBeVisible();
   await expect(page.getByText('DRAFT', { exact: true })).toBeVisible();
+  const metadataForm = page.getByRole('heading', { name: 'Edit draft metadata' }).locator('..');
+  await metadataForm.getByLabel('Subtitle').fill('[TEST] Editable subtitle');
+  await metadataForm.getByLabel('Subject').fill('Computer systems');
+  await metadataForm.getByRole('button', { name: 'Save metadata' }).click();
+  await expect(page.getByRole('status')).toContainText('Publication metadata saved');
   const client = new pg.Client({ connectionString: env.TEST_DATABASE_URL });
   await client.connect();
   let browserPublicationId = '';
@@ -70,11 +75,13 @@ test('uses the hierarchical Studio to create a persistent standalone draft', asy
   const browserEditionIds: string[] = [];
   const browserChapterIds: string[] = [];
   try {
-    const rows = await client.query<{ id: string }>(
-      `SELECT id FROM app."Publication" WHERE slug=$1`,
+    const rows = await client.query<{ id: string; subtitle: string; subject: string }>(
+      `SELECT id,subtitle,subject FROM app."Publication" WHERE slug=$1`,
       [`studio-browser-book-${suffix}`],
     );
     expect(rows.rowCount).toBe(1);
+    expect(rows.rows[0]!.subtitle).toBe('[TEST] Editable subtitle');
+    expect(rows.rows[0]!.subject).toBe('Computer systems');
     const publicationId = rows.rows[0]!.id;
     browserPublicationId = publicationId;
     const edition = await client.query<{ id: string }>(

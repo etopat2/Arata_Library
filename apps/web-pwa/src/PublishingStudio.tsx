@@ -734,6 +734,121 @@ export function PublishingStudio() {
                       .join(', ') || 'Add an author before publishing'}
                   </dd>
                 </dl>
+                {['DRAFT', 'FORTHCOMING'].includes(detail.publication.status) &&
+                  !detail.revisions.some((item) =>
+                    ['IN_REVIEW', 'APPROVED', 'PUBLISHED'].includes(item.status),
+                  ) && (
+                    <form
+                      key={JSON.stringify(detail.publication)}
+                      className="mt-5 grid gap-3 border-t border-slate-200 pt-4"
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        const form = new FormData(event.currentTarget);
+                        const title = value(form, 'title');
+                        void run(async () => {
+                          const result = await api.studio.change(`publications/${publicationId}`, {
+                            title,
+                            subtitle: value(form, 'subtitle') || null,
+                            description: value(form, 'description') || null,
+                            subject: value(form, 'subject') || null,
+                            keywords: value(form, 'keywords')
+                              .split(',')
+                              .map((keyword) => keyword.trim())
+                              .filter(Boolean),
+                            languageCode: value(form, 'languageCode'),
+                            licenceCode: value(form, 'licenceCode'),
+                            sourceRef: value(form, 'sourceRef'),
+                            copyrightNotice: value(form, 'copyrightNotice'),
+                          });
+                          select({ ...selected, label: title });
+                          return result;
+                        }, 'Publication metadata saved');
+                      }}
+                    >
+                      <h4 className="font-bold">Edit draft metadata</h4>
+                      <label className={field}>
+                        Title
+                        <input
+                          className={input}
+                          name="title"
+                          defaultValue={detail.publication.title}
+                          required
+                        />
+                      </label>
+                      <label className={field}>
+                        Subtitle
+                        <input
+                          className={input}
+                          name="subtitle"
+                          defaultValue={detail.publication.subtitle ?? ''}
+                        />
+                      </label>
+                      <label className={field}>
+                        Description
+                        <textarea
+                          className={input}
+                          name="description"
+                          defaultValue={detail.publication.description ?? ''}
+                          rows={3}
+                        />
+                      </label>
+                      <label className={field}>
+                        Subject
+                        <input
+                          className={input}
+                          name="subject"
+                          defaultValue={detail.publication.subject ?? ''}
+                        />
+                      </label>
+                      <label className={field}>
+                        Keywords (comma separated)
+                        <input
+                          className={input}
+                          name="keywords"
+                          defaultValue={detail.publication.keywords.join(', ')}
+                        />
+                      </label>
+                      <label className={field}>
+                        Language code
+                        <input
+                          className={input}
+                          name="languageCode"
+                          defaultValue={detail.publication.languageCode ?? ''}
+                          required
+                        />
+                      </label>
+                      <label className={field}>
+                        Licence code
+                        <input
+                          className={input}
+                          name="licenceCode"
+                          defaultValue={detail.publication.licenceCode ?? ''}
+                          required
+                        />
+                      </label>
+                      <label className={field}>
+                        Content source reference
+                        <input
+                          className={input}
+                          name="sourceRef"
+                          defaultValue={detail.publication.sourceRef ?? ''}
+                          required
+                        />
+                      </label>
+                      <label className={field}>
+                        Copyright notice
+                        <input
+                          className={input}
+                          name="copyrightNotice"
+                          defaultValue={detail.publication.copyrightNotice ?? ''}
+                          required
+                        />
+                      </label>
+                      <button disabled={busy} className={button}>
+                        Save metadata
+                      </button>
+                    </form>
+                  )}
                 <form
                   key={detail.collections
                     .map((collection) => collection.id)

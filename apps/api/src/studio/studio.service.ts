@@ -490,6 +490,8 @@ export class StudioService {
       title?: string | undefined;
       subtitle?: string | null | undefined;
       description?: string | null | undefined;
+      subject?: string | null | undefined;
+      keywords?: string[] | undefined;
       languageCode?: string | undefined;
       licenceCode?: string | undefined;
       sourceRef?: string | undefined;
@@ -515,18 +517,30 @@ export class StudioService {
         ).rowCount
       )
         throw new HttpException('Publication has a frozen revision', 409);
+      const columns = {
+        title: 'title',
+        subtitle: 'subtitle',
+        description: 'description',
+        subject: 'subject',
+        keywords: 'keywords',
+        languageCode: '"languageCode"',
+        licenceCode: '"licenceCode"',
+        sourceRef: '"sourceRef"',
+        copyrightNotice: '"copyrightNotice"',
+      } as const;
+      const changes = Object.entries(data).filter(([, value]) => value !== undefined) as [
+        keyof typeof columns,
+        unknown,
+      ][];
+      const values: unknown[] = [id];
+      const assignments = changes.map(([key, value]) => {
+        values.push(value);
+        return `${columns[key]}=$${values.length}`;
+      });
+      if (!assignments.length) throw new HttpException('No publication changes supplied', 400);
       await client.query(
-        `UPDATE app."Publication" SET title=COALESCE($2,title),subtitle=COALESCE($3,subtitle),description=COALESCE($4,description),"languageCode"=COALESCE($5,"languageCode"),"licenceCode"=COALESCE($6,"licenceCode"),"sourceRef"=COALESCE($7,"sourceRef"),"copyrightNotice"=COALESCE($8,"copyrightNotice"),"updatedAt"=now() WHERE id=$1`,
-        [
-          id,
-          data.title ?? null,
-          data.subtitle ?? null,
-          data.description ?? null,
-          data.languageCode ?? null,
-          data.licenceCode ?? null,
-          data.sourceRef ?? null,
-          data.copyrightNotice ?? null,
-        ],
+        `UPDATE app."Publication" SET ${assignments.join(',')},"updatedAt"=now() WHERE id=$1`,
+        values,
       );
       await this.audit(client, context, 'studio.publication_updated', 'Publication', id, requestId);
       return { id };
