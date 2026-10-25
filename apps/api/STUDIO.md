@@ -44,6 +44,12 @@ Publications may begin without a collection, and an authorized publication role
 can replace their collection memberships with zero or multiple existing library
 collections. Once a publication leaves DRAFT, reclassification requires a publisher role. The
 hierarchy displays uncategorised works under the Library root.
+Draft authors and editors can reorder chapters and lessons by submitting the entire
+current sibling list. The API checks the expected order and parent membership,
+normalizes positions atomically, and records an audit event. Series volumes may be
+reordered until any revision in the series enters review; the reviewed order is
+then frozen. Published revisions cannot be reordered. Edition ordering and
+metadata editing remain open.
 
 Uploads use a declared SHA-256 digest, a unique idempotency key, and sequential
 8 MiB chunks; the limit is 200 MiB. The returned upload and job IDs drive status,

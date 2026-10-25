@@ -25,6 +25,16 @@ const slug = z
   .regex(/^[a-z0-9][a-z0-9-]{0,199}$/);
 const text = (max = 400) => z.string().trim().min(1).max(max);
 const positive = z.number().int().min(1).max(100000);
+const order = z.strictObject({
+  ids: z
+    .array(uuid)
+    .max(1000)
+    .refine((ids) => new Set(ids).size === ids.length),
+  expectedIds: z
+    .array(uuid)
+    .max(1000)
+    .refine((ids) => new Set(ids).size === ids.length),
+});
 const collection = z.strictObject({ slug, title: text(300), description: text(2000).optional() });
 const publication = z.strictObject({
   slug,
@@ -300,6 +310,23 @@ export class StudioController {
       ),
     );
   }
+  @Put('publications/:id/volumes/order') async reorderVolumes(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    const data = parse(order, body);
+    return wrap(
+      req,
+      await this.studio.reorderVolumes(
+        await this.auth(req, true),
+        parse(uuid, id),
+        data.ids,
+        data.expectedIds,
+        req.id,
+      ),
+    );
+  }
   @Post('publications/:id/editions') async addEdition(
     @Req() req: Request,
     @Param('id') id: string,
@@ -345,6 +372,23 @@ export class StudioController {
       ),
     );
   }
+  @Put('revisions/:id/chapters/order') async reorderChapters(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    const data = parse(order, body);
+    return wrap(
+      req,
+      await this.studio.reorderChapters(
+        await this.auth(req, true),
+        parse(uuid, id),
+        data.ids,
+        data.expectedIds,
+        req.id,
+      ),
+    );
+  }
   @Post('chapters/:id/lessons') async addLesson(
     @Req() req: Request,
     @Param('id') id: string,
@@ -356,6 +400,23 @@ export class StudioController {
         await this.auth(req, true),
         parse(uuid, id),
         parse(lesson, body),
+        req.id,
+      ),
+    );
+  }
+  @Put('chapters/:id/lessons/order') async reorderLessons(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    const data = parse(order, body);
+    return wrap(
+      req,
+      await this.studio.reorderLessons(
+        await this.auth(req, true),
+        parse(uuid, id),
+        data.ids,
+        data.expectedIds,
         req.id,
       ),
     );

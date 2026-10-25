@@ -604,4 +604,153 @@ describe('Publishing Studio editorial boundaries', () => {
       await pool.end();
     }
   }, 30000);
+
+  it('reorders exact draft siblings and rejects stale, foreign, unauthorized and frozen edits', async () => {
+    const created = await call('author', '/studio/publications', 'POST', {
+      slug: `studio-series-order-${suffix}`,
+      title: '[TEST] Ordered series',
+      kind: 'SERIES',
+      languageCode: 'en',
+      licenceCode: 'TEST-ONLY',
+      sourceRef: 'TEST-SOURCE',
+      copyrightNotice: '[TEST] Synthetic rights',
+    });
+    expect(created.status).toBe(201);
+    const pub = created.data.id;
+    const first = await call('author', `/studio/publications/${pub}/volumes`, 'POST', {
+      ordinal: 3,
+      title: 'First volume',
+    });
+    const second = await call('author', `/studio/publications/${pub}/volumes`, 'POST', {
+      ordinal: 8,
+      title: 'Second volume',
+    });
+    expect(first.status).toBe(201);
+    expect(second.status).toBe(201);
+    const volumes = [first.data.id, second.data.id];
+    const volumePath = `/studio/publications/${pub}/volumes/order`;
+    expect(
+      (
+        await call('outsider', volumePath, 'PUT', {
+          ids: [...volumes].reverse(),
+          expectedIds: volumes,
+        })
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await call('author', volumePath, 'PUT', {
+          ids: [volumes[0], volumes[0]],
+          expectedIds: volumes,
+        })
+      ).status,
+    ).toBe(400);
+    expect(
+      (
+        await call('author', volumePath, 'PUT', {
+          ids: [volumes[0], randomUUID()],
+          expectedIds: volumes,
+        })
+      ).status,
+    ).toBe(409);
+    expect(
+      (
+        await call('author', volumePath, 'PUT', {
+          ids: [...volumes].reverse(),
+          expectedIds: volumes,
+        })
+      ).status,
+    ).toBe(200);
+    expect(
+      (await call('author', volumePath, 'PUT', { ids: volumes, expectedIds: volumes })).status,
+    ).toBe(409);
+    const volumeRows = (
+      await fixture.query<{ id: string; ordinal: number }>(
+        `SELECT id,ordinal FROM app."Volume" WHERE "publicationId"=$1 ORDER BY ordinal`,
+        [pub],
+      )
+    ).rows;
+    expect(volumeRows.map((row) => row.id)).toEqual([...volumes].reverse());
+    expect(volumeRows.map((row) => row.ordinal)).toEqual([1, 2]);
+
+    const edition = await call('author', `/studio/publications/${pub}/editions`, 'POST', {
+      volumeId: first.data.id,
+      editionCode: '1',
+      label: 'First edition',
+    });
+    expect(edition.status).toBe(201);
+    const draft = await call('author', `/studio/editions/${edition.data.id}/revisions`, 'POST', {
+      changeSummary: '[TEST] order',
+    });
+    expect(draft.status).toBe(201);
+    const rev = draft.data.id;
+    const chapterA = await call('author', `/studio/revisions/${rev}/chapters`, 'POST', {
+      ordinal: 2,
+      slug: 'chapter-a',
+      title: 'A',
+    });
+    const chapterB = await call('author', `/studio/revisions/${rev}/chapters`, 'POST', {
+      ordinal: 7,
+      slug: 'chapter-b',
+      title: 'B',
+    });
+    expect(chapterA.status).toBe(201);
+    expect(chapterB.status).toBe(201);
+    const chapters = [chapterA.data.id, chapterB.data.id];
+    const chapterPath = `/studio/revisions/${rev}/chapters/order`;
+    expect(
+      (
+        await call('author', chapterPath, 'PUT', {
+          ids: [...chapters].reverse(),
+          expectedIds: chapters,
+        })
+      ).status,
+    ).toBe(200);
+    const chapterRows = (
+      await fixture.query<{ id: string; ordinal: number }>(
+        `SELECT id,ordinal FROM app."Chapter" WHERE "revisionId"=$1 ORDER BY ordinal`,
+        [rev],
+      )
+    ).rows;
+    expect(chapterRows.map((row) => row.id)).toEqual([...chapters].reverse());
+    expect(chapterRows.map((row) => row.ordinal)).toEqual([1, 2]);
+    const lessonA = await call('author', `/studio/chapters/${chapterA.data.id}/lessons`, 'POST', {
+      ordinal: 4,
+      title: 'A',
+      bodyMarkdown: 'A',
+    });
+    const lessonB = await call('author', `/studio/chapters/${chapterA.data.id}/lessons`, 'POST', {
+      ordinal: 9,
+      title: 'B',
+      bodyMarkdown: 'B',
+    });
+    expect(lessonA.status).toBe(201);
+    expect(lessonB.status).toBe(201);
+    const lessons = [lessonA.data.id, lessonB.data.id];
+    const lessonPath = `/studio/chapters/${chapterA.data.id}/lessons/order`;
+    expect(
+      (
+        await call('author', lessonPath, 'PUT', {
+          ids: [...lessons].reverse(),
+          expectedIds: lessons,
+        })
+      ).status,
+    ).toBe(200);
+    const lessonRows = (
+      await fixture.query<{ id: string; ordinal: number }>(
+        `SELECT id,ordinal FROM app."Lesson" WHERE "chapterId"=$1 ORDER BY ordinal`,
+        [chapterA.data.id],
+      )
+    ).rows;
+    expect(lessonRows.map((row) => row.id)).toEqual([...lessons].reverse());
+    expect(lessonRows.map((row) => row.ordinal)).toEqual([1, 2]);
+    expect(
+      (
+        await call('author', `/studio/revisions/${revisionId}/chapters/order`, 'PUT', {
+          ids: [],
+          expectedIds: [],
+        })
+      ).status,
+    ).toBe(409);
+  }, 30000);
 });

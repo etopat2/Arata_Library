@@ -173,6 +173,44 @@ export class StudioService {
     return hash({ metadata, contributors, content });
   }
 
+  private async reorderSiblings(
+    client: PoolClient,
+    table: 'Volume' | 'Chapter' | 'Lesson',
+    parentColumn: 'publicationId' | 'revisionId' | 'chapterId',
+    parentId: string,
+    ids: string[],
+    expectedIds: string[],
+  ) {
+    const current = (
+      await client.query<{ id: string; ordinal: number }>(
+        `SELECT id,ordinal FROM app."${table}" WHERE "${parentColumn}"=$1 ORDER BY ordinal,id FOR UPDATE`,
+        [parentId],
+      )
+    ).rows;
+    if (
+      current.length !== expectedIds.length ||
+      current.some((row, index) => row.id !== expectedIds[index])
+    )
+      throw new HttpException('Order changed; reload the hierarchy and retry', 409);
+    if (current.length !== ids.length || ids.some((id) => !current.some((row) => row.id === id)))
+      throw new HttpException('Order must include exactly the current siblings', 409);
+    if (ids.every((id, index) => id === current[index]?.id)) return;
+    const maxOrdinal = Math.max(0, ...current.map((row) => row.ordinal));
+    if (maxOrdinal > 1_000_000_000)
+      throw new HttpException('Order exceeds the supported range', 409);
+    // Move every ordinal above the old range before assigning dense positive positions.
+    // This avoids transient unique conflicts during swaps under the database constraints.
+    await client.query(`UPDATE app."${table}" SET ordinal=ordinal+$2 WHERE "${parentColumn}"=$1`, [
+      parentId,
+      maxOrdinal + 1,
+    ]);
+    for (const [index, id] of ids.entries())
+      await client.query(
+        `UPDATE app."${table}" SET ordinal=$3 WHERE id=$1 AND "${parentColumn}"=$2`,
+        [id, parentId, index + 1],
+      );
+  }
+
   async tree(context: AuthContext) {
     return this.transaction(async (client) => {
       const pubs = await client.query<{ id: string }>(
@@ -547,7 +585,7 @@ export class StudioService {
     return this.transaction(async (client) => {
       await this.role(client, context, publicationId, ['AUTHOR', 'EDITOR', 'PUBLISHER']);
       const pub = await client.query<{ kind: string }>(
-        `SELECT kind FROM app."Publication" WHERE id=$1`,
+        `SELECT kind FROM app."Publication" WHERE id=$1 FOR UPDATE`,
         [publicationId],
       );
       if (pub.rows[0]?.kind !== 'SERIES') throw new HttpException('Volumes require a series', 409);
@@ -558,6 +596,49 @@ export class StudioService {
       );
       await this.audit(client, context, 'studio.volume_created', 'Volume', id, requestId);
       return { id };
+    });
+  }
+
+  async reorderVolumes(
+    context: AuthContext,
+    publicationId: string,
+    ids: string[],
+    expectedIds: string[],
+    requestId: string,
+  ) {
+    return this.transaction(async (client) => {
+      await this.role(client, context, publicationId, ['AUTHOR', 'EDITOR', 'PUBLISHER']);
+      const publication = await client.query<{ kind: string }>(
+        `SELECT kind FROM app."Publication" WHERE id=$1 FOR UPDATE`,
+        [publicationId],
+      );
+      if (!publication.rows[0]) throw new HttpException('Publication not found', 404);
+      if (publication.rows[0].kind !== 'SERIES')
+        throw new HttpException('Volumes require a series', 409);
+      const released = await client.query(
+        `SELECT 1 FROM app."Edition" e JOIN app."Revision" r ON r."editionId"=e.id
+         WHERE e."publicationId"=$1 AND r.status IN ('IN_REVIEW','APPROVED','PUBLISHED') LIMIT 1`,
+        [publicationId],
+      );
+      if (released.rowCount)
+        throw new HttpException('Reviewed volume order cannot be changed', 409);
+      await this.reorderSiblings(
+        client,
+        'Volume',
+        'publicationId',
+        publicationId,
+        ids,
+        expectedIds,
+      );
+      await this.audit(
+        client,
+        context,
+        'studio.volumes_reordered',
+        'Publication',
+        publicationId,
+        requestId,
+      );
+      return { ids };
     });
   }
 
@@ -815,6 +896,31 @@ export class StudioService {
     });
   }
 
+  async reorderChapters(
+    context: AuthContext,
+    revisionId: string,
+    ids: string[],
+    expectedIds: string[],
+    requestId: string,
+  ) {
+    return this.transaction(async (client) => {
+      const revision = await this.revision(client, revisionId, true);
+      await this.role(client, context, revision.publicationId, ['AUTHOR', 'EDITOR']);
+      if (revision.status !== 'DRAFT')
+        throw new HttpException('Only draft revisions can be edited', 409);
+      await this.reorderSiblings(client, 'Chapter', 'revisionId', revisionId, ids, expectedIds);
+      await this.audit(
+        client,
+        context,
+        'studio.chapters_reordered',
+        'Revision',
+        revisionId,
+        requestId,
+      );
+      return { ids };
+    });
+  }
+
   async addLesson(
     context: AuthContext,
     chapterId: string,
@@ -845,6 +951,35 @@ export class StudioService {
       );
       await this.audit(client, context, 'studio.lesson_created', 'Lesson', id, requestId);
       return { id };
+    });
+  }
+
+  async reorderLessons(
+    context: AuthContext,
+    chapterId: string,
+    ids: string[],
+    expectedIds: string[],
+    requestId: string,
+  ) {
+    return this.transaction(async (client) => {
+      const revision = await this.revision(
+        client,
+        await this.chapterRevision(client, chapterId),
+        true,
+      );
+      await this.role(client, context, revision.publicationId, ['AUTHOR', 'EDITOR']);
+      if (revision.status !== 'DRAFT')
+        throw new HttpException('Only draft revisions can be edited', 409);
+      await this.reorderSiblings(client, 'Lesson', 'chapterId', chapterId, ids, expectedIds);
+      await this.audit(
+        client,
+        context,
+        'studio.lessons_reordered',
+        'Chapter',
+        chapterId,
+        requestId,
+      );
+      return { ids };
     });
   }
 

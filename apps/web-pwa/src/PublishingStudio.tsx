@@ -194,6 +194,57 @@ export function PublishingStudio() {
   const revisionId = selected?.revisionId;
   const chapterId = selected?.chapterId;
 
+  function ReorderList({
+    title,
+    items,
+    path,
+  }: {
+    title: string;
+    items: { id: string; ordinal: number; title: string }[];
+    path: string;
+  }) {
+    const ordered = [...items].sort((a, b) => a.ordinal - b.ordinal);
+    if (ordered.length < 2) return null;
+    return (
+      <FormBox title={title}>
+        <ol className="space-y-2">
+          {ordered.map((item, index) => (
+            <li
+              key={item.id}
+              className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 p-2"
+            >
+              <span>
+                {index + 1}. {item.title}
+              </span>
+              <span className="flex shrink-0 gap-1">
+                {([-1, 1] as const).map((direction) => (
+                  <button
+                    key={direction}
+                    type="button"
+                    className={secondary}
+                    disabled={busy || index + direction < 0 || index + direction >= ordered.length}
+                    aria-label={`Move ${item.title} ${direction < 0 ? 'up' : 'down'}`}
+                    onClick={() => {
+                      const expectedIds = ordered.map((entry) => entry.id);
+                      const ids = [...expectedIds];
+                      [ids[index], ids[index + direction]] = [ids[index + direction]!, ids[index]!];
+                      void run(
+                        () => api.studio.replace(path, { ids, expectedIds }),
+                        `${title} saved`,
+                      );
+                    }}
+                  >
+                    {direction < 0 ? '↑' : '↓'}
+                  </button>
+                ))}
+              </span>
+            </li>
+          ))}
+        </ol>
+      </FormBox>
+    );
+  }
+
   function TreeButton({ item, depth = 0 }: { item: Selection; depth?: number }) {
     return (
       <button
@@ -631,6 +682,16 @@ export function PublishingStudio() {
           )}
           {selected?.type === 'publication' && detail && (
             <div className="grid gap-5 xl:grid-cols-2">
+              {detail.publication.kind === 'SERIES' &&
+                !detail.revisions.some((item) =>
+                  ['IN_REVIEW', 'APPROVED', 'PUBLISHED'].includes(item.status),
+                ) && (
+                  <ReorderList
+                    title="Volume order"
+                    items={detail.volumes}
+                    path={`publications/${publicationId}/volumes/order`}
+                  />
+                )}
               <FormBox title="Publication metadata">
                 <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-2 text-sm">
                   <dt>Status</dt>
@@ -952,6 +1013,22 @@ export function PublishingStudio() {
           )}
           {revisionId && revision && (
             <div className="space-y-5">
+              {selected?.type === 'revision' && revision.revision.status === 'DRAFT' && (
+                <ReorderList
+                  title="Chapter order"
+                  items={revision.chapters}
+                  path={`revisions/${revisionId}/chapters/order`}
+                />
+              )}
+              {selected?.type === 'chapter' &&
+                chapterId &&
+                revision.revision.status === 'DRAFT' && (
+                  <ReorderList
+                    title="Lesson order"
+                    items={revision.lessons.filter((item) => item.chapterId === chapterId)}
+                    path={`chapters/${chapterId}/lessons/order`}
+                  />
+                )}
               <FormBox
                 title={`Revision ${tree?.revisions.find((item) => item.id === revisionId)?.number ?? ''} · ${revision.revision.status}`}
               >
