@@ -129,21 +129,33 @@ test('uses the hierarchical Studio to create a persistent standalone draft', asy
   await defaultForm.getByLabel('Confirm default edition change').check();
   await defaultForm.getByRole('button', { name: 'Set as default' }).click();
   await expect(page.getByRole('status')).toContainText('Default edition changed');
-  await page.getByTestId(`studio-edition-${browserEditionIds[0]}`).click();
+  const editedEditionNode = page.getByTestId(`studio-edition-${browserEditionIds[0]}`);
+  await editedEditionNode.click();
+  await expect(editedEditionNode).toHaveAttribute('aria-current', 'page');
   const editionForm = page.getByRole('heading', { name: 'Edit edition metadata' }).locator('..');
+  await expect(editionForm.getByLabel('Edition label')).toHaveValue(
+    `[TEST] Browser edition ${suffix}`,
+  );
   await editionForm.getByLabel('Edition label').fill(`[TEST] Edited edition ${suffix}`);
   await editionForm.getByRole('button', { name: 'Save edition' }).click();
   await expect(page.getByRole('status')).toContainText('Edition metadata saved');
-  await page.getByTestId(`studio-revision-${browserRevisionId}`).click();
+  await expect(editedEditionNode).toContainText(`[TEST] Edited edition ${suffix}`);
+  const editedRevisionNode = page.getByTestId(`studio-revision-${browserRevisionId}`);
+  await editedRevisionNode.click();
+  await expect(editedRevisionNode).toHaveAttribute('aria-current', 'page');
   await expect(page.getByRole('heading', { name: 'Chapter order' })).toBeVisible();
   await page.getByRole('button', { name: 'Move Beta up' }).click();
   await expect(page.getByRole('status')).toContainText('Chapter order saved');
-  await page.getByTestId(`studio-chapter-${browserChapterIds[0]}`).click();
+  const editedChapterNode = page.getByTestId(`studio-chapter-${browserChapterIds[0]}`);
+  await editedChapterNode.click();
+  await expect(editedChapterNode).toHaveAttribute('aria-current', 'page');
   const chapterForm = page.getByRole('heading', { name: 'Edit chapter metadata' }).locator('..');
+  await expect(chapterForm.getByLabel('Chapter title')).toHaveValue('Alpha');
   await chapterForm.getByLabel('Chapter title').fill('[TEST] Edited Alpha');
   await chapterForm.getByLabel('Chapter summary (optional)').fill('Synthetic revised summary');
   await chapterForm.getByRole('button', { name: 'Save chapter' }).click();
   await expect(page.getByRole('status')).toContainText('Chapter metadata saved');
+  await expect(editedChapterNode).toContainText('[TEST] Edited Alpha');
   const ordered = new pg.Client({ connectionString: env.TEST_DATABASE_URL });
   await ordered.connect();
   try {
