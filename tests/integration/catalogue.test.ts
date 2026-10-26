@@ -39,11 +39,14 @@ let withdrawnId: string;
 let freeLessonId: string;
 let lockedLessonId: string;
 let approvedAssetId: string;
+let readerUserId: string;
 let storageRoot: string;
 let storedFile: string;
 const approvedFileBody = '[TEST] Rights-approved private reader asset';
 const priorStorageRoot = process.env.STUDIO_STORAGE_ROOT;
 const sessionToken = randomBytes(36).toString('base64url');
+const secondSessionToken = randomBytes(36).toString('base64url');
+const thirdSessionToken = randomBytes(36).toString('base64url');
 const adminToken = randomBytes(36).toString('base64url');
 let policyLibraryId: string;
 
@@ -66,9 +69,18 @@ beforeAll(async () => {
       [`catalogue-${suffix}@example.invalid`],
     );
     const userId = user.rows[0]!.id;
+    readerUserId = userId;
     await fixture.query(
       `INSERT INTO app."AuthSession" (id,"userId","tokenHash","expiresAt") VALUES (gen_random_uuid(),$1,$2,now()+interval '1 hour')`,
       [userId, tokenHash(sessionToken)],
+    );
+    await fixture.query(
+      `INSERT INTO app."AuthSession" (id,"userId","tokenHash","expiresAt") VALUES (gen_random_uuid(),$1,$2,now()+interval '1 hour')`,
+      [userId, tokenHash(secondSessionToken)],
+    );
+    await fixture.query(
+      `INSERT INTO app."AuthSession" (id,"userId","tokenHash","expiresAt") VALUES (gen_random_uuid(),$1,$2,now()+interval '1 hour')`,
+      [userId, tokenHash(thirdSessionToken)],
     );
     const admin = await fixture.query<{ id: string }>(
       `INSERT INTO app."User" (id,email,status,"emailVerifiedAt","termsAcceptedAt","privacyVersion","createdAt","updatedAt")
@@ -244,8 +256,9 @@ beforeAll(async () => {
       );
       const id = result.rows[0]!.id;
       await fixture.query(
-        `INSERT INTO app."ContentPolicy" (id,"resourceId","accessClass","allowRead",version,"isActive","approvedAt") VALUES (gen_random_uuid(),$1,$2,true,1,true,now())`,
-        [id, item.access],
+        `INSERT INTO app."ContentPolicy" (id,"resourceId","accessClass","allowRead","maxConcurrentSessions",version,"isActive","approvedAt")
+         VALUES (gen_random_uuid(),$1,$2,true,$3,1,true,now())`,
+        [id, item.access, item.access === 'REGISTERED_FREE' ? 1 : null],
       );
       if (item.access === 'PREMIUM') premiumId = id;
       else if (item.access === 'REGISTERED_FREE') registeredId = id;
@@ -577,5 +590,53 @@ describe('public catalogue and policy boundaries', () => {
       `/reader/assets/${approvedAssetId}?grant=${encodeURIComponent(token)}`,
     );
     expect(withdrawn.response.status).toBe(403);
+  });
+
+  it('atomically limits licensed readers and releases a revoked session seat', async () => {
+    await fixture.query(`DELETE FROM app."ReaderLease" WHERE "userId"=$1`, [readerUserId]);
+    const endpoint = `${base}/api/v1/resources/${registeredId}/open`;
+    const attempts = await Promise.all(
+      [sessionToken, secondSessionToken].map((token) =>
+        fetch(endpoint, { headers: { Cookie: `arata_session=${token}` } }),
+      ),
+    );
+    expect(attempts.map((response) => response.status).sort()).toEqual([200, 403]);
+    expect((await attempts.find((response) => response.status === 403)!.json()).code).toBe(
+      'LICENSED_SESSION_LIMIT',
+    );
+    const winner = attempts[0]!.status === 200 ? sessionToken : secondSessionToken;
+    const loser = winner === sessionToken ? secondSessionToken : sessionToken;
+    const active = await fixture.query<{ count: string }>(
+      `SELECT count(*)::text AS count FROM app."ReaderLease" WHERE "userId"=$1 AND "expiresAt">now()`,
+      [readerUserId],
+    );
+    expect(Number(active.rows[0]!.count)).toBe(1);
+    await fixture.query(
+      `UPDATE app."ReaderLease" SET "createdAt"=now()-interval '1 hour',
+         "expiresAt"=now()-interval '1 minute' WHERE "sessionId"=
+         (SELECT id FROM app."AuthSession" WHERE "tokenHash"=$1)`,
+      [tokenHash(winner)],
+    );
+    const admitted = await fetch(endpoint, {
+      headers: { Cookie: `arata_session=${loser}` },
+    });
+    expect(admitted.status).toBe(200);
+    const full = await fetch(endpoint, {
+      headers: { Cookie: `arata_session=${thirdSessionToken}` },
+    });
+    expect(full.status).toBe(403);
+    await fixture.query(`UPDATE app."AuthSession" SET "revokedAt"=now() WHERE "tokenHash"=$1`, [
+      tokenHash(loser),
+    ]);
+    const afterRevoke = await fetch(endpoint, {
+      headers: { Cookie: `arata_session=${thirdSessionToken}` },
+    });
+    expect(afterRevoke.status).toBe(200);
+    const leases = await fixture.query<{ tokenHash: string }>(
+      `SELECT s."tokenHash" FROM app."ReaderLease" l JOIN app."AuthSession" s ON s.id=l."sessionId"
+       WHERE l."userId"=$1 AND l."expiresAt">now() AND s."revokedAt" IS NULL`,
+      [readerUserId],
+    );
+    expect(leases.rows).toEqual([{ tokenHash: tokenHash(thirdSessionToken) }]);
   });
 });

@@ -215,16 +215,77 @@ export class ReaderService {
         signInMayHelp ? 401 : 403,
       );
     }
-    if (context && policy.accessClass === 'PREMIUM' && policy.maxConcurrentSessions !== null) {
-      const active = await this.pool.query<{ count: string }>(
-        `SELECT count(*)::text AS count FROM app."AuthSession" WHERE "userId"=$1
-         AND "revokedAt" IS NULL AND "expiresAt">now()`,
-        [context.user.id],
-      );
-      if (Number(active.rows[0]?.count ?? 0) > policy.maxConcurrentSessions)
-        throw new HttpException('Licensed session limit reached', 403);
-    }
+    if (context && action !== 'preview' && policy.accessClass !== 'PUBLIC_FREE')
+      await this.reserveReaderLeases(context, policy);
     return policy;
+  }
+
+  private async reserveReaderLeases(context: AuthContext, policy: EffectiveContentPolicy) {
+    if (!policy.sessionLimits.length) return;
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      const session = await client.query<{ expiresAt: Date }>(
+        `SELECT "expiresAt" FROM app."AuthSession" WHERE id=$1 AND "userId"=$2
+         AND "revokedAt" IS NULL AND "expiresAt">now()`,
+        [context.session.id, context.user.id],
+      );
+      if (!session.rows[0]) throw new HttpException('Authentication required', 401);
+      // Stable lock order makes simultaneous reads on overlapping policy scopes safe.
+      for (const limit of [...policy.sessionLimits].sort((a, b) =>
+        a.policyId.localeCompare(b.policyId),
+      )) {
+        await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [
+          `reader-lease:${limit.policyId}:${context.user.id}`,
+        ]);
+        const current = await client.query<{ isActive: boolean }>(
+          `SELECT "isActive" FROM app."ContentPolicy" WHERE id=$1`,
+          [limit.policyId],
+        );
+        if (!current.rows[0]?.isActive) throw new HttpException('Policy changed; retry', 409);
+        await client.query(
+          `DELETE FROM app."ReaderLease" l USING app."AuthSession" s
+           WHERE l."sessionId"=s.id AND l."policyId"=$1 AND l."userId"=$2
+             AND (l."expiresAt"<=now() OR s."revokedAt" IS NOT NULL OR s."expiresAt"<=now())`,
+          [limit.policyId, context.user.id],
+        );
+        const existing = await client.query<{ expiresAt: Date }>(
+          `SELECT "expiresAt" FROM app."ReaderLease" WHERE "policyId"=$1
+           AND "userId"=$2 AND "sessionId"=$3`,
+          [limit.policyId, context.user.id, context.session.id],
+        );
+        if (!existing.rows[0] || existing.rows[0].expiresAt <= new Date()) {
+          const active = await client.query<{ count: string }>(
+            `SELECT count(*)::text AS count FROM app."ReaderLease" l
+             JOIN app."AuthSession" s ON s.id=l."sessionId" AND s."userId"=l."userId"
+             WHERE l."policyId"=$1 AND l."userId"=$2 AND l."sessionId"<>$3
+               AND l."expiresAt">now() AND s."revokedAt" IS NULL AND s."expiresAt">now()`,
+            [limit.policyId, context.user.id, context.session.id],
+          );
+          if (Number(active.rows[0]?.count ?? 0) >= limit.maxSessions)
+            throw new HttpException('Licensed session limit reached', 403);
+        }
+        await client.query(
+          `INSERT INTO app."ReaderLease" (id,"policyId","userId","sessionId","expiresAt")
+           VALUES ($1,$2,$3,$4,least(now()+interval '15 minutes',$5::timestamptz))
+           ON CONFLICT ("policyId","userId","sessionId") DO UPDATE SET
+             "expiresAt"=EXCLUDED."expiresAt","updatedAt"=now()`,
+          [
+            randomUUID(),
+            limit.policyId,
+            context.user.id,
+            context.session.id,
+            session.rows[0].expiresAt,
+          ],
+        );
+      }
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => undefined);
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 
   async openLesson(id: string, context: AuthContext | null) {

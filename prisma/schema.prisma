@@ -296,6 +296,7 @@ model User {
   updatedAt              DateTime                @updatedAt @db.Timestamptz(6)
   profile                UserProfile?
   sessions               AuthSession[]
+  readerLeases           ReaderLease[]
   authenticators         Authenticator[]
   verificationTokens     VerificationToken[]
   roles                  RoleAssignment[]
@@ -355,17 +356,19 @@ model UserProfile {
 }
 
 model AuthSession {
-  id            String    @id @default(uuid()) @db.Uuid
-  userId        String    @db.Uuid
-  tokenHash     String    @unique @db.VarChar(128)
-  expiresAt     DateTime  @db.Timestamptz(6)
-  revokedAt     DateTime? @db.Timestamptz(6)
-  mfaVerifiedAt DateTime? @db.Timestamptz(6)
-  deviceLabel   String?   @db.VarChar(160)
-  lastSeenAt    DateTime? @db.Timestamptz(6)
-  createdAt     DateTime  @default(now()) @db.Timestamptz(6)
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            String        @id @default(uuid()) @db.Uuid
+  userId        String        @db.Uuid
+  tokenHash     String        @unique @db.VarChar(128)
+  expiresAt     DateTime      @db.Timestamptz(6)
+  revokedAt     DateTime?     @db.Timestamptz(6)
+  mfaVerifiedAt DateTime?     @db.Timestamptz(6)
+  deviceLabel   String?       @db.VarChar(160)
+  lastSeenAt    DateTime?     @db.Timestamptz(6)
+  createdAt     DateTime      @default(now()) @db.Timestamptz(6)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  readerLeases  ReaderLease[]
 
+  @@unique([id, userId])
   @@index([userId, expiresAt])
   @@schema("app")
 }
@@ -1025,7 +1028,25 @@ model ContentPolicy {
   lesson                Lesson?               @relation(fields: [lessonId], references: [id], onDelete: Restrict)
   resource              Resource?             @relation(fields: [resourceId], references: [id], onDelete: Restrict)
   changes               PolicyChange[]
+  readerLeases          ReaderLease[]
 
+  @@schema("app")
+}
+
+model ReaderLease {
+  id        String        @id @default(uuid()) @db.Uuid
+  policyId  String        @db.Uuid
+  userId    String        @db.Uuid
+  sessionId String        @db.Uuid
+  expiresAt DateTime      @db.Timestamptz(6)
+  createdAt DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime      @default(now()) @updatedAt @db.Timestamptz(6)
+  policy    ContentPolicy @relation(fields: [policyId], references: [id], onDelete: Restrict)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session   AuthSession   @relation(fields: [sessionId, userId], references: [id, userId], onDelete: Cascade)
+
+  @@unique([policyId, userId, sessionId])
+  @@index([policyId, userId, expiresAt])
   @@schema("app")
 }
 

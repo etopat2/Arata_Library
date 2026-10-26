@@ -39,8 +39,12 @@ try {
   const migrations = await client.query<{ migration_name: string; complete: boolean }>(`
     SELECT migration_name, finished_at IS NOT NULL AND rolled_back_at IS NULL AS complete
     FROM public._prisma_migrations WHERE rolled_back_at IS NULL ORDER BY migration_name`);
-  const access = await client.query<{ app_can_research: boolean; report_can_link: boolean; identity_can_link: boolean }>(`
+  const access = await client.query<{ app_can_research: boolean; app_can_lease: boolean; report_can_link: boolean; identity_can_link: boolean }>(`
     SELECT has_schema_privilege('arata_app_dev', 'research', 'USAGE') AS app_can_research,
+      (has_table_privilege('arata_app_dev', 'app."ReaderLease"', 'SELECT')
+       AND has_table_privilege('arata_app_dev', 'app."ReaderLease"', 'INSERT')
+       AND has_table_privilege('arata_app_dev', 'app."ReaderLease"', 'UPDATE')
+       AND has_table_privilege('arata_app_dev', 'app."ReaderLease"', 'DELETE')) AS app_can_lease,
       has_schema_privilege('arata_research_report_dev', 'research_private', 'USAGE') AS report_can_link,
       has_table_privilege('arata_research_identity_dev', 'research_private."PseudonymLink"', 'SELECT') AS identity_can_link`);
   const snapshotView = await client.query<{ present: boolean }>("SELECT to_regclass('app.\"PublicInsightSnapshot\"') IS NOT NULL AS present");
@@ -65,9 +69,9 @@ try {
     report: await checkRole(local.RESEARCH_REPORT_DATABASE_URL, 'SELECT 1 FROM research."ResearchEvent" LIMIT 0', 'SELECT 1 FROM research_private."PseudonymLink" LIMIT 0'),
     identity: await checkRole(local.RESEARCH_IDENTITY_DATABASE_URL, 'SELECT 1 FROM research_private."PseudonymLink" LIMIT 0', 'SELECT 1 FROM research."ResearchEvent" LIMIT 0'),
   };
-  if (!row || row.tables !== 87 || row.enums !== 29 || row.foreign_keys < 151 || row.checks < 74 || row.triggers < 44
-    || migrations.rows.length !== 19 || migrations.rows.some(m => !m.complete)
-    || !perms || perms.app_can_research || perms.report_can_link || !perms.identity_can_link || !snapshotView.rows[0]?.present
+  if (!row || row.tables !== 88 || row.enums !== 29 || row.foreign_keys < 154 || row.checks < 75 || row.triggers < 44
+    || migrations.rows.length !== 20 || migrations.rows.some(m => !m.complete)
+    || !perms || perms.app_can_research || !perms.app_can_lease || perms.report_can_link || !perms.identity_can_link || !snapshotView.rows[0]?.present
     || !editionOrder.rows[0]?.standalone || !editionOrder.rows[0].volume
     || reviewGuards.rows[0]?.count !== 5 || !reviewGuards.rows[0].child_freezes_review
     || !reviewGuards.rows[0].resource_parent_fallback

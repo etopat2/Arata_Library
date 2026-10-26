@@ -99,6 +99,10 @@ describe('effective reader policy', () => {
       }),
     ]);
     expect(policy.maxConcurrentSessions).toBe(1);
+    expect(policy.sessionLimits).toEqual([
+      { policyId: id(4), maxSessions: 3 },
+      { policyId: id(5), maxSessions: 1 },
+    ]);
     expect(
       mayUseContent(policy, 'read', {
         authenticated: false,

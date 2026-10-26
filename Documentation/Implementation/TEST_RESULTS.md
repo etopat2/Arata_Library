@@ -1,5 +1,19 @@
 # Validation results
 
+## Session-bound reader licences — 2026-10-26
+
+Scope: `FR-ENT-016` contribution, with `FR-RDR-001/002` access-path regression. Screens: `reader`, `content-policy`; other mapped screens unchanged. Paths: `prisma/schema.prisma`, `prisma/migrations/202610260001_reader_leases/`, `apps/api/src/reader/reader.service.ts`, `packages/access-policy/src/content-policy.ts`, `apps/web-pwa/src/Reader.tsx`, `database/tests/reader-policy.test.ts`, `tests/integration/catalogue.test.ts`, `database/erd/`.
+
+| Check | Result | Evidence and limit |
+|---|---|---|
+| PostgreSQL and migration | Passed locally | Additive migration applied first to isolated test, then development database with no reset. `prisma format`, `validate`, `generate`, two migration drift comparisons, `db:verify`, `db:erd`, and SQL catalog inspection passed: 88 tables, 154 FKs, 75 checks, 44 triggers, 29 enums, 20 migrations. Application-role lease grants and research isolation verified. `db:test` passed 11/11, including duplicate, ownership, expiry and cascade rules. |
+| Concurrent licence acquisition | Passed locally | Policy unit 6/6 and live reader/catalogue integration 9/9. The integration test races two authenticated sessions for a one-seat policy; exactly one succeeds. It checks expiry, a third denied session, revoked-session release and surviving lease ownership. This is a browser-session cap, not a physical-device identity guarantee. |
+| Application quality | Passed locally | `npm run build:foundation`, `npm run typecheck:foundation`, `npm run lint`, and final sequential Vitest passed 41/41 across 8 files. A first Vitest run failed before loading tests because Windows denied temporary-file renames; another non-service-enabled attempt could not use local PostgreSQL. The final run used project-local temporary files and local service access. |
+| Browser and accessibility | Passed locally | Built PWA public browser regression passed 10/10, including the accessible reader and responsive catalogue; administrator policy and Studio browser regression passed 2/2. Automated axe checks passed in the relevant screens. Manual WCAG review remains open. |
+| Traceability | Passed locally | Reconciliation `--check` retained 287 SRS IDs and 90 wireframe screens with 88 Prisma models. `FR-ENT-016` records the new migration, role grants, live test and SQL evidence; status remains partial until all SRS acceptance is met. |
+
+Active acquisitions remove expired and revoked leases. A global dormant-lease cleanup job, offline licences, export services, account-synced reader preferences, manual accessibility acceptance and production release gates remain open in `BLOCKERS.md` and `apps/api/READER.md`.
+
 ## Reader and content-policy local checks — 2026-10-25
 
 Scope: partial `FR-RDR-001`–`010`, `FR-ENT-001/004/007`–`014/016`, `FR-SRC-002/005/006`, and `BR-001/003/004/009/011` contributions. Screens: `reader`, `bookmarks`, `notes`, `content-policy`, `volume-detail`, and `resource-detail`. Implementation paths and remaining acceptance work are in `PROGRESS.md`, `BLOCKERS.md`, and `apps/api/READER.md`.

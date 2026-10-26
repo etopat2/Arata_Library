@@ -156,6 +156,10 @@ export async function createApp() {
       const response = context.getResponse<Response>();
       const request = context.getRequest<Request>();
       const status = error instanceof HttpException ? error.getStatus() : 500;
+      const sessionLimit =
+        status === 403 &&
+        error instanceof HttpException &&
+        error.message === 'Licensed session limit reached';
       if (status >= 500)
         console.error(
           JSON.stringify({
@@ -173,7 +177,9 @@ export async function createApp() {
           : status === 401
             ? 'Authentication required'
             : status === 403
-              ? 'Access denied'
+              ? sessionLimit
+                ? 'Licensed session limit reached'
+                : 'Access denied'
               : status === 404
                 ? 'Not found'
                 : status === 429
@@ -189,7 +195,9 @@ export async function createApp() {
           status === 401
             ? 'AUTHENTICATION_REQUIRED'
             : status === 403
-              ? 'ACCESS_DENIED'
+              ? sessionLimit
+                ? 'LICENSED_SESSION_LIMIT'
+                : 'ACCESS_DENIED'
               : status === 429
                 ? 'RATE_LIMITED'
                 : status >= 500

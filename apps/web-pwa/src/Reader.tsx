@@ -153,7 +153,9 @@ export function Reader() {
             ? reason.status === 401
               ? 'Sign in to read this lesson.'
               : reason.status === 403
-                ? 'Your current access does not include this lesson.'
+                ? reason.problem?.code === 'LICENSED_SESSION_LIMIT'
+                  ? 'Your licensed reading seats are in use on other devices. Close another session or try again in 15 minutes.'
+                  : 'Your current access does not include this lesson.'
                 : 'This lesson is unavailable.'
             : reason instanceof Error
               ? reason.message

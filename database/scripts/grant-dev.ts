@@ -22,7 +22,7 @@ try {
         EXECUTE format('GRANT INSERT, UPDATE ON app.%I TO arata_app_dev', t.tablename);
       END LOOP;
     END $$;
-    GRANT DELETE ON app."AuthSession", app."VerificationToken", app."Bookmark", app."Annotation", app."SyncOperation" TO arata_app_dev;
+    GRANT DELETE ON app."AuthSession", app."VerificationToken", app."Bookmark", app."Annotation", app."SyncOperation", app."ReaderLease" TO arata_app_dev;
 
     GRANT USAGE ON SCHEMA research TO arata_research_ingest_dev, arata_research_report_dev;
     GRANT USAGE ON SCHEMA app TO arata_research_ingest_dev, arata_research_report_dev;

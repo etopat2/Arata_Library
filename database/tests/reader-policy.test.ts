@@ -60,3 +60,74 @@ test('one scope, version uniqueness and action limits are enforced in PostgreSQL
     await client.end();
   }
 });
+
+test('reader leases reject duplicate seats, cross-user sessions and invalid expiry', async () => {
+  const client = new pg.Client({ connectionString: url });
+  await client.connect();
+  try {
+    await client.query('BEGIN');
+    const libraryId = randomUUID();
+    const policyId = randomUUID();
+    const userId = randomUUID();
+    const otherUserId = randomUUID();
+    const sessionId = randomUUID();
+    const secondSessionId = randomUUID();
+    await client.query(
+      `INSERT INTO app."Library" (id,slug,title) VALUES ($1,$2,'[TEST] Lease library')`,
+      [libraryId, `test-lease-${libraryId}`],
+    );
+    await client.query(
+      `INSERT INTO app."ContentPolicy" (id,"libraryId",version,"isActive","approvedAt","allowRead","maxConcurrentSessions")
+       VALUES ($1,$2,1,true,now(),true,1)`,
+      [policyId, libraryId],
+    );
+    for (const id of [userId, otherUserId])
+      await client.query(
+        `INSERT INTO app."User" (id,email,"privacyVersion","createdAt","updatedAt")
+         VALUES ($1,$2,'TEST-ONLY',now(),now())`,
+        [id, `lease-${id}@example.invalid`],
+      );
+    await client.query(
+      `INSERT INTO app."AuthSession" (id,"userId","tokenHash","expiresAt")
+       VALUES ($1,$2,$3,now()+interval '1 hour')`,
+      [sessionId, userId, randomUUID()],
+    );
+    await client.query(
+      `INSERT INTO app."AuthSession" (id,"userId","tokenHash","expiresAt")
+       VALUES ($1,$2,$3,now()+interval '1 hour')`,
+      [secondSessionId, userId, randomUUID()],
+    );
+    const insert = `INSERT INTO app."ReaderLease" (id,"policyId","userId","sessionId","expiresAt")
+      VALUES ($1,$2,$3,$4,now()+interval '15 minutes')`;
+    await client.query(insert, [randomUUID(), policyId, userId, sessionId]);
+    async function rejects(sql: string, values: unknown[], code: string) {
+      await client.query('SAVEPOINT invalid_lease');
+      try {
+        await assert.rejects(
+          client.query(sql, values),
+          (error: unknown) => (error as { code?: string }).code === code,
+        );
+      } finally {
+        await client.query('ROLLBACK TO SAVEPOINT invalid_lease');
+        await client.query('RELEASE SAVEPOINT invalid_lease');
+      }
+    }
+    await rejects(insert, [randomUUID(), policyId, userId, sessionId], '23505');
+    await rejects(insert, [randomUUID(), policyId, otherUserId, sessionId], '23503');
+    await rejects(
+      `INSERT INTO app."ReaderLease" (id,"policyId","userId","sessionId","expiresAt")
+       VALUES ($1,$2,$3,$4,now()-interval '1 minute')`,
+      [randomUUID(), policyId, userId, secondSessionId],
+      '23514',
+    );
+    await client.query(`DELETE FROM app."AuthSession" WHERE id=$1`, [sessionId]);
+    const remaining = await client.query<{ count: string }>(
+      `SELECT count(*)::text AS count FROM app."ReaderLease" WHERE "sessionId"=$1`,
+      [sessionId],
+    );
+    assert.equal(Number(remaining.rows[0]!.count), 0);
+  } finally {
+    await client.query('ROLLBACK').catch(() => undefined);
+    await client.end();
+  }
+});

@@ -71,6 +71,7 @@ export interface EffectiveContentPolicy {
   watermarkLabel: string | null;
   screenshotMode: ScreenshotMode;
   maxConcurrentSessions: number | null;
+  sessionLimits: { policyId: string; maxSessions: number }[];
   licenceEndsAt: string | null;
   sources: { scope: PolicyScope; id: string; version: number }[];
 }
@@ -92,6 +93,7 @@ const defaults: EffectiveContentPolicy = {
   watermarkLabel: null,
   screenshotMode: 'RESTRICTED_NOTICE',
   maxConcurrentSessions: null,
+  sessionLimits: [],
   licenceEndsAt: null,
   sources: [],
 };
@@ -118,7 +120,7 @@ export function resolveContentPolicy(
   path: PolicyPath,
   rows: readonly ContentPolicyRow[],
 ): EffectiveContentPolicy {
-  const result: EffectiveContentPolicy = { ...defaults, sources: [] };
+  const result: EffectiveContentPolicy = { ...defaults, sources: [], sessionLimits: [] };
   let explicitReadDeny = false;
   for (const scope of policyScopeOrder) {
     const id = path[scope];
@@ -136,6 +138,7 @@ export function resolveContentPolicy(
     }
     if (row.allowRead === false) explicitReadDeny = true;
     if (row.maxConcurrentSessions !== null) {
+      result.sessionLimits.push({ policyId: row.id, maxSessions: row.maxConcurrentSessions });
       result.maxConcurrentSessions =
         result.maxConcurrentSessions === null
           ? row.maxConcurrentSessions

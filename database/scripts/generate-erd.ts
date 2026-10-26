@@ -46,7 +46,7 @@ try {
     FROM pg_constraint k JOIN pg_class c ON c.oid = k.conrelid JOIN pg_namespace n ON n.oid = c.relnamespace
     WHERE k.contype IN ('p', 'u') AND n.nspname IN ('app', 'research', 'research_private')`)).rows;
   const tableNames = [...new Set(columns.map(c => `${c.schema_name}.${c.table_name}`))];
-  if (tableNames.length !== 87 || foreignKeys.length !== 151) throw new Error("Physical schema differs from the verified 87-table, 151-FK baseline");
+  if (tableNames.length !== 88 || foreignKeys.length !== 154) throw new Error("Physical schema differs from the verified 88-table, 154-FK baseline");
   const byTable = new Map(tableNames.map(name => [name, columns.filter(c => `${c.schema_name}.${c.table_name}` === name)]));
   const relationColumns = new Set(foreignKeys.flatMap(fk => fk.child_columns.map(column => `${fk.child_schema}.${fk.child_table}.${column}`)));
   const unique = (fk: ForeignKey) => uniqueKeys.some(key => key.schema_name === fk.child_schema && key.table_name === fk.child_table

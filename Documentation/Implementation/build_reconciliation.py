@@ -269,7 +269,7 @@ def main(check: bool) -> None:
     for path, method, _ in operations:
         operation_by_path[path].append(method)
     models = set(re.findall(r"(?m)^model (\w+) \{", (ROOT / "prisma/schema.prisma").read_text(encoding="utf-8")))
-    if len(models) != 87:
+    if len(models) != 88:
         raise ValueError(f"unexpected Prisma model count: {len(models)}")
 
     prior = rows(OUT / "REQUIREMENT_TRACEABILITY.csv")

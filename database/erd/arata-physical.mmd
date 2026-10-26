@@ -543,6 +543,15 @@ erDiagram
     jsonb answerSpec
     integer points
   }
+  app_ReaderLease {
+    uuid id PK
+    uuid policyId FK
+    uuid userId FK
+    uuid sessionId FK
+    timestamp_6__with_time_zone expiresAt
+    timestamp_6__with_time_zone createdAt
+    timestamp_6__with_time_zone updatedAt
+  }
   app_ReadingProgress {
     uuid id PK
     uuid userId FK
@@ -968,6 +977,9 @@ erDiagram
   app_Quiz ||--o{ app_QuizAttempt : "QuizAttempt_quizId_fkey"
   app_User ||--o{ app_QuizAttempt : "QuizAttempt_userId_fkey"
   app_Quiz ||--o{ app_QuizQuestion : "QuizQuestion_quizId_fkey"
+  app_ContentPolicy ||--o{ app_ReaderLease : "ReaderLease_policyId_fkey"
+  app_AuthSession ||--o{ app_ReaderLease : "ReaderLease_sessionId_userId_fkey"
+  app_User ||--o{ app_ReaderLease : "ReaderLease_userId_fkey"
   app_Edition ||--o{ app_ReadingProgress : "ReadingProgress_editionId_fkey"
   app_Lesson ||--o{ app_ReadingProgress : "ReadingProgress_lessonId_fkey"
   app_User ||--o{ app_ReadingProgress : "ReadingProgress_userId_fkey"

@@ -150,7 +150,7 @@ export function ContentPolicyAdmin() {
             <h2 className="text-xl font-bold">Effective permissions</h2>
             <dl className="mt-3 grid gap-2 sm:grid-cols-2">
               {Object.entries(effective)
-                .filter(([key]) => key !== 'sources')
+                .filter(([key]) => key !== 'sources' && key !== 'sessionLimits')
                 .map(([key, value]) => (
                   <div key={key}>
                     <dt className="font-semibold">{key}</dt>
