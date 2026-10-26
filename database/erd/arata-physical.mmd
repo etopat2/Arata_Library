@@ -156,6 +156,16 @@ erDiagram
     boolean isActive
     timestamp_6__with_time_zone approvedAt
     timestamp_6__with_time_zone createdAt
+    uuid libraryId FK
+    boolean allowPreview
+    boolean allowSelect
+    integer maxCopyChars
+    boolean allowExportPdf
+    boolean allowExportEpub
+    character_varying_160_ watermarkLabel
+    app__ScreenshotPolicyMode_ screenshotMode
+    integer maxConcurrentSessions
+    timestamp_6__with_time_zone licenceEndsAt
   }
   app_Contributor {
     uuid id PK
@@ -884,6 +894,7 @@ erDiagram
   app_Chapter o|--o{ app_ContentPolicy : "ContentPolicy_chapterId_fkey"
   app_Edition o|--o{ app_ContentPolicy : "ContentPolicy_editionId_fkey"
   app_Lesson o|--o{ app_ContentPolicy : "ContentPolicy_lessonId_fkey"
+  app_Library o|--o{ app_ContentPolicy : "ContentPolicy_libraryId_fkey"
   app_Publication o|--o{ app_ContentPolicy : "ContentPolicy_publicationId_fkey"
   app_Resource o|--o{ app_ContentPolicy : "ContentPolicy_resourceId_fkey"
   app_Revision o|--o{ app_ContentPolicy : "ContentPolicy_revisionId_fkey"

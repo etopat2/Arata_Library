@@ -1,5 +1,19 @@
 # Validation results
 
+## Reader and content-policy local checks — 2026-10-25
+
+Scope: partial `FR-RDR-001`–`010`, `FR-ENT-001/004/007`–`014/016`, `FR-SRC-002/005/006`, and `BR-001/003/004/009/011` contributions. Screens: `reader`, `bookmarks`, `notes`, `content-policy`, `volume-detail`, and `resource-detail`. Implementation paths and remaining acceptance work are in `PROGRESS.md`, `BLOCKERS.md`, and `apps/api/READER.md`.
+
+| Check | Result | Evidence and limit |
+|---|---|---|
+| PostgreSQL and Prisma | Passed locally | Additive `202610250006_reader_policy_fields` applied to isolated test and development databases without reset; `prisma format`, `validate`, `generate`, `db:verify` (87 tables, 151 foreign keys, 74 checks, 44 triggers, 29 enums, 19 complete migrations), both migration drift comparisons (no difference), `db:erd`, and `db:test` (10/10) passed. |
+| Live reader/API authorization | Passed locally | Final sequential `npx vitest run --config vitest.config.ts --maxWorkers=1` passed 39/39 across 8 files; the integration subset passed 26/26 across 5 files. Reader cases check public-free access, premium search secrecy, cross-user notes, encrypted annotation storage, explicit progress, administrator MFA/CSRF/versioning, and denied/tampered asset grants. The initial parallel suite had identity timeouts under local resource contention; standalone identity passed 8/8, then the sequential full suite passed. |
+| Policy resolver | Passed locally | Six unit cases cover default deny, inherited overrides, parent read veto, earliest expiry and strictest session cap, independent action flags, and audience/entitlement checks. A configured session cap is not yet enforced by a lease service (GAP-026). |
+| PWA and accessibility | Passed locally | `npm run test:e2e`: 10/10 Chrome browser checks against the built PWA and live API. The new reader test opened a labelled development lesson, checked rights disclosure and theme, and reported zero axe violations. It first exposed an empty legacy seed and a real night-mode form-control contrast defect; a new reviewed synthetic publication and white control backgrounds resolved those failures. Manual WCAG review remains open. |
+| Build, lint, design contract and traceability | Passed locally | `npm run build:foundation`, `npm run lint`, `npm run api:validate`, and reconciliation `--check` passed; 287 SRS IDs, 90 screens, 102 source operations and 87 models retained. The 190-operation design OpenAPI remains out of sync with new live reader DTOs (GAP-029). |
+
+The synthetic `dev-reader-series` was created by the guarded development seed with explicit bibliographic and rights evidence. Repeating the seed passed; SQL found one current lesson in `dev-reader-series` and the older `dev-published-series` still has its original preview-only revision. Successful approved binary delivery, expiry/revocation replay, institutional/trial/paid grant issuance, offline sync and export, complete policy workflows, and manual accessibility acceptance remain open. This section records a verified partial module contribution, not completion of the full SRS reader or content-policy acceptance.
+
 ## Publishing Studio local checks - 2026-10-25
 
 Scope: partial `FR-PUB-001`–`016`, `FR-AST-001`–`012`, and `BR-003/010/012/015` contributions. Wireframe references: `studio`, `publication-tree`, `book-editor`, `volume-editor`, `edition-editor`, `revision-history-admin`, `chapter-editor`, `asset-upload`, `bulk-import`, `review-queue`, `release-schedule`, and `licensing`. Paths and remaining acceptance gaps are listed in `PROGRESS.md` and `apps/api/STUDIO.md`.

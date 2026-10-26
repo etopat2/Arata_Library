@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import dotenv from 'dotenv';
 import pg from 'pg';
 
@@ -9,6 +10,9 @@ const url = process.env.MIGRATION_DATABASE_URL ?? local.MIGRATION_DATABASE_URL;
 if (!url || new URL(url).pathname !== '/arata_techlibrary_dev')
   throw new Error('Refusing non-development database');
 const client = new pg.Client({ connectionString: url, connectionTimeoutMillis: 5000 });
+const sampleLessonBody =
+  '# [DEV SAMPLE] Introduction to web engineering\n\nThis synthetic lesson demonstrates accessible reading. It contains no production manuscript.\n\n## Try it\n\nUse semantic headings, descriptive links, and keyboard focus.';
+const sampleLessonHash = createHash('sha256').update(sampleLessonBody).digest('hex');
 try {
   await client.connect();
   await client.query('BEGIN');
@@ -45,6 +49,13 @@ try {
       title: '[DEV SAMPLE] Accessible Web Basics',
       kind: 'STANDALONE',
       access: 'PUBLIC_FREE',
+      featured: false,
+    },
+    {
+      slug: 'dev-reader-series',
+      title: '[DEV SAMPLE] Reader Series',
+      kind: 'SERIES',
+      access: 'PREMIUM',
       featured: false,
     },
   ] as const) {
@@ -86,6 +97,13 @@ try {
       `INSERT INTO app."Chapter" (id,"revisionId",ordinal,slug,title,"previewText") VALUES (gen_random_uuid(),$1,1,'sample-introduction','[DEV SAMPLE] Introduction','[DEV SAMPLE] This synthetic chapter preview contains no production manuscript.') RETURNING id`,
       [revision.rows[0]!.id],
     );
+    if (item.kind === 'SERIES') {
+      await client.query(
+        `INSERT INTO app."Lesson" (id,"chapterId",ordinal,title,"bodyMarkdown","contentHash")
+         VALUES (gen_random_uuid(),$1,1,'[DEV SAMPLE] Introduction to web engineering',$2,$3)`,
+        [chapter.rows[0]!.id, sampleLessonBody, sampleLessonHash],
+      );
+    }
     await client.query(
       `INSERT INTO app."ContentPolicy" (id,"chapterId","accessClass","allowRead",version,"isActive","approvedAt") VALUES (gen_random_uuid(),$1,'PUBLIC_FREE',true,1,true,now())`,
       [chapter.rows[0]!.id],
@@ -95,12 +113,17 @@ try {
       [id, item.access],
     );
     const hash = item.kind === 'SERIES' ? 'a'.repeat(64) : 'b'.repeat(64);
-    await client.query(`UPDATE app."Revision" SET status='IN_REVIEW',"submittedAt"=now() WHERE id=$1`, [revision.rows[0]!.id]);
+    await client.query(
+      `UPDATE app."Revision" SET status='IN_REVIEW',"submittedAt"=now() WHERE id=$1`,
+      [revision.rows[0]!.id],
+    );
     await client.query(
       `INSERT INTO app."EditorialReview" (id,"revisionId","reviewerId",decision,"manifestHash",comment) VALUES (gen_random_uuid(),$1,$2,'APPROVED',$3,'[DEV SAMPLE] Synthetic test review')`,
       [revision.rows[0]!.id, reviewer.rows[0]!.id, hash],
     );
-    await client.query(`UPDATE app."Revision" SET status='APPROVED' WHERE id=$1`, [revision.rows[0]!.id]);
+    await client.query(`UPDATE app."Revision" SET status='APPROVED' WHERE id=$1`, [
+      revision.rows[0]!.id,
+    ]);
     await client.query(
       `INSERT INTO app."RightsAttestation" (id,"publicationId","revisionId","actorId","manifestHash","licenceCode","sourceRef")
        VALUES (gen_random_uuid(),$1,$2,$3,$4,'DEV-SAMPLE','DEV-SAMPLE-SOURCE')`,

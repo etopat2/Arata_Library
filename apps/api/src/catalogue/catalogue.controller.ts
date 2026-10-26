@@ -4,6 +4,8 @@ import type { Request, Response } from 'express';
 import { IdentityService } from '../identity/identity.service.js';
 import { CatalogueService } from './catalogue.service.js';
 import { Inject } from '@nestjs/common';
+import { ReaderService } from '../reader/reader.service.js';
+import type { AuthContext } from '../identity/identity.service.js';
 
 const uuid = z.uuid();
 const slug = z.string().regex(/^[a-z0-9][a-z0-9-]{0,199}$/);
@@ -43,6 +45,17 @@ function parse<T extends z.ZodType>(schema: T, value: unknown): z.output<T> {
   return parsed.data;
 }
 const wrap = (request: Request, data: unknown) => ({ data, requestId: request.id });
+async function optionalContext(
+  identity: IdentityService,
+  request: Request,
+): Promise<AuthContext | null> {
+  try {
+    return await identity.context(request.headers.cookie);
+  } catch (error) {
+    if (error instanceof HttpException && error.getStatus() === 401) return null;
+    throw error;
+  }
+}
 const html = (value: string) =>
   value.replace(
     /[&<>"']/g,
@@ -51,7 +64,11 @@ const html = (value: string) =>
 
 @Controller('catalogue')
 export class CatalogueController {
-  constructor(@Inject(CatalogueService) private readonly catalogue: CatalogueService) {}
+  constructor(
+    @Inject(CatalogueService) private readonly catalogue: CatalogueService,
+    @Inject(ReaderService) private readonly reader: ReaderService,
+    @Inject(IdentityService) private readonly identity: IdentityService,
+  ) {}
 
   @Get('collections')
   async collections(@Req() request: Request) {
@@ -112,7 +129,13 @@ export class CatalogueController {
 
   @Get('chapters/:id/preview')
   async preview(@Req() request: Request, @Param('id') value: string) {
-    return wrap(request, await this.catalogue.chapterPreview(parse(uuid, value)));
+    return wrap(
+      request,
+      await this.reader.previewChapter(
+        parse(uuid, value),
+        await optionalContext(this.identity, request),
+      ),
+    );
   }
 }
 
@@ -121,6 +144,7 @@ export class PublicResourceController {
   constructor(
     @Inject(CatalogueService) private readonly catalogue: CatalogueService,
     @Inject(IdentityService) private readonly identity: IdentityService,
+    @Inject(ReaderService) private readonly reader: ReaderService,
   ) {}
 
   @Get()
@@ -138,13 +162,13 @@ export class PublicResourceController {
 
   @Get(':id/open')
   async open(@Req() request: Request, @Param('id') value: string) {
-    const id = parse(uuid, value);
-    const resource = await this.catalogue.resource(id);
-    const authenticated =
-      resource.accessClass === 'REGISTERED_FREE'
-        ? !!(await this.identity.context(request.headers.cookie))
-        : false;
-    return wrap(request, await this.catalogue.openResource(id, authenticated));
+    return wrap(
+      request,
+      await this.reader.openResource(
+        parse(uuid, value),
+        await optionalContext(this.identity, request),
+      ),
+    );
   }
 }
 

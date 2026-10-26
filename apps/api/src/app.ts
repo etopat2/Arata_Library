@@ -26,6 +26,9 @@ import { StudioUploadController } from './studio/uploads.controller.js';
 import { StudioUploads } from './studio/uploads.service.js';
 import { StudioImportController } from './studio/imports.controller.js';
 import { StudioImports } from './studio/imports.service.js';
+import { ReaderController } from './reader/reader.controller.js';
+import { ReaderService } from './reader/reader.service.js';
+import { PolicyAdminController } from './reader/policy-admin.controller.js';
 
 export type ApiConfig = ReturnType<typeof loadConfig>;
 export function loadConfig() {
@@ -84,6 +87,8 @@ class HealthController {
     StudioController,
     StudioUploadController,
     StudioImportController,
+    ReaderController,
+    PolicyAdminController,
   ],
   providers: [
     { provide: 'APP_CONFIG', useFactory: loadConfig },
@@ -99,6 +104,7 @@ class HealthController {
     StudioService,
     StudioUploads,
     StudioImports,
+    ReaderService,
   ],
 })
 class AppModule {}

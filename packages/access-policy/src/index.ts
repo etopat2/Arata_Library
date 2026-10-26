@@ -8,3 +8,5 @@ export function mayAccess(principal: Principal, action: Action): boolean {
   if (action === 'health.ready') return principal.kind === 'service';
   return false;
 }
+
+export * from './content-policy.js';

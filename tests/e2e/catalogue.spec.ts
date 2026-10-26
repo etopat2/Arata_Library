@@ -19,6 +19,31 @@ test('navigates real published series, edition and sample from the catalogue', a
   ).toBeVisible();
 });
 
+test('opens an accessible public lesson in the reader with permissions and themes', async ({
+  page,
+}) => {
+  await page.goto('/?screen=catalogue');
+  await page
+    .getByRole('link', { name: /\[DEV SAMPLE\] Reader Series/i })
+    .first()
+    .click();
+  await page.getByRole('link', { name: /browse chapters/i }).click();
+  await page.getByRole('link', { name: 'Open digital reader' }).click();
+  await expect(page.getByRole('navigation', { name: 'Table of contents' })).toBeVisible();
+  await expect(page.getByRole('main')).toContainText('[DEV SAMPLE]');
+  await page.getByText('Content permissions').click();
+  await expect(
+    page.getByText(
+      'Browser controls cannot block operating system screenshots or copying of content already displayed.',
+      { exact: true },
+    ),
+  ).toBeVisible();
+  await page.getByLabel('Theme').selectOption('night');
+  await expect(page.locator('.bg-slate-950').first()).toBeVisible();
+  const audit = await new AxeBuilder({ page }).analyze();
+  expect(audit.violations).toEqual([]);
+});
+
 test('searches real records and keeps premium body text out of public responses', async ({
   page,
   request,

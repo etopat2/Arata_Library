@@ -10,6 +10,7 @@ import {
 } from '@arata/api-client';
 
 const api = createApiClient().catalogue;
+const readerApi = createApiClient().reader;
 const route = new URLSearchParams(location.search);
 const screen = route.get('screen') ?? 'home';
 const get = (name: string) => route.get(name) ?? '';
@@ -181,6 +182,7 @@ export function PublicPortal({
     title: string;
     text: string;
     licenceCode?: string;
+    assets?: { id: string; name: string }[];
   } | null>(null);
   const [busy, setBusy] = useState(true);
   const [opening, setOpening] = useState(false);
@@ -270,6 +272,15 @@ export function PublicPortal({
       );
     } finally {
       setOpening(false);
+    }
+  }
+  async function downloadResource(assetId: string) {
+    if (!resource) return;
+    try {
+      const grant = (await readerApi.resourceAssetGrant(resource.id, assetId)).data;
+      location.href = `/api/v1/reader/assets/${encodeURIComponent(assetId)}?grant=${encodeURIComponent(grant.token)}`;
+    } catch {
+      setOpenError('The licensed file is unavailable for download.');
     }
   }
   function search(event: FormEvent<HTMLFormElement>) {
@@ -819,6 +830,12 @@ export function PublicPortal({
               {edition.label} · Revision {edition.revisionNumber} · Published{' '}
               {new Date(edition.publishedAt).toLocaleDateString()}
             </p>
+            <a
+              className="mt-5 inline-flex min-h-11 items-center rounded-lg bg-[#74233e] px-5 font-semibold text-white"
+              href={href('reader', { edition: edition.id })}
+            >
+              Open digital reader
+            </a>
             <section className="mt-8 rounded-xl border border-slate-200 bg-white p-6">
               <h2 className="text-xl font-bold">Table of contents</h2>
               <p className="mt-1 text-sm text-slate-600">
@@ -975,7 +992,7 @@ export function PublicPortal({
               <p className="mt-5 text-sm text-slate-600">
                 {resource.copyrightNotice ?? 'Observe the stated licence and copyright terms.'}
               </p>
-              {resource.hasReadableText && resource.accessState !== 'LOCKED' ? (
+              {resource.accessState !== 'UPCOMING' ? (
                 <button
                   className={`${buttonStyle} mt-5`}
                   disabled={opening}
@@ -1000,6 +1017,23 @@ export function PublicPortal({
                 <article className="mt-7 whitespace-pre-wrap rounded-lg border border-slate-200 bg-slate-50 p-5 leading-8">
                   <h2 className="mb-4 text-xl font-bold">{reading.title}</h2>
                   {reading.text}
+                  {reading.assets?.length ? (
+                    <div className="mt-5">
+                      <h3 className="font-semibold">Licensed files</h3>
+                      <ul className="mt-2 space-y-2">
+                        {reading.assets.map((asset) => (
+                          <li key={asset.id}>
+                            <button
+                              className="font-semibold underline"
+                              onClick={() => void downloadResource(asset.id)}
+                            >
+                              Download {asset.name}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
                 </article>
               )}
             </div>

@@ -1,4 +1,38 @@
 import type { ApiProblem, HealthResponse } from '@arata/shared-types';
+import type { EffectiveContentPolicy } from '@arata/access-policy';
+
+export interface ReaderLesson {
+  id: string;
+  title: string;
+  ordinal: number;
+  chapterId: string;
+  chapterTitle: string;
+  chapterOrdinal: number;
+  editionId: string;
+  editionLabel: string;
+  revisionNumber: number;
+  publicationTitle: string;
+  publicationSlug: string;
+  bodyMarkdown: string | null;
+  blocks: unknown;
+  hasBodyAsset: boolean;
+  policy: EffectiveContentPolicy;
+  watermark: string | null;
+  screenshotNotice: string | null;
+}
+export interface ReaderManifest {
+  editionId: string;
+  lessons: {
+    id: string;
+    title: string;
+    chapterId: string;
+    chapterTitle: string;
+    chapterOrdinal: number;
+    ordinal: number;
+    available: boolean;
+    preview: boolean;
+  }[];
+}
 
 export type CatalogueAccess = 'FREE' | 'SIGN_IN' | 'LOCKED' | 'UPCOMING';
 export interface CatalogueCollection {
@@ -222,6 +256,82 @@ export function createApiClient(baseUrl = '') {
   }
   return {
     request,
+    reader: {
+      manifest: (editionId: string, signal?: AbortSignal) =>
+        request<ApiData<ReaderManifest>>(
+          `/reader/editions/${encodeURIComponent(editionId)}/manifest`,
+          'GET',
+          undefined,
+          signal,
+        ),
+      lesson: (id: string, signal?: AbortSignal) =>
+        request<ApiData<ReaderLesson>>(
+          `/reader/lessons/${encodeURIComponent(id)}`,
+          'GET',
+          undefined,
+          signal,
+        ),
+      search: (editionId: string, q: string) =>
+        request<ApiData<{ id: string; title: string; snippet: string }[]>>(
+          `/reader/editions/${encodeURIComponent(editionId)}/search?q=${encodeURIComponent(q)}`,
+        ),
+      progress: (id: string, value: { anchor?: string; percent?: number; completed: boolean }) =>
+        request<ApiData<{ id: string }>>(
+          `/reader/lessons/${encodeURIComponent(id)}/progress`,
+          'POST',
+          value,
+        ),
+      bookmark: (id: string, anchor: string) =>
+        request<ApiData<{ id: string | null }>>(
+          `/reader/lessons/${encodeURIComponent(id)}/bookmarks`,
+          'POST',
+          { anchor },
+        ),
+      bookmarks: (editionId: string) =>
+        request<ApiData<{ id: string; anchor: string; createdAt: string }[]>>(
+          `/reader/editions/${encodeURIComponent(editionId)}/bookmarks`,
+        ),
+      editionProgress: (editionId: string) =>
+        request<ApiData<{ lessonId: string; position: unknown; completedAt: string | null }[]>>(
+          `/reader/editions/${encodeURIComponent(editionId)}/progress`,
+        ),
+      annotations: (id: string) =>
+        request<
+          ApiData<{ id: string; anchor: string; kind: string; quote: string; note: string }[]>
+        >(`/reader/lessons/${encodeURIComponent(id)}/annotations`),
+      annotate: (
+        id: string,
+        value: { anchor: string; kind: 'NOTE' | 'HIGHLIGHT'; quote?: string; note?: string },
+      ) =>
+        request<ApiData<{ id: string }>>(
+          `/reader/lessons/${encodeURIComponent(id)}/annotations`,
+          'POST',
+          value,
+        ),
+      deleteAnnotation: (id: string) =>
+        request<ApiData<{ deleted: boolean }>>(
+          `/reader/annotations/${encodeURIComponent(id)}`,
+          'DELETE',
+        ),
+      assetGrant: (id: string) =>
+        request<ApiData<{ assetId: string; token: string; expiresAt: string }>>(
+          `/reader/lessons/${encodeURIComponent(id)}/asset-grant`,
+        ),
+      resourceAssetGrant: (id: string, assetId: string) =>
+        request<ApiData<{ assetId: string; token: string; expiresAt: string }>>(
+          `/reader/resources/${encodeURIComponent(id)}/assets/${encodeURIComponent(assetId)}/grant`,
+        ),
+    },
+    policies: {
+      history: (scope: string, id: string) =>
+        request<ApiData<Record<string, unknown>[]>>(
+          `/admin/content-policies/${encodeURIComponent(scope)}/${encodeURIComponent(id)}`,
+        ),
+      effective: (path: URLSearchParams) =>
+        request<ApiData<EffectiveContentPolicy>>(`/admin/content-policies/effective?${path}`),
+      replace: (value: Record<string, unknown>) =>
+        request<ApiData<{ id: string; version: number }>>('/admin/content-policies', 'POST', value),
+    },
     studio: {
       tree: () => request<ApiData<StudioTree>>('/studio/tree'),
       publication: (id: string) =>
@@ -309,12 +419,15 @@ export function createApiClient(baseUrl = '') {
           signal,
         ),
       openResource: (id: string, signal?: AbortSignal) =>
-        request<ApiData<{ id: string; title: string; text: string; licenceCode: string }>>(
-          `/resources/${encodeURIComponent(id)}/open`,
-          'GET',
-          undefined,
-          signal,
-        ),
+        request<
+          ApiData<{
+            id: string;
+            title: string;
+            text: string;
+            licenceCode: string;
+            assets: { id: string; name: string }[];
+          }>
+        >(`/resources/${encodeURIComponent(id)}/open`, 'GET', undefined, signal),
       search: (params: URLSearchParams, signal?: AbortSignal) =>
         request<
           ApiData<{

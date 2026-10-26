@@ -363,7 +363,7 @@ def main(check: bool) -> None:
             "implementation_paths": prior_row["implementation_paths"],
             "implementation_status": prior_row["implementation_status"],
             "verification_result": prior_row["verification_result"],
-            "mapping_note": prior_row["mapping_note"] if ident in {"BR-003", "BR-010", "BR-012", "BR-015"} else "Proposed invariant mapping; service and end-to-end acceptance remain open" if family == "BR" else prior_row["mapping_note"],
+            "mapping_note": prior_row["mapping_note"],
         })
 
     navigation: list[dict[str, str]] = []

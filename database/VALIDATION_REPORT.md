@@ -1,5 +1,9 @@
 # Database validation report
 
+## Reader policy extension - 2026-10-25
+
+The additive `202610250006_reader_policy_fields` migration was reviewed and applied first to `arata_techlibrary_test`, then to `arata_techlibrary_dev`. It preflights duplicate scope versions, adds a library policy scope and nullable action overrides, and preserves existing policies and content. No reset or row deletion occurred. `prisma format`, `prisma validate` and `prisma generate` passed. PostgreSQL 18.4 reports 87 tables, 151 foreign keys, 74 checks, 44 triggers, 29 enums and 19 complete migrations in UTC. `db:verify` passed including role isolation. The isolated SQL suite passed 10/10; physical Mermaid/DOT/SVG diagrams were regenerated with 151 named relationships. Reader policy/API/browser validation is recorded in `Documentation/Implementation/TEST_RESULTS.md`. A production restore drill and full reader release acceptance remain open.
+
 ## Reviewed bibliographic metadata guard - 2026-10-25
 
 The additive `202610250004_reviewed_bibliography_guard` migration was inspected,

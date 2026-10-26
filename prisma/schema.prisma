@@ -131,6 +131,14 @@ enum AccessClass {
   @@schema("app")
 }
 
+enum ScreenshotPolicyMode {
+  ALLOW
+  WATERMARK
+  RESTRICTED_NOTICE
+
+  @@schema("app")
+}
+
 enum EntitlementSource {
   PAID
   TRIAL
@@ -506,11 +514,12 @@ model RetentionPolicy {
 }
 
 model Library {
-  id          String       @id @default(uuid()) @db.Uuid
-  slug        String       @unique @db.VarChar(200)
-  title       String       @db.VarChar(300)
-  createdAt   DateTime     @default(now()) @db.Timestamptz(6)
+  id          String          @id @default(uuid()) @db.Uuid
+  slug        String          @unique @db.VarChar(200)
+  title       String          @db.VarChar(300)
+  createdAt   DateTime        @default(now()) @db.Timestamptz(6)
   collections Collection[]
+  policies    ContentPolicy[]
 
   @@schema("app")
 }
@@ -977,34 +986,45 @@ model EditorialReview {
 }
 
 model ContentPolicy {
-  id            String         @id @default(uuid()) @db.Uuid
-  publicationId String?        @db.Uuid
-  volumeId      String?        @db.Uuid
-  editionId     String?        @db.Uuid
-  revisionId    String?        @db.Uuid
-  chapterId     String?        @db.Uuid
-  lessonId      String?        @db.Uuid
-  resourceId    String?        @db.Uuid
-  accessClass   AccessClass?
-  allowRead     Boolean?
-  allowDownload Boolean?
-  allowCopy     Boolean?
-  allowPrint    Boolean?
-  allowOffline  Boolean?
-  allowShare    Boolean?
-  watermark     Boolean?
-  version       Int
-  isActive      Boolean        @default(false)
-  approvedAt    DateTime?      @db.Timestamptz(6)
-  createdAt     DateTime       @default(now()) @db.Timestamptz(6)
-  publication   Publication?   @relation(fields: [publicationId], references: [id], onDelete: Restrict)
-  volume        Volume?        @relation(fields: [volumeId], references: [id], onDelete: Restrict)
-  edition       Edition?       @relation(fields: [editionId], references: [id], onDelete: Restrict)
-  revision      Revision?      @relation(fields: [revisionId], references: [id], onDelete: Restrict)
-  chapter       Chapter?       @relation(fields: [chapterId], references: [id], onDelete: Restrict)
-  lesson        Lesson?        @relation(fields: [lessonId], references: [id], onDelete: Restrict)
-  resource      Resource?      @relation(fields: [resourceId], references: [id], onDelete: Restrict)
-  changes       PolicyChange[]
+  id                    String                @id @default(uuid()) @db.Uuid
+  libraryId             String?               @db.Uuid
+  publicationId         String?               @db.Uuid
+  volumeId              String?               @db.Uuid
+  editionId             String?               @db.Uuid
+  revisionId            String?               @db.Uuid
+  chapterId             String?               @db.Uuid
+  lessonId              String?               @db.Uuid
+  resourceId            String?               @db.Uuid
+  accessClass           AccessClass?
+  allowRead             Boolean?
+  allowPreview          Boolean?
+  allowSelect           Boolean?
+  allowDownload         Boolean?
+  allowCopy             Boolean?
+  maxCopyChars          Int?
+  allowPrint            Boolean?
+  allowExportPdf        Boolean?
+  allowExportEpub       Boolean?
+  allowOffline          Boolean?
+  allowShare            Boolean?
+  watermark             Boolean?
+  watermarkLabel        String?               @db.VarChar(160)
+  screenshotMode        ScreenshotPolicyMode?
+  maxConcurrentSessions Int?
+  licenceEndsAt         DateTime?             @db.Timestamptz(6)
+  version               Int
+  isActive              Boolean               @default(false)
+  approvedAt            DateTime?             @db.Timestamptz(6)
+  createdAt             DateTime              @default(now()) @db.Timestamptz(6)
+  library               Library?              @relation(fields: [libraryId], references: [id], onDelete: Restrict)
+  publication           Publication?          @relation(fields: [publicationId], references: [id], onDelete: Restrict)
+  volume                Volume?               @relation(fields: [volumeId], references: [id], onDelete: Restrict)
+  edition               Edition?              @relation(fields: [editionId], references: [id], onDelete: Restrict)
+  revision              Revision?             @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  chapter               Chapter?              @relation(fields: [chapterId], references: [id], onDelete: Restrict)
+  lesson                Lesson?               @relation(fields: [lessonId], references: [id], onDelete: Restrict)
+  resource              Resource?             @relation(fields: [resourceId], references: [id], onDelete: Restrict)
+  changes               PolicyChange[]
 
   @@schema("app")
 }
