@@ -131,6 +131,14 @@ enum AccessClass {
   @@schema("app")
 }
 
+enum ScreenshotPolicyMode {
+  ALLOW
+  WATERMARK
+  RESTRICTED_NOTICE
+
+  @@schema("app")
+}
+
 enum EntitlementSource {
   PAID
   TRIAL
@@ -288,6 +296,8 @@ model User {
   updatedAt              DateTime                @updatedAt @db.Timestamptz(6)
   profile                UserProfile?
   sessions               AuthSession[]
+  readerLeases           ReaderLease[]
+  readerPreference       ReaderPreference?
   authenticators         Authenticator[]
   verificationTokens     VerificationToken[]
   roles                  RoleAssignment[]
@@ -347,17 +357,19 @@ model UserProfile {
 }
 
 model AuthSession {
-  id            String    @id @default(uuid()) @db.Uuid
-  userId        String    @db.Uuid
-  tokenHash     String    @unique @db.VarChar(128)
-  expiresAt     DateTime  @db.Timestamptz(6)
-  revokedAt     DateTime? @db.Timestamptz(6)
-  mfaVerifiedAt DateTime? @db.Timestamptz(6)
-  deviceLabel   String?   @db.VarChar(160)
-  lastSeenAt    DateTime? @db.Timestamptz(6)
-  createdAt     DateTime  @default(now()) @db.Timestamptz(6)
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            String        @id @default(uuid()) @db.Uuid
+  userId        String        @db.Uuid
+  tokenHash     String        @unique @db.VarChar(128)
+  expiresAt     DateTime      @db.Timestamptz(6)
+  revokedAt     DateTime?     @db.Timestamptz(6)
+  mfaVerifiedAt DateTime?     @db.Timestamptz(6)
+  deviceLabel   String?       @db.VarChar(160)
+  lastSeenAt    DateTime?     @db.Timestamptz(6)
+  createdAt     DateTime      @default(now()) @db.Timestamptz(6)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  readerLeases  ReaderLease[]
 
+  @@unique([id, userId])
   @@index([userId, expiresAt])
   @@schema("app")
 }
@@ -506,11 +518,12 @@ model RetentionPolicy {
 }
 
 model Library {
-  id          String       @id @default(uuid()) @db.Uuid
-  slug        String       @unique @db.VarChar(200)
-  title       String       @db.VarChar(300)
-  createdAt   DateTime     @default(now()) @db.Timestamptz(6)
+  id          String          @id @default(uuid()) @db.Uuid
+  slug        String          @unique @db.VarChar(200)
+  title       String          @db.VarChar(300)
+  createdAt   DateTime        @default(now()) @db.Timestamptz(6)
   collections Collection[]
+  policies    ContentPolicy[]
 
   @@schema("app")
 }
@@ -977,34 +990,77 @@ model EditorialReview {
 }
 
 model ContentPolicy {
-  id            String         @id @default(uuid()) @db.Uuid
-  publicationId String?        @db.Uuid
-  volumeId      String?        @db.Uuid
-  editionId     String?        @db.Uuid
-  revisionId    String?        @db.Uuid
-  chapterId     String?        @db.Uuid
-  lessonId      String?        @db.Uuid
-  resourceId    String?        @db.Uuid
-  accessClass   AccessClass?
-  allowRead     Boolean?
-  allowDownload Boolean?
-  allowCopy     Boolean?
-  allowPrint    Boolean?
-  allowOffline  Boolean?
-  allowShare    Boolean?
-  watermark     Boolean?
-  version       Int
-  isActive      Boolean        @default(false)
-  approvedAt    DateTime?      @db.Timestamptz(6)
-  createdAt     DateTime       @default(now()) @db.Timestamptz(6)
-  publication   Publication?   @relation(fields: [publicationId], references: [id], onDelete: Restrict)
-  volume        Volume?        @relation(fields: [volumeId], references: [id], onDelete: Restrict)
-  edition       Edition?       @relation(fields: [editionId], references: [id], onDelete: Restrict)
-  revision      Revision?      @relation(fields: [revisionId], references: [id], onDelete: Restrict)
-  chapter       Chapter?       @relation(fields: [chapterId], references: [id], onDelete: Restrict)
-  lesson        Lesson?        @relation(fields: [lessonId], references: [id], onDelete: Restrict)
-  resource      Resource?      @relation(fields: [resourceId], references: [id], onDelete: Restrict)
-  changes       PolicyChange[]
+  id                    String                @id @default(uuid()) @db.Uuid
+  libraryId             String?               @db.Uuid
+  publicationId         String?               @db.Uuid
+  volumeId              String?               @db.Uuid
+  editionId             String?               @db.Uuid
+  revisionId            String?               @db.Uuid
+  chapterId             String?               @db.Uuid
+  lessonId              String?               @db.Uuid
+  resourceId            String?               @db.Uuid
+  accessClass           AccessClass?
+  allowRead             Boolean?
+  allowPreview          Boolean?
+  allowSelect           Boolean?
+  allowDownload         Boolean?
+  allowCopy             Boolean?
+  maxCopyChars          Int?
+  allowPrint            Boolean?
+  allowExportPdf        Boolean?
+  allowExportEpub       Boolean?
+  allowOffline          Boolean?
+  allowShare            Boolean?
+  watermark             Boolean?
+  watermarkLabel        String?               @db.VarChar(160)
+  screenshotMode        ScreenshotPolicyMode?
+  maxConcurrentSessions Int?
+  licenceEndsAt         DateTime?             @db.Timestamptz(6)
+  version               Int
+  isActive              Boolean               @default(false)
+  approvedAt            DateTime?             @db.Timestamptz(6)
+  createdAt             DateTime              @default(now()) @db.Timestamptz(6)
+  library               Library?              @relation(fields: [libraryId], references: [id], onDelete: Restrict)
+  publication           Publication?          @relation(fields: [publicationId], references: [id], onDelete: Restrict)
+  volume                Volume?               @relation(fields: [volumeId], references: [id], onDelete: Restrict)
+  edition               Edition?              @relation(fields: [editionId], references: [id], onDelete: Restrict)
+  revision              Revision?             @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  chapter               Chapter?              @relation(fields: [chapterId], references: [id], onDelete: Restrict)
+  lesson                Lesson?               @relation(fields: [lessonId], references: [id], onDelete: Restrict)
+  resource              Resource?             @relation(fields: [resourceId], references: [id], onDelete: Restrict)
+  changes               PolicyChange[]
+  readerLeases          ReaderLease[]
+
+  @@schema("app")
+}
+
+model ReaderLease {
+  id        String        @id @default(uuid()) @db.Uuid
+  policyId  String        @db.Uuid
+  userId    String        @db.Uuid
+  sessionId String        @db.Uuid
+  expiresAt DateTime      @db.Timestamptz(6)
+  createdAt DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime      @default(now()) @updatedAt @db.Timestamptz(6)
+  policy    ContentPolicy @relation(fields: [policyId], references: [id], onDelete: Restrict)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session   AuthSession   @relation(fields: [sessionId, userId], references: [id, userId], onDelete: Cascade)
+
+  @@unique([policyId, userId, sessionId])
+  @@index([policyId, userId, expiresAt])
+  @@index([expiresAt])
+  @@schema("app")
+}
+
+model ReaderPreference {
+  userId        String   @id @db.Uuid
+  theme         String   @default("paper") @db.VarChar(10)
+  fontSize      Int      @default(18)
+  fontFamily    String   @default("system") @db.VarChar(10)
+  lineSpacing   Int      @default(175)
+  reducedMotion Boolean  @default(false)
+  updatedAt     DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@schema("app")
 }

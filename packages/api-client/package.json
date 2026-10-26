@@ -10,6 +10,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@arata/access-policy": "0.1.0",
     "@arata/shared-types": "0.1.0"
   }
 }

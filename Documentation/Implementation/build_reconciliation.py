@@ -269,7 +269,7 @@ def main(check: bool) -> None:
     for path, method, _ in operations:
         operation_by_path[path].append(method)
     models = set(re.findall(r"(?m)^model (\w+) \{", (ROOT / "prisma/schema.prisma").read_text(encoding="utf-8")))
-    if len(models) != 87:
+    if len(models) != 89:
         raise ValueError(f"unexpected Prisma model count: {len(models)}")
 
     prior = rows(OUT / "REQUIREMENT_TRACEABILITY.csv")
@@ -301,6 +301,11 @@ def main(check: bool) -> None:
             priority = f"{source_priority} / {release}"
             screen_value = design_row["screen_ids"]
             candidate_paths = design_row["api_paths"]
+        if ident == "FR-RDR-002":
+            db_models += ";ReaderPreference"
+            candidate_paths += ";/api/v1/reader/settings"
+        elif ident == "NFR-UX-007":
+            db_models = "ReaderPreference"
         for name in db_models.split(";"):
             if name and not name.startswith("N/A") and name not in models:
                 raise ValueError(f"{ident} maps missing Prisma model {name}")
@@ -363,7 +368,7 @@ def main(check: bool) -> None:
             "implementation_paths": prior_row["implementation_paths"],
             "implementation_status": prior_row["implementation_status"],
             "verification_result": prior_row["verification_result"],
-            "mapping_note": prior_row["mapping_note"] if ident in {"BR-003", "BR-010", "BR-012", "BR-015"} else "Proposed invariant mapping; service and end-to-end acceptance remain open" if family == "BR" else prior_row["mapping_note"],
+            "mapping_note": prior_row["mapping_note"],
         })
 
     navigation: list[dict[str, str]] = []

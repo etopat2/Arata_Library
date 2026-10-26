@@ -1,5 +1,21 @@
 # Database validation report
 
+## Account reader preferences — 2026-10-26
+
+Migration `202610260003_reader_preferences` only creates `app."ReaderPreference"`; it changes no existing table or row. It was reviewed and applied first to the isolated test database, then to development, without a reset. The user-owned row has a cascade delete with its account and four PostgreSQL allowlist checks. Prisma format, validate, generate and both migration drift comparisons passed. PostgreSQL 18.4 reports 89 tables, 155 foreign keys, 79 checks, 44 triggers, 29 enums and 22 complete migrations. `db:verify` confirms application read/write privileges without direct preference deletion, research role isolation and UTC. SQL constraints passed 12/12, including invalid settings and deletion. The physical ERD was regenerated. Recovery is a reviewed forward migration or verified backup restore after assessing saved preferences; do not reset a database containing unverified data.
+
+## Reader-lease expiry index and retention worker - 2026-10-26
+
+The additive `202610260002_reader_lease_cleanup_index` migration creates only an expiry index on `app."ReaderLease"`. It was reviewed and applied first to `arata_techlibrary_test`, then to `arata_techlibrary_dev`, with no reset or row rewrite. Prisma format, validate and generate passed. Both migration drift comparisons found no difference. PostgreSQL 18.4 reports 88 tables, 154 foreign keys, 75 checks, 44 triggers, 29 enums and 21 completed migrations; `db:verify` confirms the index, application lease privileges and research role isolation. The SQL constraint suite passes 11/11. The worker deletes at most 1,000 expired leases per sweep and preserves active leases; its live integration result is in `Documentation/Implementation/TEST_RESULTS.md`. Rolling back this additive index requires a reviewed forward migration or restore from a verified backup; do not reset a database containing unverified data.
+
+## Session-bound reader leases - 2026-10-26
+
+The additive `202610260001_reader_leases` migration was reviewed and applied to the isolated `arata_techlibrary_test` database before `arata_techlibrary_dev`, without resetting either database or removing existing rows. It adds a reader lease table, a composite authentication-session ownership key, foreign keys, uniqueness, an expiry check and an indexed policy/user/expiry lookup. PostgreSQL 18.4 now reports 88 tables, 154 foreign keys, 75 checks, 44 triggers, 29 enums and 20 complete migrations. `prisma format`, `prisma validate`, `prisma generate`, both migration-to-schema and database-to-schema drift comparisons, `db:verify` and `db:erd` passed. The physical Mermaid/DOT/SVG ERDs include 154 named relationships. The SQL constraint suite passed 11/11, including duplicate leases, cross-user session rejection, expiry and cascade deletion. `ReaderLease` privileges were granted to the application role; research data isolation remains verified. For rollback, restore a verified backup or deploy a reviewed forward migration after confirming lease/data impact; never reset a database with unverified data. Global cleanup of dormant expired leases remains open; active acquisitions remove stale rows.
+
+## Reader policy extension - 2026-10-25
+
+The additive `202610250006_reader_policy_fields` migration was reviewed and applied first to `arata_techlibrary_test`, then to `arata_techlibrary_dev`. It preflights duplicate scope versions, adds a library policy scope and nullable action overrides, and preserves existing policies and content. No reset or row deletion occurred. `prisma format`, `prisma validate` and `prisma generate` passed. PostgreSQL 18.4 reports 87 tables, 151 foreign keys, 74 checks, 44 triggers, 29 enums and 19 complete migrations in UTC. `db:verify` passed including role isolation. The isolated SQL suite passed 10/10; physical Mermaid/DOT/SVG diagrams were regenerated with 151 named relationships. Reader policy/API/browser validation is recorded in `Documentation/Implementation/TEST_RESULTS.md`. A production restore drill and full reader release acceptance remain open.
+
 ## Reviewed bibliographic metadata guard - 2026-10-25
 
 The additive `202610250004_reviewed_bibliography_guard` migration was inspected,

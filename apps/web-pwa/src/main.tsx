@@ -7,6 +7,8 @@ import { registerSW } from 'virtual:pwa-register';
 import { AccountScreens } from './AccountScreens.js';
 import { PublicPortal } from './PublicPortal.js';
 import { PublishingStudio } from './PublishingStudio.js';
+import { Reader } from './Reader.js';
+import { ContentPolicyAdmin } from './ContentPolicyAdmin.js';
 import './style.css';
 
 const accountScreens = new Set([
@@ -33,6 +35,8 @@ function App() {
   const [updateReady, setUpdateReady] = useState(false);
   const account = accountScreens.has(new URLSearchParams(location.search).get('screen') ?? '');
   const studio = new URLSearchParams(location.search).get('screen') === 'studio';
+  const reader = new URLSearchParams(location.search).get('screen') === 'reader';
+  const policyAdmin = new URLSearchParams(location.search).get('screen') === 'content-policy';
 
   useEffect(() => {
     void getTheme().then(chooseTheme);
@@ -56,6 +60,8 @@ function App() {
     void setTheme(next);
   }
   if (studio) return <PublishingStudio />;
+  if (reader) return <Reader />;
+  if (policyAdmin) return <ContentPolicyAdmin />;
   if (!account)
     return (
       <PublicPortal

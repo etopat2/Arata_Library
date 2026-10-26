@@ -23,7 +23,7 @@ export default defineConfig({
       command: 'npm run dev:api',
       url: 'http://127.0.0.1:3110/api/v1/health/live',
       reuseExistingServer: false,
-      timeout: 45000,
+      timeout: 90000,
       env: {
         DATABASE_URL: local.TEST_DATABASE_URL,
         NODE_ENV: 'test',
@@ -35,7 +35,7 @@ export default defineConfig({
       command: 'npm run preview -w @arata/web-pwa -- --port 5187',
       url: 'http://127.0.0.1:5187',
       reuseExistingServer: false,
-      timeout: 45000,
+      timeout: 90000,
       env: { VITE_API_PROXY_TARGET: 'http://127.0.0.1:3110' },
     },
   ],

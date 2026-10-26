@@ -15,7 +15,7 @@ digraph ArataPhysicalERD {
   "app_Cohort" [label="app.Cohort\nPK id\nFK institutionId\nname\ncreatedAt", fillcolor="#f7f9fc"];
   "app_CohortMember" [label="app.CohortMember\nPK cohortId\nPK userId\njoinedAt\nleftAt?", fillcolor="#f7f9fc"];
   "app_Collection" [label="app.Collection\nPK id\nslug\ntitle\ndescription?\ncreatedAt\nFK libraryId", fillcolor="#f7f9fc"];
-  "app_ContentPolicy" [label="app.ContentPolicy\nPK id\nFK publicationId?\nFK volumeId?\nFK editionId?\nFK revisionId?\nFK chapterId?\nFK lessonId?\nFK resourceId?\naccessClass?\nallowRead?\nallowDownload?\nallowCopy?\nallowPrint?\nallowOffline?\nallowShare?\nwatermark?\nversion\nisActive\napprovedAt?\ncreatedAt", fillcolor="#f7f9fc"];
+  "app_ContentPolicy" [label="app.ContentPolicy\nPK id\nFK publicationId?\nFK volumeId?\nFK editionId?\nFK revisionId?\nFK chapterId?\nFK lessonId?\nFK resourceId?\naccessClass?\nallowRead?\nallowDownload?\nallowCopy?\nallowPrint?\nallowOffline?\nallowShare?\nwatermark?\nversion\nisActive\napprovedAt?\ncreatedAt\nFK libraryId?\nallowPreview?\nallowSelect?\nmaxCopyChars?\nallowExportPdf?\nallowExportEpub?\nwatermarkLabel?\nscreenshotMode?\nmaxConcurrentSessions?\nlicenceEndsAt?", fillcolor="#f7f9fc"];
   "app_Contributor" [label="app.Contributor\nPK id\ndisplayName\nslug\nbiography?", fillcolor="#f7f9fc"];
   "app_CrossReference" [label="app.CrossReference\nPK id\nFK sourceLessonId\nFK targetPublicationId?\nFK targetChapterId?\nFK targetLessonId?\nlabel\ncreatedAt", fillcolor="#f7f9fc"];
   "app_Edition" [label="app.Edition\nPK id\nFK publicationId\nFK volumeId?\neditionCode\nlabel\nFK currentRevisionId?\nisDefault\ncreatedAt\nisbn13?\npublicationDate?\nordinal", fillcolor="#f7f9fc"];
@@ -55,6 +55,8 @@ digraph ArataPhysicalERD {
   "app_QuizAnswer" [label="app.QuizAnswer\nPK attemptId\nPK questionId\nresponse\nawarded?", fillcolor="#f7f9fc"];
   "app_QuizAttempt" [label="app.QuizAttempt\nPK id\nFK userId\nFK quizId\nstatus\nstartedAt\nsubmittedAt?\nscore?", fillcolor="#f7f9fc"];
   "app_QuizQuestion" [label="app.QuizQuestion\nPK id\nFK quizId\nordinal\nkind\npromptAssetId?\nanswerSpec\npoints", fillcolor="#f7f9fc"];
+  "app_ReaderLease" [label="app.ReaderLease\nPK id\nFK policyId\nFK userId\nFK sessionId\nexpiresAt\ncreatedAt\nupdatedAt", fillcolor="#f7f9fc"];
+  "app_ReaderPreference" [label="app.ReaderPreference\nPK userId\ntheme\nfontSize\nfontFamily\nlineSpacing\nreducedMotion\nupdatedAt", fillcolor="#f7f9fc"];
   "app_ReadingProgress" [label="app.ReadingProgress\nPK id\nFK userId\nFK editionId\nFK lessonId\nposition?\ncompletedAt?\nupdatedAt", fillcolor="#f7f9fc"];
   "app_ReconciliationItem" [label="app.ReconciliationItem\nPK id\nFK runId\nFK paymentAttemptId?\nproviderRef\noutcome\ndetail?", fillcolor="#f7f9fc"];
   "app_ReconciliationRun" [label="app.ReconciliationRun\nPK id\nprovider\nperiodFrom\nperiodTo\nstartedAt\nendedAt?", fillcolor="#f7f9fc"];
@@ -112,6 +114,7 @@ digraph ArataPhysicalERD {
   "app_Chapter" -> "app_ContentPolicy" [label="ContentPolicy_chapterId_fkey (chapterId)\n0..1 : 0..many"];
   "app_Edition" -> "app_ContentPolicy" [label="ContentPolicy_editionId_fkey (editionId)\n0..1 : 0..many"];
   "app_Lesson" -> "app_ContentPolicy" [label="ContentPolicy_lessonId_fkey (lessonId)\n0..1 : 0..many"];
+  "app_Library" -> "app_ContentPolicy" [label="ContentPolicy_libraryId_fkey (libraryId)\n0..1 : 0..many"];
   "app_Publication" -> "app_ContentPolicy" [label="ContentPolicy_publicationId_fkey (publicationId)\n0..1 : 0..many"];
   "app_Resource" -> "app_ContentPolicy" [label="ContentPolicy_resourceId_fkey (resourceId)\n0..1 : 0..many"];
   "app_Revision" -> "app_ContentPolicy" [label="ContentPolicy_revisionId_fkey (revisionId)\n0..1 : 0..many"];
@@ -185,6 +188,10 @@ digraph ArataPhysicalERD {
   "app_Quiz" -> "app_QuizAttempt" [label="QuizAttempt_quizId_fkey (quizId)\n1 : 0..many"];
   "app_User" -> "app_QuizAttempt" [label="QuizAttempt_userId_fkey (userId)\n1 : 0..many"];
   "app_Quiz" -> "app_QuizQuestion" [label="QuizQuestion_quizId_fkey (quizId)\n1 : 0..many"];
+  "app_ContentPolicy" -> "app_ReaderLease" [label="ReaderLease_policyId_fkey (policyId)\n1 : 0..many"];
+  "app_AuthSession" -> "app_ReaderLease" [label="ReaderLease_sessionId_userId_fkey (sessionId, userId)\n1 : 0..many"];
+  "app_User" -> "app_ReaderLease" [label="ReaderLease_userId_fkey (userId)\n1 : 0..many"];
+  "app_User" -> "app_ReaderPreference" [label="ReaderPreference_userId_fkey (userId)\n1 : 0..1"];
   "app_Edition" -> "app_ReadingProgress" [label="ReadingProgress_editionId_fkey (editionId)\n1 : 0..many"];
   "app_Lesson" -> "app_ReadingProgress" [label="ReadingProgress_lessonId_fkey (lessonId)\n1 : 0..many"];
   "app_User" -> "app_ReadingProgress" [label="ReadingProgress_userId_fkey (userId)\n1 : 0..many"];

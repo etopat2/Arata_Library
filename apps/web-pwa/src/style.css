@@ -77,3 +77,11 @@
   background: #fff;
   color: #183443;
 }
+
+.reader-reduced-motion *,
+.reader-reduced-motion *::before,
+.reader-reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
