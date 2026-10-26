@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { randomBytes, randomUUID } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import dotenv from 'dotenv';
 import pg from 'pg';
 import { csrfToken, tokenHash } from '../../apps/api/src/identity/security.js';
@@ -68,6 +69,87 @@ test.beforeAll(async () => {
     );
   } finally {
     await client.end();
+  }
+});
+
+test('downloads an approved resource file through the browser grant', async ({ page }) => {
+  const resourceId = randomUUID();
+  const assetId = randomUUID();
+  const policyId = randomUUID();
+  const resourceTitle = `[TEST] Downloadable resource ${suffix}`;
+  const filename = `browser-rights-${suffix}.txt`;
+  const content = `[TEST] Rights-confirmed browser download ${suffix}`;
+  const storageRoot = join(process.cwd(), '.private-objects');
+  mkdirSync(storageRoot, { recursive: true });
+  const filePath = join(storageRoot, filename);
+  writeFileSync(filePath, content);
+  const client = new pg.Client({ connectionString: env.TEST_DATABASE_URL });
+  await client.connect();
+  try {
+    const owner = await client.query<{ id: string }>(`SELECT id FROM app."User" WHERE email=$1`, [
+      `studio-browser-${suffix}@example.invalid`,
+    ]);
+    expect(owner.rowCount).toBe(1);
+    await client.query('BEGIN');
+    try {
+      await client.query(
+        `INSERT INTO app."Resource" (id,title,description,format,"bodyText","accessClass","licenceCode","publishedAt")
+         VALUES ($1,$2,'[TEST] Licensed file description','TEXT','[TEST] File preview','PUBLIC_FREE','TEST-LICENCE',now()-interval '1 day')`,
+        [resourceId, resourceTitle],
+      );
+      await client.query(
+        `INSERT INTO app."ContentPolicy" (id,"resourceId","accessClass","allowRead","allowDownload",version,"isActive","approvedAt")
+         VALUES ($1,$2,'PUBLIC_FREE',true,true,1,true,now())`,
+        [policyId, resourceId],
+      );
+      await client.query(
+        `INSERT INTO app."Asset" (id,"uploadedById","storageKey","originalName","mimeType",
+           "sizeBytes",sha256,status,"scanEvidence","scannedAt","licenceCode",
+           "copyrightNotice",attribution,"provenanceRef","permissionConfirmedAt","approvedAt")
+         VALUES ($1,$2,$3,$3,'text/plain',$4,$5,'APPROVED',
+           '{"engine":"TEST-ONLY","result":"clean"}'::jsonb,now(),'TEST-LICENCE',
+           '[TEST] Synthetic rights','[TEST] Test author','TEST-SOURCE',now(),now())`,
+        [
+          assetId,
+          owner.rows[0]!.id,
+          filename,
+          Buffer.byteLength(content),
+          createHash('sha256').update(content).digest('hex'),
+        ],
+      );
+      await client.query(
+        `INSERT INTO app."ResourceAttachment" ("resourceId","assetId",ordinal)
+         VALUES ($1,$2,0)`,
+        [resourceId, assetId],
+      );
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => undefined);
+      throw error;
+    }
+    await page.goto(`/?screen=resource-detail&id=${resourceId}`);
+    await expect(page.getByRole('heading', { name: resourceTitle, exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Open resource' }).click();
+    await expect(page.getByRole('heading', { name: 'Licensed files' })).toBeVisible();
+    expect((await page.request.get(`/api/v1/reader/assets/${assetId}`)).status()).toBe(403);
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: `Download ${filename}` }).click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toBe(filename);
+    expect(readFileSync((await download.path())!, 'utf8')).toBe(content);
+    const audit = await client.query<{ count: string }>(
+      `SELECT count(*)::text AS count FROM app."AuditEvent"
+       WHERE action='reader.asset.download' AND "objectId"=$1`,
+      [assetId],
+    );
+    expect(Number(audit.rows[0]!.count)).toBe(1);
+  } finally {
+    await client.query(`DELETE FROM app."ResourceAttachment" WHERE "resourceId"=$1`, [resourceId]);
+    await client.query(`DELETE FROM app."ContentPolicy" WHERE id=$1`, [policyId]);
+    await client.query(`DELETE FROM app."Resource" WHERE id=$1`, [resourceId]);
+    await client.query(`DELETE FROM app."Asset" WHERE id=$1`, [assetId]);
+    await client.end();
+    unlinkSync(filePath);
   }
 });
 
