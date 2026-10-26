@@ -13,6 +13,7 @@ import {
   type ContentPolicyRow,
   type EffectiveContentPolicy,
   type PolicyPath,
+  type PolicyScope,
   type ReaderAction,
 } from '@arata/access-policy';
 import type { AuthContext } from '../identity/identity.service.js';
@@ -94,6 +95,70 @@ export class ReaderService {
       chapterId: row.chapterId,
       lessonId: row.id,
     };
+  }
+
+  async effectivePath(scope: PolicyScope, id: string): Promise<PolicyPath> {
+    if (scope === 'libraryId') {
+      const found = await this.pool.query(`SELECT 1 FROM app."Library" WHERE id=$1`, [id]);
+      if (!found.rowCount) throw new HttpException('Policy target not found', 404);
+      return { libraryId: id };
+    }
+    const queries: Record<Exclude<PolicyScope, 'libraryId'>, string> = {
+      publicationId: `SELECT p.id AS "publicationId" FROM app."Publication" p WHERE p.id=$1`,
+      volumeId: `SELECT p.id AS "publicationId",v.id AS "volumeId"
+        FROM app."Volume" v JOIN app."Publication" p ON p.id=v."publicationId" WHERE v.id=$1`,
+      editionId: `SELECT p.id AS "publicationId",e."volumeId",e.id AS "editionId"
+        FROM app."Edition" e JOIN app."Publication" p ON p.id=e."publicationId" WHERE e.id=$1`,
+      revisionId: `SELECT p.id AS "publicationId",e."volumeId",e.id AS "editionId",r.id AS "revisionId"
+        FROM app."Revision" r JOIN app."Edition" e ON e.id=r."editionId"
+        JOIN app."Publication" p ON p.id=e."publicationId" WHERE r.id=$1`,
+      chapterId: `SELECT p.id AS "publicationId",e."volumeId",e.id AS "editionId",
+          r.id AS "revisionId",c.id AS "chapterId"
+        FROM app."Chapter" c JOIN app."Revision" r ON r.id=c."revisionId"
+        JOIN app."Edition" e ON e.id=r."editionId"
+        JOIN app."Publication" p ON p.id=e."publicationId" WHERE c.id=$1`,
+      lessonId: `SELECT p.id AS "publicationId",e."volumeId",e.id AS "editionId",
+          r.id AS "revisionId",c.id AS "chapterId",l.id AS "lessonId"
+        FROM app."Lesson" l JOIN app."Chapter" c ON c.id=l."chapterId"
+        JOIN app."Revision" r ON r.id=c."revisionId"
+        JOIN app."Edition" e ON e.id=r."editionId"
+        JOIN app."Publication" p ON p.id=e."publicationId" WHERE l.id=$1`,
+      resourceId: `SELECT p.id AS "publicationId",COALESCE(res."volumeId",e."volumeId") AS "volumeId",
+          e.id AS "editionId",rv.id AS "revisionId",COALESCE(res."chapterId",lc.id) AS "chapterId",
+          res."lessonId",res.id AS "resourceId"
+        FROM app."Resource" res LEFT JOIN app."Lesson" l ON l.id=res."lessonId"
+        LEFT JOIN app."Chapter" lc ON lc.id=l."chapterId"
+        LEFT JOIN app."Chapter" c ON c.id=res."chapterId"
+        LEFT JOIN app."Revision" rv ON rv.id=COALESCE(res."revisionId",c."revisionId",lc."revisionId")
+        LEFT JOIN app."Edition" e ON e.id=COALESCE(res."editionId",rv."editionId")
+        LEFT JOIN app."Volume" v ON v.id=res."volumeId"
+        LEFT JOIN app."Publication" p ON p.id=COALESCE(res."publicationId",e."publicationId",v."publicationId")
+        WHERE res.id=$1`,
+    };
+    const result = await this.pool.query<PolicyPath>(queries[scope], [id]);
+    const row = result.rows[0];
+    if (!row) throw new HttpException('Policy target not found', 404);
+    const path = Object.fromEntries(
+      Object.entries(row).filter(([, value]) => value !== null),
+    ) as PolicyPath;
+    const libraries = path.publicationId
+      ? await this.pool.query<{ libraryId: string }>(
+          `SELECT DISTINCT co."libraryId" FROM app."PublicationCollection" pc
+           JOIN app."Collection" co ON co.id=pc."collectionId" WHERE pc."publicationId"=$1`,
+          [path.publicationId],
+        )
+      : null;
+    if (libraries && libraries.rowCount! > 1)
+      throw new HttpException('Ambiguous library assignment', 409);
+    const fallback = libraries?.rows[0]?.libraryId
+      ? libraries.rows[0].libraryId
+      : (
+          await this.pool.query<{ id: string }>(
+            `SELECT id FROM app."Library" ORDER BY "createdAt",id LIMIT 1`,
+          )
+        ).rows[0]?.id;
+    if (fallback) path.libraryId = fallback;
+    return path;
   }
 
   async policy(path: PolicyPath): Promise<EffectiveContentPolicy> {

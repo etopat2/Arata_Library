@@ -37,11 +37,15 @@ for row in rows:
         continue
     found.add(row["requirement_id"])
     existing = [value for value in row["implementation_paths"].split(";") if value]
-    row["implementation_paths"] = ";".join(dict.fromkeys([*existing, *anchors]))
+    admin_browser = ["tests/e2e/studio.spec.ts"] if row["requirement_id"] in {
+        "FR-ENT-007", "FR-ENT-008", "FR-ENT-009", "FR-ENT-010", "FR-ENT-014"
+    } else []
+    row["implementation_paths"] = ";".join(dict.fromkeys([*existing, *anchors, *admin_browser]))
     row["implementation_status"] = "Partially implemented; release acceptance open"
     row["verification_result"] = (
-        "Reader policy unit 6/6; SQL constraints 10/10; live catalogue/reader integration 7/7; "
-        "browser and final build evidence in TEST_RESULTS.md. Full SRS acceptance remains open."
+        "Reader policy unit 6/6; SQL constraints 10/10; live catalogue/reader integration 8/8; "
+        "public browser 10/10 and administrator/Studio browser 2/2; final build evidence in TEST_RESULTS.md. "
+        "Full SRS acceptance remains open."
     )
     note = "Reader paths are live but do not complete offline, export, advanced rendering or release gates; see apps/api/READER.md."
     if note not in row["mapping_note"]:

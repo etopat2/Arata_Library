@@ -68,16 +68,19 @@ export function ContentPolicyAdmin() {
     }
     try {
       const result = await api.replace({ scope, scopeId: id, reason, ...changes });
-      setStatus(`Policy version ${result.data.version} approved and recorded.`);
       await load();
+      setStatus(`Policy version ${result.data.version} approved and recorded.`);
     } catch {
       setStatus('Policy update failed. Check your authority, recent MFA, values, and reason.');
     }
   }
   const select = (name: string, label: string) => (
-    <label key={name} className="block rounded border border-slate-300 p-3">
-      <span className="block font-semibold">{label}</span>
+    <div key={name} className="rounded border border-slate-300 p-3">
+      <label className="block font-semibold" htmlFor={`policy-${name}`}>
+        {label}
+      </label>
       <select
+        id={`policy-${name}`}
         className="mt-1 w-full rounded border border-slate-400 p-2"
         value={values[name] ?? ''}
         onChange={(event) => setValues({ ...values, [name]: event.target.value })}
@@ -87,7 +90,7 @@ export function ContentPolicyAdmin() {
         <option value="yes">Allow</option>
         <option value="no">Restrict</option>
       </select>
-    </label>
+    </div>
   );
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">

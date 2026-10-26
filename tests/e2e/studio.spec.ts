@@ -12,7 +12,9 @@ if (!env.TEST_DATABASE_URL || new URL(env.TEST_DATABASE_URL).pathname !== '/arat
   throw new Error('Studio browser test requires isolated test database');
 const suffix = randomUUID().slice(0, 8);
 const token = randomBytes(36).toString('base64url');
+const policyAdminToken = randomBytes(36).toString('base64url');
 let collectionTitle: string;
+let policyLibraryId: string;
 
 test.beforeAll(async () => {
   const client = new pg.Client({ connectionString: env.TEST_DATABASE_URL });
@@ -36,6 +38,29 @@ test.beforeAll(async () => {
       `INSERT INTO app."RoleAssignment" (id,"userId","roleId","scopeType") VALUES (gen_random_uuid(),$1,(SELECT id FROM app."Role" WHERE code='PUBLISHER'),'PLATFORM')`,
       [user.id],
     );
+    const policyAdmin = (
+      await client.query<{ id: string }>(
+        `INSERT INTO app."User" (id,email,status,"emailVerifiedAt","termsAcceptedAt","privacyVersion","createdAt","updatedAt")
+         VALUES (gen_random_uuid(),$1,'ACTIVE',now(),now(),'TEST-ONLY',now(),now()) RETURNING id`,
+        [`policy-browser-admin-${suffix}@example.invalid`],
+      )
+    ).rows[0]!;
+    await client.query(
+      `INSERT INTO app."AuthSession" (id,"userId","tokenHash","expiresAt","mfaVerifiedAt")
+       VALUES (gen_random_uuid(),$1,$2,now()+interval '1 hour',now())`,
+      [policyAdmin.id, tokenHash(policyAdminToken)],
+    );
+    await client.query(
+      `INSERT INTO app."RoleAssignment" (id,"userId","roleId","scopeType")
+       VALUES (gen_random_uuid(),$1,(SELECT id FROM app."Role" WHERE code='SYSTEM_ADMIN'),'PLATFORM')`,
+      [policyAdmin.id],
+    );
+    policyLibraryId = (
+      await client.query<{ id: string }>(
+        `INSERT INTO app."Library" (id,slug,title) VALUES (gen_random_uuid(),$1,'[TEST] Policy browser library') RETURNING id`,
+        [`policy-browser-${suffix}`],
+      )
+    ).rows[0]!.id;
     collectionTitle = `[TEST] Studio browser ${suffix}`;
     await client.query(
       `INSERT INTO app."Collection" (id,"libraryId",slug,title) VALUES (gen_random_uuid(),(SELECT id FROM app."Library" WHERE slug='arata-techlibrary'),$1,$2)`,
@@ -44,6 +69,53 @@ test.beforeAll(async () => {
   } finally {
     await client.end();
   }
+});
+
+test('approves and inspects a versioned content policy in the administrator screen', async ({
+  page,
+}) => {
+  const secret = process.env.AUTH_SESSION_SECRET ?? foundation.AUTH_SESSION_SECRET;
+  if (!secret) throw new Error('Session signing key needed');
+  await page.context().addCookies([
+    { name: 'arata_session', value: policyAdminToken, url: 'http://127.0.0.1:5187' },
+    {
+      name: 'arata_csrf',
+      value: csrfToken(policyAdminToken, secret),
+      url: 'http://127.0.0.1:5187',
+    },
+  ]);
+  await page.goto('/?screen=content-policy');
+  await expect(page.getByRole('heading', { name: 'Content permission management' })).toBeVisible();
+  await page.getByLabel('Policy scope').selectOption('libraryId');
+  await page.getByLabel('Target ID').fill(policyLibraryId);
+  await page.getByRole('button', { name: 'Load effective policy' }).click();
+  await expect(page.getByRole('status')).toContainText('Current policy and history loaded');
+  await page.getByLabel('Reading', { exact: true }).selectOption('yes');
+  await page.getByLabel('Access class').selectOption('PUBLIC_FREE');
+  await page.getByLabel('Reason for change').fill('Allow synthetic reader browser access');
+  await page.getByRole('button', { name: 'Approve version' }).click();
+  await expect(page.getByRole('status')).toContainText('Policy version 1 approved and recorded');
+  await expect(page.getByRole('heading', { name: 'Version history' })).toBeVisible();
+  await expect(page.getByText('Version 1 · Active', { exact: false })).toBeVisible();
+  const client = new pg.Client({ connectionString: env.TEST_DATABASE_URL });
+  await client.connect();
+  try {
+    const saved = await client.query<{
+      accessClass: string;
+      allowRead: boolean;
+      isActive: boolean;
+    }>(
+      `SELECT "accessClass","allowRead","isActive" FROM app."ContentPolicy" WHERE "libraryId"=$1`,
+      [policyLibraryId],
+    );
+    expect(saved.rows).toEqual([{ accessClass: 'PUBLIC_FREE', allowRead: true, isActive: true }]);
+  } finally {
+    await client.end();
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  const audit = await new AxeBuilder({ page }).analyze();
+  expect(audit.violations).toEqual([]);
 });
 
 test('uses the hierarchical Studio to create a persistent standalone draft', async ({ page }) => {

@@ -13,6 +13,7 @@ import {
 import type { Request } from 'express';
 import type { Pool } from 'pg';
 import { z } from 'zod';
+import { policyScopeOrder } from '@arata/access-policy';
 import { IdentityService } from '../identity/identity.service.js';
 import { ReaderService } from './reader.service.js';
 
@@ -119,9 +120,13 @@ export class PolicyAdminController {
       .safeParse(query);
     if (!parsed.success || !Object.values(parsed.data).some(Boolean))
       throw new HttpException('A valid policy path is required', 400);
-    const path = Object.fromEntries(
-      Object.entries(parsed.data).filter(([, value]) => value !== undefined),
-    );
+    const deepest = [...policyScopeOrder].reverse().find((key) => parsed.data[key]);
+    if (!deepest) throw new HttpException('A valid policy path is required', 400);
+    const path = await this.reader.effectivePath(deepest, parsed.data[deepest]!);
+    for (const [key, value] of Object.entries(parsed.data)) {
+      if (value && path[key as keyof typeof path] !== value)
+        throw new HttpException('Policy path does not match the target hierarchy', 400);
+    }
     return { data: await this.reader.policy(path), requestId: request.id };
   }
 

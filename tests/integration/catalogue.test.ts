@@ -477,6 +477,21 @@ describe('public catalogue and policy boundaries', () => {
     expect(records[0].isActive).toBe(true);
     expect(records[1].isActive).toBe(false);
     expect(records[0].accessClass).toBe('RESTRICTED');
+    const inherited = await fetch(`${endpoint}/effective?lessonId=${freeLessonId}`, {
+      headers: { Cookie: `arata_session=${adminToken}` },
+    });
+    expect(inherited.status).toBe(200);
+    const effective = (await inherited.json()).data;
+    expect(effective.accessClass).toBe('PUBLIC_FREE');
+    expect(effective.allowDownload).toBe(true);
+    expect(effective.sources.map((item: { scope: string }) => item.scope)).toEqual(
+      expect.arrayContaining(['publicationId', 'chapterId']),
+    );
+    const mismatched = await fetch(
+      `${endpoint}/effective?publicationId=${policyLibraryId}&lessonId=${freeLessonId}`,
+      { headers: { Cookie: `arata_session=${adminToken}` } },
+    );
+    expect(mismatched.status).toBe(400);
   });
 
   it('stores private annotations encrypted and keeps progress explicit', async () => {
