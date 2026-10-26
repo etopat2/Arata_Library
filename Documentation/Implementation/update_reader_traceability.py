@@ -50,7 +50,7 @@ for row in rows:
         ]))
     row["implementation_status"] = "Partially implemented; release acceptance open"
     row["verification_result"] = (
-        "Reader policy unit 6/6; SQL constraints 11/11; live catalogue/reader integration 9/9; "
+        "Reader policy unit 6/6; SQL constraints 11/11; live catalogue/reader integration 10/10; "
         "public browser and administrator/Studio browser results, plus final build evidence, in TEST_RESULTS.md. "
         "Full SRS acceptance remains open."
     )

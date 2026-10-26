@@ -14,6 +14,10 @@ Scope: `FR-ENT-016` contribution, with `FR-RDR-001/002` access-path regression. 
 
 Active acquisitions remove expired and revoked leases. A global dormant-lease cleanup job, offline licences, export services, account-synced reader preferences, manual accessibility acceptance and production release gates remain open in `BLOCKERS.md` and `apps/api/READER.md`.
 
+### Resource delivery and revoked-session follow-up — 2026-10-26
+
+Scope: partial `FR-SRC-006`, `FR-ENT-008/016` and `FR-RDR-002` evidence; screens `resource-detail` and `reader`. The fixture attaches an approved, scanned and rights-confirmed synthetic private file to a registered-free resource, then exercises live resource grant and transfer routes. Targeted integration passed 10/10. Anonymous grant requests return 401; the active session receives the exact file with `no-store`; another session and a session revoked after grant issuance receive 403. The successful transfer has an audit event. No production source changed. Browser-level transfer and runtime OpenAPI checks remain open in GAP-029.
+
 ## Reader and content-policy local checks — 2026-10-25
 
 Scope: partial `FR-RDR-001`–`010`, `FR-ENT-001/004/007`–`014/016`, `FR-SRC-002/005/006`, and `BR-001/003/004/009/011` contributions. Screens: `reader`, `bookmarks`, `notes`, `content-policy`, `volume-detail`, and `resource-detail`. Implementation paths and remaining acceptance work are in `PROGRESS.md`, `BLOCKERS.md`, and `apps/api/READER.md`.

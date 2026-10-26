@@ -256,13 +256,23 @@ beforeAll(async () => {
       );
       const id = result.rows[0]!.id;
       await fixture.query(
-        `INSERT INTO app."ContentPolicy" (id,"resourceId","accessClass","allowRead","maxConcurrentSessions",version,"isActive","approvedAt")
-         VALUES (gen_random_uuid(),$1,$2,true,$3,1,true,now())`,
-        [id, item.access, item.access === 'REGISTERED_FREE' ? 1 : null],
+        `INSERT INTO app."ContentPolicy" (id,"resourceId","accessClass","allowRead","allowDownload","maxConcurrentSessions",version,"isActive","approvedAt")
+         VALUES (gen_random_uuid(),$1,$2,true,$3,$4,1,true,now())`,
+        [
+          id,
+          item.access,
+          item.access === 'REGISTERED_FREE',
+          item.access === 'REGISTERED_FREE' ? 1 : null,
+        ],
       );
       if (item.access === 'PREMIUM') premiumId = id;
-      else if (item.access === 'REGISTERED_FREE') registeredId = id;
-      else if (item.withdrawn) withdrawnId = id;
+      else if (item.access === 'REGISTERED_FREE') {
+        registeredId = id;
+        await fixture.query(
+          `INSERT INTO app."ResourceAttachment" ("resourceId","assetId",ordinal) VALUES ($1,$2,0)`,
+          [id, approvedAssetId],
+        );
+      } else if (item.withdrawn) withdrawnId = id;
       else freeId = id;
     }
     await fixture.query('COMMIT');
@@ -638,5 +648,39 @@ describe('public catalogue and policy boundaries', () => {
       [readerUserId],
     );
     expect(leases.rows).toEqual([{ tokenHash: tokenHash(thirdSessionToken) }]);
+  });
+
+  it('delivers approved resource files only to the granted active session', async () => {
+    const path = `/reader/resources/${registeredId}/assets/${approvedAssetId}/grant`;
+    expect((await get(path)).response.status).toBe(401);
+    const granted = await fetch(`${base}/api/v1${path}`, {
+      headers: { Cookie: `arata_session=${thirdSessionToken}` },
+    });
+    expect(granted.status).toBe(200);
+    const token = (await granted.json()).data.token as string;
+    const assetPath = `${base}/api/v1/reader/assets/${approvedAssetId}?grant=${encodeURIComponent(token)}`;
+    const valid = await fetch(assetPath, {
+      headers: { Cookie: `arata_session=${thirdSessionToken}` },
+    });
+    expect(valid.status).toBe(200);
+    expect(valid.headers.get('cache-control')).toContain('no-store');
+    expect(await valid.text()).toBe(approvedFileBody);
+    const wrongSession = await fetch(assetPath, {
+      headers: { Cookie: `arata_session=${sessionToken}` },
+    });
+    expect(wrongSession.status).toBe(403);
+    await fixture.query(`UPDATE app."AuthSession" SET "revokedAt"=now() WHERE "tokenHash"=$1`, [
+      tokenHash(thirdSessionToken),
+    ]);
+    const replay = await fetch(assetPath, {
+      headers: { Cookie: `arata_session=${thirdSessionToken}` },
+    });
+    expect(replay.status).toBe(403);
+    const audited = await fixture.query<{ count: string }>(
+      `SELECT count(*)::text AS count FROM app."AuditEvent"
+       WHERE action='reader.asset.download' AND "objectId"=$1 AND "actorId"=$2`,
+      [approvedAssetId, readerUserId],
+    );
+    expect(Number(audited.rows[0]!.count)).toBeGreaterThanOrEqual(1);
   });
 });
