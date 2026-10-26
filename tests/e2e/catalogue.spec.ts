@@ -40,6 +40,25 @@ test('opens an accessible public lesson in the reader with permissions and theme
   ).toBeVisible();
   await page.getByLabel('Theme').selectOption('night');
   await expect(page.locator('.bg-slate-950').first()).toBeVisible();
+  await page.getByLabel('Text size').selectOption('21');
+  await page.getByLabel('Font family').selectOption('serif');
+  await page.getByLabel('Line spacing').selectOption('2');
+  await page.getByLabel('Reduce motion').check();
+  await page.reload();
+  await expect(page.getByLabel('Theme')).toHaveValue('night');
+  await expect(page.getByLabel('Text size')).toHaveValue('21');
+  await expect(page.getByLabel('Font family')).toHaveValue('serif');
+  await expect(page.getByLabel('Line spacing')).toHaveValue('2');
+  await expect(page.getByLabel('Reduce motion')).toBeChecked();
+  await expect(page.locator('article[aria-label="Lesson content"]')).toHaveCSS(
+    'font-family',
+    /Georgia/,
+  );
+  await expect(page.locator('article[aria-label="Lesson content"]')).toHaveAttribute(
+    'style',
+    /line-height: 2/,
+  );
+  await expect(page.locator('.reader-reduced-motion')).toBeVisible();
   const audit = await new AxeBuilder({ page }).analyze();
   expect(audit.violations).toEqual([]);
 });

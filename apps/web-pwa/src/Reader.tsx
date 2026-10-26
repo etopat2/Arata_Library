@@ -14,6 +14,12 @@ const initialEdition = route.get('edition') ?? '';
 const initialLesson = route.get('lesson') ?? '';
 const link = (edition: string, lesson?: string) =>
   `/?${new URLSearchParams({ screen: 'reader', edition, ...(lesson ? { lesson } : {}) })}`;
+const fontFamilies = {
+  system: 'ui-sans-serif, system-ui, sans-serif',
+  serif: 'Georgia, Times New Roman, serif',
+  mono: 'ui-monospace, Menlo, Consolas, monospace',
+} as const;
+type FontFamily = keyof typeof fontFamilies;
 
 function highlighted(value: string, quotes: string[]): ReactNode {
   const matches = quotes.filter(Boolean);
@@ -106,10 +112,28 @@ export function Reader() {
   const [bookmarks, setBookmarks] = useState<{ id: string; anchor: string }[]>([]);
   const [selected, setSelected] = useState('');
   const [note, setNote] = useState('');
-  const [fontSize, setFontSize] = useState(() =>
-    Number(localStorage.getItem('arata-reader-font') ?? 18),
-  );
-  const [theme, setTheme] = useState(() => localStorage.getItem('arata-reader-theme') ?? 'paper');
+  const [fontSize, setFontSize] = useState(() => {
+    const stored = Number(localStorage.getItem('arata-reader-font') ?? 18);
+    return [16, 18, 21, 24].includes(stored) ? stored : 18;
+  });
+  const [theme, setTheme] = useState(() => {
+    const stored = localStorage.getItem('arata-reader-theme');
+    return stored === 'night' || stored === 'sepia' ? stored : 'paper';
+  });
+  const [fontFamily, setFontFamily] = useState<FontFamily>(() => {
+    const stored = localStorage.getItem('arata-reader-family');
+    return stored === 'serif' || stored === 'mono' ? stored : 'system';
+  });
+  const [lineSpacing, setLineSpacing] = useState(() => {
+    const stored = Number(localStorage.getItem('arata-reader-spacing') ?? 1.75);
+    return [1.5, 1.75, 2].includes(stored) ? stored : 1.75;
+  });
+  const [reducedMotion, setReducedMotion] = useState(() => {
+    const stored = localStorage.getItem('arata-reader-reduced-motion');
+    return stored === null
+      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      : stored === 'true';
+  });
 
   useEffect(() => {
     const abort = new AbortController();
@@ -250,7 +274,7 @@ export function Reader() {
         ? 'bg-amber-50 text-stone-900'
         : 'bg-white text-slate-900';
   return (
-    <div className={`min-h-screen ${palette}`}>
+    <div className={`min-h-screen ${palette} ${reducedMotion ? 'reader-reduced-motion' : ''}`}>
       <a
         href="#reader-main"
         className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:p-3 focus:text-black"
@@ -403,6 +427,52 @@ export function Reader() {
                     <option value="24">Extra large</option>
                   </select>
                 </label>
+                <label>
+                  Font family{' '}
+                  <select
+                    value={fontFamily}
+                    onChange={(event) => {
+                      const value = event.target.value as FontFamily;
+                      setFontFamily(value);
+                      localStorage.setItem('arata-reader-family', value);
+                    }}
+                    className="ml-2 rounded border border-slate-500 bg-white p-2 text-slate-900"
+                  >
+                    <option value="system">System</option>
+                    <option value="serif">Serif</option>
+                    <option value="mono">Monospace</option>
+                  </select>
+                </label>
+                <label>
+                  Line spacing{' '}
+                  <select
+                    value={lineSpacing}
+                    onChange={(event) => {
+                      const value = Number(event.target.value);
+                      setLineSpacing(value);
+                      localStorage.setItem('arata-reader-spacing', String(value));
+                    }}
+                    className="ml-2 rounded border border-slate-500 bg-white p-2 text-slate-900"
+                  >
+                    <option value="1.5">Compact</option>
+                    <option value="1.75">Comfortable</option>
+                    <option value="2">Spacious</option>
+                  </select>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={reducedMotion}
+                    onChange={(event) => {
+                      setReducedMotion(event.target.checked);
+                      localStorage.setItem(
+                        'arata-reader-reduced-motion',
+                        String(event.target.checked),
+                      );
+                    }}
+                  />
+                  Reduce motion
+                </label>
                 <button
                   className="rounded border border-current px-3 py-2"
                   onClick={() => void save('bookmark')}
@@ -492,7 +562,7 @@ export function Reader() {
               )}
               <article
                 className="prose max-w-3xl"
-                style={{ fontSize, lineHeight: 1.75 }}
+                style={{ fontSize, fontFamily: fontFamilies[fontFamily], lineHeight: lineSpacing }}
                 aria-label="Lesson content"
               >
                 {lesson.bodyMarkdown ? (

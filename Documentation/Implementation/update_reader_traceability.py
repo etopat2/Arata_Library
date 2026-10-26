@@ -54,12 +54,23 @@ for row in rows:
             "database/scripts/grant-dev.ts",
             "database/scripts/verify-dev.ts",
         ]))
+    if row["requirement_id"] == "FR-RDR-002":
+        row["implementation_paths"] = ";".join(dict.fromkeys([
+            *row["implementation_paths"].split(";"),
+            "apps/web-pwa/src/style.css",
+            "playwright.config.ts",
+        ]))
     row["implementation_status"] = "Partially implemented; release acceptance open"
     row["verification_result"] = (
         "Reader policy unit 6/6; SQL constraints 11/11; live catalogue/reader integration 10/10; worker integration 2/2; "
         "public browser 10/10, administrator/Studio browser 3/3, and build evidence in TEST_RESULTS.md. "
         "Full SRS acceptance remains open."
     )
+    if row["requirement_id"] == "FR-RDR-002":
+        row["verification_result"] = (
+            "Device preference Chromium/axe browser 1/1 and PWA build passed; account sync and manual WCAG review open. "
+            "Full SRS acceptance remains open."
+        )
     note = "Reader paths are live but do not complete offline, export, advanced rendering or release gates; see apps/api/READER.md."
     if note not in row["mapping_note"]:
         row["mapping_note"] = (row["mapping_note"].rstrip() + " " + note).strip()
