@@ -1,6 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { randomBytes, randomUUID } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { createHash, createHmac, randomBytes, randomUUID } from 'node:crypto';
+import { mkdtempSync, readFileSync, rmdirSync, unlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import dotenv from 'dotenv';
 import pg from 'pg';
 import type { INestApplication } from '@nestjs/common';
@@ -36,6 +38,11 @@ let registeredId: string;
 let withdrawnId: string;
 let freeLessonId: string;
 let lockedLessonId: string;
+let approvedAssetId: string;
+let storageRoot: string;
+let storedFile: string;
+const approvedFileBody = '[TEST] Rights-approved private reader asset';
+const priorStorageRoot = process.env.STUDIO_STORAGE_ROOT;
 const sessionToken = randomBytes(36).toString('base64url');
 const adminToken = randomBytes(36).toString('base64url');
 let policyLibraryId: string;
@@ -46,6 +53,10 @@ async function get(path: string) {
 }
 
 beforeAll(async () => {
+  storageRoot = mkdtempSync(join(tmpdir(), 'arata-reader-test-'));
+  storedFile = join(storageRoot, `reader-sample-${suffix}.txt`);
+  writeFileSync(storedFile, approvedFileBody);
+  process.env.STUDIO_STORAGE_ROOT = storageRoot;
   await fixture.connect();
   await fixture.query('BEGIN');
   try {
@@ -131,6 +142,25 @@ beforeAll(async () => {
       [sampleId, `[TEST] Public reader lesson ${suffix}`],
     );
     freeLessonId = freeLesson.rows[0]!.id;
+    const approvedAsset = await fixture.query<{ id: string }>(
+      `INSERT INTO app."Asset" (id,"uploadedById","storageKey","originalName","mimeType",
+         "sizeBytes",sha256,status,"scanEvidence","scannedAt","licenceCode",
+         "copyrightNotice",attribution,"provenanceRef","permissionConfirmedAt","approvedAt")
+       VALUES (gen_random_uuid(),$1,$2,'[TEST] reader sample.txt','text/plain',$3,$4,'APPROVED',
+         '{"engine":"TEST-ONLY","result":"clean"}'::jsonb,now(),'TEST-LICENCE',
+         '[TEST] Synthetic rights','[TEST] Test author','TEST-SOURCE',now(),now()) RETURNING id`,
+      [
+        userId,
+        `reader-sample-${suffix}.txt`,
+        Buffer.byteLength(approvedFileBody),
+        createHash('sha256').update(approvedFileBody).digest('hex'),
+      ],
+    );
+    approvedAssetId = approvedAsset.rows[0]!.id;
+    await fixture.query(`UPDATE app."Lesson" SET "bodyAssetId"=$1 WHERE id=$2`, [
+      approvedAssetId,
+      freeLessonId,
+    ]);
     const lockedLesson = await fixture.query<{ id: string }>(
       `INSERT INTO app."Lesson" (id,"chapterId",ordinal,title,"bodyMarkdown")
        VALUES (gen_random_uuid(),$1,1,'[TEST] Premium lesson',$2) RETURNING id`,
@@ -138,7 +168,7 @@ beforeAll(async () => {
     );
     lockedLessonId = lockedLesson.rows[0]!.id;
     await fixture.query(
-      `INSERT INTO app."ContentPolicy" (id,"chapterId","accessClass","allowRead",version,"isActive","approvedAt") VALUES (gen_random_uuid(),$1,'PUBLIC_FREE',true,1,true,now())`,
+      `INSERT INTO app."ContentPolicy" (id,"chapterId","accessClass","allowRead","allowDownload",version,"isActive","approvedAt") VALUES (gen_random_uuid(),$1,'PUBLIC_FREE',true,true,1,true,now())`,
       [sampleId],
     );
     await fixture.query(
@@ -235,6 +265,10 @@ beforeAll(async () => {
 afterAll(async () => {
   await app?.close();
   await fixture.end();
+  if (storedFile) unlinkSync(storedFile);
+  if (storageRoot) rmdirSync(storageRoot);
+  if (priorStorageRoot === undefined) delete process.env.STUDIO_STORAGE_ROOT;
+  else process.env.STUDIO_STORAGE_ROOT = priorStorageRoot;
 });
 
 describe('public catalogue and policy boundaries', () => {
@@ -333,8 +367,48 @@ describe('public catalogue and policy boundaries', () => {
     const free = await get(`/reader/lessons/${freeLessonId}`);
     expect(free.response.status).toBe(200);
     expect(free.text).toContain(`Public reader lesson ${suffix}`);
-    expect(JSON.parse(free.text).data.policy.allowDownload).toBe(false);
-    expect((await get(`/reader/lessons/${freeLessonId}/asset-grant`)).response.status).toBe(404);
+    expect(JSON.parse(free.text).data.policy.allowDownload).toBe(true);
+    const approvedGrant = await get(`/reader/lessons/${freeLessonId}/asset-grant`);
+    expect(approvedGrant.response.status).toBe(200);
+    const token = JSON.parse(approvedGrant.text).data.token as string;
+    const download = await get(
+      `/reader/assets/${approvedAssetId}?grant=${encodeURIComponent(token)}`,
+    );
+    expect(download.response.status).toBe(200);
+    expect(download.response.headers.get('content-type')).toContain('text/plain');
+    expect(download.response.headers.get('cache-control')).toContain('no-store');
+    expect(download.text).toBe(approvedFileBody);
+    expect(
+      (await get(`/reader/assets/${approvedAssetId}?grant=${encodeURIComponent(token + 'x')}`))
+        .response.status,
+    ).toBe(403);
+    const expiredPayload = Buffer.from(
+      JSON.stringify({
+        lessonId: freeLessonId,
+        assetId: approvedAssetId,
+        userId: null,
+        sessionId: null,
+        expiresAt: new Date(Date.now() - 1_000).toISOString(),
+      }),
+    ).toString('base64url');
+    const expiredSignature = createHmac(
+      'sha256',
+      Buffer.from(process.env.AUTH_SESSION_SECRET!, 'hex'),
+    )
+      .update(`reader-asset:${expiredPayload}`)
+      .digest('base64url');
+    expect(
+      (
+        await get(
+          `/reader/assets/${approvedAssetId}?grant=${encodeURIComponent(`${expiredPayload}.${expiredSignature}`)}`,
+        )
+      ).response.status,
+    ).toBe(403);
+    const wrongSession = await fetch(
+      `${base}/api/v1/reader/assets/${approvedAssetId}?grant=${encodeURIComponent(token)}`,
+      { headers: { Cookie: `arata_session=${sessionToken}` } },
+    );
+    expect(wrongSession.status).toBe(403);
     expect((await get(`/reader/assets/${freeLessonId}?grant=invalid`)).response.status).toBe(403);
     expect(
       (await get(`/reader/resources/${freeId}/assets/${freeLessonId}/grant`)).response.status,
@@ -460,5 +534,33 @@ describe('public catalogue and policy boundaries', () => {
       headers,
     });
     expect(removed.status).toBe(200);
+  });
+
+  it('rechecks a valid asset grant when an administrator withdraws download permission', async () => {
+    const grantResponse = await get(`/reader/lessons/${freeLessonId}/asset-grant`);
+    expect(grantResponse.response.status).toBe(200);
+    const token = JSON.parse(grantResponse.text).data.token as string;
+    const { csrfToken } = await import('../../apps/api/src/identity/security.js');
+    const csrf = csrfToken(adminToken, process.env.AUTH_SESSION_SECRET!);
+    const changed = await fetch(`${base}/api/v1/admin/content-policies`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: `arata_session=${adminToken}; arata_csrf=${csrf}`,
+        Origin: process.env.WEB_ORIGIN!,
+        'X-CSRF-Token': csrf,
+      },
+      body: JSON.stringify({
+        scope: 'lessonId',
+        scopeId: freeLessonId,
+        allowDownload: false,
+        reason: 'Withdraw synthetic test asset delivery',
+      }),
+    });
+    expect(changed.status).toBe(201);
+    const withdrawn = await get(
+      `/reader/assets/${approvedAssetId}?grant=${encodeURIComponent(token)}`,
+    );
+    expect(withdrawn.response.status).toBe(403);
   });
 });

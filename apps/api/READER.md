@@ -28,7 +28,7 @@ Writes use authenticated same-origin CSRF checks. All SQL values are bound; scop
 
 ## Incomplete acceptance
 
-This does **not** complete FR-RDR-002/003/009/010, FR-ENT-008/010/012/013/016 or the offline and export requirements. Remaining work includes server-backed font family/line spacing/reduced-motion preferences, a standards-complete safe Markdown/diagram/formula/code renderer, synchronized reading position and cross-edition anchor migration, explicit offline/expired-licence screens, offline licence issuance and sync, PDF/EPUB export services, resource-file end-to-end delivery tests, stronger session lease controls, library mapping for publications in multiple libraries, complete runtime OpenAPI alignment and manual WCAG review. Cross-browser copy/print behavior is a deterrence and must be described honestly. See `Documentation/Implementation/BLOCKERS.md`.
+This does **not** complete FR-RDR-002/003/009/010, FR-ENT-008/010/012/013/016 or the offline and export requirements. Remaining work includes server-backed font family/line spacing/reduced-motion preferences, a standards-complete safe Markdown/diagram/formula/code renderer, synchronized reading position and cross-edition anchor migration, explicit offline/expired-licence screens, offline licence issuance and sync, PDF/EPUB export services, resource-file and browser-level delivery tests, stronger session lease controls, library mapping for publications in multiple libraries, complete runtime OpenAPI alignment and manual WCAG review. A live API test covers approved lesson-file delivery and tampered, expired, wrong-session and policy-revoked grants. Cross-browser copy/print behavior is a deterrence and must be described honestly. See `Documentation/Implementation/BLOCKERS.md`.
 
 ## Checks
 
