@@ -48,6 +48,9 @@ try {
       has_schema_privilege('arata_research_report_dev', 'research_private', 'USAGE') AS report_can_link,
       has_table_privilege('arata_research_identity_dev', 'research_private."PseudonymLink"', 'SELECT') AS identity_can_link`);
   const snapshotView = await client.query<{ present: boolean }>("SELECT to_regclass('app.\"PublicInsightSnapshot\"') IS NOT NULL AS present");
+  const leaseExpiryIndex = await client.query<{ present: boolean }>(
+    `SELECT to_regclass('app."ReaderLease_expiresAt_idx"') IS NOT NULL AS present`,
+  );
   const editionOrder = await client.query<{ standalone: boolean; volume: boolean }>(`
     SELECT to_regclass('app.edition_standalone_order') IS NOT NULL AS standalone,
       to_regclass('app.edition_volume_order') IS NOT NULL AS volume`);
@@ -70,15 +73,15 @@ try {
     identity: await checkRole(local.RESEARCH_IDENTITY_DATABASE_URL, 'SELECT 1 FROM research_private."PseudonymLink" LIMIT 0', 'SELECT 1 FROM research."ResearchEvent" LIMIT 0'),
   };
   if (!row || row.tables !== 88 || row.enums !== 29 || row.foreign_keys < 154 || row.checks < 75 || row.triggers < 44
-    || migrations.rows.length !== 20 || migrations.rows.some(m => !m.complete)
-    || !perms || perms.app_can_research || !perms.app_can_lease || perms.report_can_link || !perms.identity_can_link || !snapshotView.rows[0]?.present
+    || migrations.rows.length !== 21 || migrations.rows.some(m => !m.complete)
+    || !perms || perms.app_can_research || !perms.app_can_lease || perms.report_can_link || !perms.identity_can_link || !snapshotView.rows[0]?.present || !leaseExpiryIndex.rows[0]?.present
     || !editionOrder.rows[0]?.standalone || !editionOrder.rows[0].volume
     || reviewGuards.rows[0]?.count !== 5 || !reviewGuards.rows[0].child_freezes_review
     || !reviewGuards.rows[0].resource_parent_fallback
     || Object.values(directRoleChecks).some(passed => !passed)) {
     throw new Error("Database structure, migration history or role isolation did not match expected baseline");
   }
-  console.log(JSON.stringify({ database: database.rows[0], counts: row, migrations: migrations.rows, roleIsolation: perms, directRoleChecks, publicSnapshotView: true, editionOrder: editionOrder.rows[0], reviewGuards: reviewGuards.rows[0] }, null, 2));
+  console.log(JSON.stringify({ database: database.rows[0], counts: row, migrations: migrations.rows, roleIsolation: perms, directRoleChecks, publicSnapshotView: true, leaseExpiryIndex: true, editionOrder: editionOrder.rows[0], reviewGuards: reviewGuards.rows[0] }, null, 2));
 } catch (error) {
   const message = error instanceof Error && !('code' in error) ? error.message : `database error ${String((error as { code?: unknown }).code ?? "unknown")}`;
   console.error(message);

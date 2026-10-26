@@ -45,12 +45,15 @@ for row in rows:
         row["implementation_paths"] = ";".join(dict.fromkeys([
             *row["implementation_paths"].split(";"),
             "prisma/migrations/202610260001_reader_leases",
+            "prisma/migrations/202610260002_reader_lease_cleanup_index",
+            "apps/worker/src/reader-lease-cleanup.ts",
+            "tests/integration/worker.test.ts",
             "database/scripts/grant-dev.ts",
             "database/scripts/verify-dev.ts",
         ]))
     row["implementation_status"] = "Partially implemented; release acceptance open"
     row["verification_result"] = (
-        "Reader policy unit 6/6; SQL constraints 11/11; live catalogue/reader integration 10/10; "
+        "Reader policy unit 6/6; SQL constraints 11/11; live catalogue/reader integration 10/10; worker integration 2/2; "
         "public browser and administrator/Studio browser results, plus final build evidence, in TEST_RESULTS.md. "
         "Full SRS acceptance remains open."
     )

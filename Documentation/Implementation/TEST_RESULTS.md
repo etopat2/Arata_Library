@@ -1,5 +1,9 @@
 # Validation results
 
+## Reader-lease retention worker — 2026-10-26
+
+Scope: partial `FR-ENT-016`; screen `reader` (worker UI N/A). Paths: `apps/worker/src/reader-lease-cleanup.ts`, `apps/worker/src/main.ts`, `prisma/migrations/202610260002_reader_lease_cleanup_index`, `tests/integration/worker.test.ts`, `database/scripts/verify-dev.ts`. The reviewed index migration was applied to isolated test before development, without a reset. `prisma format`, `validate`, `generate` and both drift comparisons passed; `db:verify` found 88 tables, 154 foreign keys, 75 checks, 44 triggers, 29 enums, 21 completed migrations, the expiry index and role isolation. SQL constraints passed 11/11. The worker integration passed 2/2: the new test confirms a bounded sweep removes an expired lease and preserves an active lease. Full sequential Vitest passed 43/43 across 8 files. The first worker-test attempt failed because its fixture parsed a quoted `.env.local` URL as raw text; using dotenv parsing fixed the fixture, then both targeted and full runs passed. npm run lint, npm run typecheck:foundation and npm run build:foundation passed. Earlier public browser 10/10 and Studio/admin 2/2 remain the latest browser runs; this slice changed the worker and database index only. Worker downtime cannot keep an expired lease occupied in the access decision; acquisition excludes expired records. Full SRS reader acceptance remains open.
+
 ## Session-bound reader licences — 2026-10-26
 
 Scope: `FR-ENT-016` contribution, with `FR-RDR-001/002` access-path regression. Screens: `reader`, `content-policy`; other mapped screens unchanged. Paths: `prisma/schema.prisma`, `prisma/migrations/202610260001_reader_leases/`, `apps/api/src/reader/reader.service.ts`, `packages/access-policy/src/content-policy.ts`, `apps/web-pwa/src/Reader.tsx`, `database/tests/reader-policy.test.ts`, `tests/integration/catalogue.test.ts`, `database/erd/`.

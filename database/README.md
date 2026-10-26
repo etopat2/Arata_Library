@@ -1,14 +1,14 @@
 # Arata TechLibrary database
 
-This package defines the PostgreSQL data layer for the SRS baseline. It does not implement authentication, payments, publishing services, retention jobs, or research publication workflows. The application must enforce authorization and orchestrate transactions using the database constraints described here.
+This package defines the PostgreSQL data layer for the SRS baseline. Application services enforce authorization and orchestrate transactions using the database constraints described here. The worker performs bounded reader-lease retention; broader privacy retention and research publication workflows remain separate implementation work.
 
 ## Requirements and structure
 
 - SRS baseline: `Documentation/Arata_TechLibrary_SRS_v1.0_2026-10-21.docx` (local, intentionally not committed to the public repository).
 - Design guidance: the local Engineering Design Package and Step 1 Implementation Contracts. Conflicts and interpretations are recorded in `Documentation/Implementation/DECISIONS.md`.
-- `prisma/schema.prisma`: 75 models, 23 enums, three schemas. `app` owns operational data, `research` holds pseudonymous events and analysis, and `research_private` holds the identity-to-pseudonym link.
+- `prisma/schema.prisma`: 88 models, 29 enums, three schemas. `app` owns operational data, `research` holds pseudonymous events and analysis, and `research_private` holds the identity-to-pseudonym link.
 - `prisma/migrations`: the initial Prisma model migration followed by versioned SQL for conditional uniqueness, check constraints, triggers, and views. Applied migrations must never be edited; corrections belong in a new migration.
-- `database/erd/arata-physical.mmd`, `.dot`, and `.svg`: generated from the actual PostgreSQL catalog, covering 75 tables and 122 named foreign keys. Generate again with `npm run db:erd` after a schema change. The SVG is large and intended for browser zoom.
+- `database/erd/arata-physical.mmd`, `.dot`, and `.svg`: generated from the actual PostgreSQL catalog, covering 88 tables and 154 named foreign keys. Generate again with `npm run db:erd` after a relationship or table change. The SVG is large and intended for browser zoom.
 - `prisma/seed.dev.ts`: fictional, visibly labelled, unpublished examples for development only.
 
 ## Local setup
@@ -105,3 +105,7 @@ For production, provision roles and database through environment-specific infras
 The reader policy migration `202610250006_reader_policy_fields` adds a library scope and nullable controls for previews, selection, copy length, PDF/EPUB export, watermark labels, screenshot notices, session caps and licence expiry. An active scope has one approved version; old versions remain in history. The migration aborts if a pre-existing scope has duplicate version numbers. Apply it to the isolated test database first with `npm run db:migrate:test`, run `npm run db:test`, then inspect and apply to development with `npm run db:migrate:deploy`; never use `migrate reset` to resolve a conflict. The application evaluates these fields with `packages/access-policy/src/content-policy.ts` and rechecks signed asset downloads in `apps/api/src/reader/reader.service.ts`.
 
 The additive `202610260001_reader_leases` migration creates session-bound, time-limited reader seats and a composite ownership key on `AuthSession`. Apply it to the isolated test database first, verify the 11 database tests and schema diffs, then deploy to development and rerun `db:grant:dev`. Lease acquisition removes expired/revoked rows for the active policy and user; authentication-session deletion cascades to its leases. A scheduled global cleanup is still required before production. Recovery uses a forward corrective migration after backup and row-impact review. Do not drop active lease records as an ad hoc rollback because that could temporarily admit more licensed sessions than the configured cap.
+
+## Reader-lease retention
+
+The worker runs `apps/worker/src/reader-lease-cleanup.ts` at startup and every minute. Each pass removes at most 1,000 expired session leases using the version-controlled `202610260002_reader_lease_cleanup_index` index. Active leases remain; session deletion cascades to its leases. After an outage, keep the worker running until the backlog clears. Validate the index and role isolation with `npm run db:verify` and exercise the isolated cleanup integration before release. If recovery requires reverting the index, review the effect on active readers and use a forward migration or verified restore; do not reset a database with unverified data.

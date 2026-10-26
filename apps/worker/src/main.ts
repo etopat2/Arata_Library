@@ -7,6 +7,7 @@ import { createDiagnosticWorker } from './diagnostics.js';
 import { startAssetWorker } from './asset-worker.js';
 import { startImportWorker } from './import-worker.js';
 import { startScheduleWorker } from './schedule-worker.js';
+import { startReaderLeaseCleanup } from './reader-lease-cleanup.js';
 
 config({ path: resolve(process.cwd(), '../../.env.foundation.local'), quiet: true });
 if (!process.env.DATABASE_URL) {
@@ -36,6 +37,7 @@ const stopAssetWorker = startAssetWorker(
 );
 const stopImportWorker = startImportWorker(pool);
 const stopScheduleWorker = startScheduleWorker(pool);
+const stopReaderLeaseCleanup = startReaderLeaseCleanup(pool);
 const worker = createDiagnosticWorker(settings.REDIS_URL);
 worker.on('completed', (job) =>
   console.info(JSON.stringify({ event: 'worker.completed', jobId: job.id })),
@@ -49,6 +51,7 @@ process.once('SIGTERM', () => {
   stopAssetWorker();
   stopImportWorker();
   stopScheduleWorker();
+  stopReaderLeaseCleanup();
   void pool.end();
   void worker.close();
 });
