@@ -101,7 +101,10 @@ export function ContentPolicyAdmin() {
         <a className="font-bold underline" href="/">
           Arata TechLibrary
         </a>{' '}
-        / Content permissions
+        / Content permissions ·{' '}
+        <a className="underline" href="/?screen=platform-settings">
+          Platform settings
+        </a>
       </header>
       <main id="policy-main" className="mx-auto max-w-5xl px-5 py-8">
         <h1 className="text-3xl font-bold">Content permission management</h1>

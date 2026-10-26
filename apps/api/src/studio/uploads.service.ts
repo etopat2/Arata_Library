@@ -8,6 +8,7 @@ import { HttpException, Inject, Injectable } from '@nestjs/common';
 import type { Pool, PoolClient } from 'pg';
 import type { Request, Response } from 'express';
 import type { AuthContext } from '../identity/identity.service.js';
+import { PlatformPolicyService } from '../platform-policy/platform-policy.service.js';
 
 const root = resolve(
   process.env.STUDIO_STORAGE_ROOT ??
@@ -34,7 +35,10 @@ const cleanName = (name: string) =>
 
 @Injectable()
 export class StudioUploads {
-  constructor(@Inject('DB_POOL') private readonly pool: Pool) {
+  constructor(
+    @Inject('DB_POOL') private readonly pool: Pool,
+    @Inject(PlatformPolicyService) private readonly platformPolicy: PlatformPolicyService,
+  ) {
     if (process.env.NODE_ENV === 'production' && !process.env.STUDIO_STORAGE_ROOT)
       throw new Error('Private Studio storage root required');
   }
@@ -65,7 +69,16 @@ export class StudioUploads {
     },
     requestId: string,
   ) {
-    if (!allowed.has(data.mimeType)) throw new HttpException('Unsupported media type', 415);
+    const uploadPolicy = (await this.platformPolicy.current()).settings.security;
+    if (
+      !allowed.has(data.mimeType) ||
+      !uploadPolicy.uploadMimeTypes.includes(
+        data.mimeType as (typeof uploadPolicy.uploadMimeTypes)[number],
+      )
+    )
+      throw new HttpException('Unsupported media type', 415);
+    if (data.sizeBytes > uploadPolicy.uploadMaxBytes)
+      throw new HttpException('Upload exceeds configured size limit', 413);
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');

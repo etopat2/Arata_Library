@@ -42,6 +42,8 @@ digraph ArataPhysicalERD {
   "app_Permission" [label="app.Permission\nPK id\ncode\ndescription?", fillcolor="#f7f9fc"];
   "app_Plan" [label="app.Plan\nPK id\ncode\nname\nactive", fillcolor="#f7f9fc"];
   "app_PlanVersion" [label="app.PlanVersion\nPK id\nFK planId\nversion\ncurrencyCode\namountMinor\nperiodMonths?\nscopeKind\nscopeId?\ntermsHash\nvalidFrom\nvalidUntil?", fillcolor="#f7f9fc"];
+  "app_PlatformPolicyEvent" [label="app.PlatformPolicyEvent\nPK id\nFK policyId\nFK actorId\naction\nreason\nbeforeHash?\nafterHash?\ncorrelationId\noccurredAt", fillcolor="#f7f9fc"];
+  "app_PlatformPolicyVersion" [label="app.PlatformPolicyVersion\nPK id\nversion\nstatus\nsettings\nreason\nsourceVersion?\nbaseVersion\nFK createdById\nFK lastEditedById\nFK approvedById?\ncreatedAt\napprovedAt?\neffectiveAt?\nactivatedAt?\nsupersededAt?", fillcolor="#f7f9fc"];
   "app_PolicyChange" [label="app.PolicyChange\nPK id\nFK policyId\nFK actorId\nbeforeHash?\nafterHash\nreason\nchangedAt", fillcolor="#f7f9fc"];
   "app_PrivacyPreference" [label="app.PrivacyPreference\nPK id\nFK userId\nFK purposeId\ngranted\npolicyVersion\neffectiveAt\nwithdrawnAt?", fillcolor="#f7f9fc"];
   "app_ProcessingPurpose" [label="app.ProcessingPurpose\nPK id\ncode\ndescription\nlawfulBasis\noptional", fillcolor="#f7f9fc"];
@@ -165,6 +167,11 @@ digraph ArataPhysicalERD {
   "app_User" -> "app_Order" [label="Order_userId_fkey (userId)\n1 : 0..many"];
   "app_Order" -> "app_PaymentAttempt" [label="PaymentAttempt_orderId_fkey (orderId)\n1 : 0..many"];
   "app_Plan" -> "app_PlanVersion" [label="PlanVersion_planId_fkey (planId)\n1 : 0..many"];
+  "app_User" -> "app_PlatformPolicyEvent" [label="PlatformPolicyEvent_actorId_fkey (actorId)\n1 : 0..many"];
+  "app_PlatformPolicyVersion" -> "app_PlatformPolicyEvent" [label="PlatformPolicyEvent_policyId_fkey (policyId)\n1 : 0..many"];
+  "app_User" -> "app_PlatformPolicyVersion" [label="PlatformPolicyVersion_approvedById_fkey (approvedById)\n0..1 : 0..many"];
+  "app_User" -> "app_PlatformPolicyVersion" [label="PlatformPolicyVersion_createdById_fkey (createdById)\n1 : 0..many"];
+  "app_User" -> "app_PlatformPolicyVersion" [label="PlatformPolicyVersion_lastEditedById_fkey (lastEditedById)\n1 : 0..many"];
   "app_User" -> "app_PolicyChange" [label="PolicyChange_actorId_fkey (actorId)\n1 : 0..many"];
   "app_ContentPolicy" -> "app_PolicyChange" [label="PolicyChange_policyId_fkey (policyId)\n1 : 0..many"];
   "app_ProcessingPurpose" -> "app_PrivacyPreference" [label="PrivacyPreference_purposeId_fkey (purposeId)\n1 : 0..many"];

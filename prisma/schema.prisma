@@ -281,66 +281,70 @@ enum ResearchStudyStatus {
 }
 
 model User {
-  id                     String                  @id @default(uuid()) @db.Uuid
-  email                  String                  @unique @db.VarChar(320)
-  passwordHash           String?                 @db.VarChar(255)
-  status                 UserStatus              @default(ACTIVE)
-  emailVerifiedAt        DateTime?               @db.Timestamptz(6)
-  failedLoginCount       Int                     @default(0)
-  lockedUntil            DateTime?               @db.Timestamptz(6)
-  closedAt               DateTime?               @db.Timestamptz(6)
-  termsAcceptedAt        DateTime?               @db.Timestamptz(6)
-  termsVersion           String                  @default("LEGACY_UNRECORDED") @db.VarChar(64)
-  privacyVersion         String                  @db.VarChar(64)
-  createdAt              DateTime                @default(now()) @db.Timestamptz(6)
-  updatedAt              DateTime                @updatedAt @db.Timestamptz(6)
-  profile                UserProfile?
-  sessions               AuthSession[]
-  readerLeases           ReaderLease[]
-  readerPreference       ReaderPreference?
-  authenticators         Authenticator[]
-  verificationTokens     VerificationToken[]
-  roles                  RoleAssignment[]
-  privacyPreferences     PrivacyPreference[]
-  notificationPreference NotificationPreference?
-  subjectRequests        SubjectRequest[]
-  publications           Publication[]
-  uploads                Asset[]
-  editorialReviews       EditorialReview[]
-  subscriptions          Subscription[]
-  trialUsages            TrialUsage[]
-  orders                 Order[]
-  entitlements           Entitlement[]
-  memberships            Membership[]
-  cohortMemberships      CohortMember[]
-  progress               ReadingProgress[]
-  bookmarks              Bookmark[]
-  annotations            Annotation[]
-  quizAttempts           QuizAttempt[]
-  projectSubmissions     ProjectSubmission[]
-  offlineLicences        OfflineLicence[]
-  syncOperations         SyncOperation[]
-  notifications          Notification[]
-  auditEvents            AuditEvent[]
-  pseudonymLinks         PseudonymLink[]
-  policyChanges          PolicyChange[]
-  requestedGrants        GrantApproval[]         @relation("GrantRequester")
-  approvedGrants         GrantApproval[]         @relation("GrantApprover")
-  eligibilityReviews     EligibilityReview[]
-  approvalsRequested     ApprovalRequest[]       @relation("ApprovalRequester")
-  approvalsDecided       ApprovalRequest[]       @relation("ApprovalDecider")
-  disclosureReviews      DisclosureReview[]
-  researchExports        ResearchExport[]
-  publishedInsights      PublicInsight[]
-  researchAudits         ResearchAudit[]
-  approvedDomains        InstitutionDomain[]
-  createdRevisions       Revision[]              @relation("RevisionCreator")
-  publishedRevisions     Revision[]              @relation("RevisionPublisher")
-  rightsAttestations     RightsAttestation[]
-  uploadSessions         UploadSession[]
-  importJobs             ImportJob[]
-  publicationSchedules   PublicationSchedule[]
-  errata                 RevisionErratum[]
+  id                       String                  @id @default(uuid()) @db.Uuid
+  email                    String                  @unique @db.VarChar(320)
+  passwordHash             String?                 @db.VarChar(255)
+  status                   UserStatus              @default(ACTIVE)
+  emailVerifiedAt          DateTime?               @db.Timestamptz(6)
+  failedLoginCount         Int                     @default(0)
+  lockedUntil              DateTime?               @db.Timestamptz(6)
+  closedAt                 DateTime?               @db.Timestamptz(6)
+  termsAcceptedAt          DateTime?               @db.Timestamptz(6)
+  termsVersion             String                  @default("LEGACY_UNRECORDED") @db.VarChar(64)
+  privacyVersion           String                  @db.VarChar(64)
+  createdAt                DateTime                @default(now()) @db.Timestamptz(6)
+  updatedAt                DateTime                @updatedAt @db.Timestamptz(6)
+  profile                  UserProfile?
+  sessions                 AuthSession[]
+  readerLeases             ReaderLease[]
+  readerPreference         ReaderPreference?
+  authenticators           Authenticator[]
+  verificationTokens       VerificationToken[]
+  roles                    RoleAssignment[]
+  privacyPreferences       PrivacyPreference[]
+  notificationPreference   NotificationPreference?
+  subjectRequests          SubjectRequest[]
+  publications             Publication[]
+  uploads                  Asset[]
+  editorialReviews         EditorialReview[]
+  subscriptions            Subscription[]
+  trialUsages              TrialUsage[]
+  orders                   Order[]
+  entitlements             Entitlement[]
+  memberships              Membership[]
+  cohortMemberships        CohortMember[]
+  progress                 ReadingProgress[]
+  bookmarks                Bookmark[]
+  annotations              Annotation[]
+  quizAttempts             QuizAttempt[]
+  projectSubmissions       ProjectSubmission[]
+  offlineLicences          OfflineLicence[]
+  syncOperations           SyncOperation[]
+  notifications            Notification[]
+  auditEvents              AuditEvent[]
+  pseudonymLinks           PseudonymLink[]
+  policyChanges            PolicyChange[]
+  platformPoliciesCreated  PlatformPolicyVersion[] @relation("PlatformPolicyCreator")
+  platformPoliciesApproved PlatformPolicyVersion[] @relation("PlatformPolicyApprover")
+  platformPoliciesEdited   PlatformPolicyVersion[] @relation("PlatformPolicyEditor")
+  platformPolicyEvents     PlatformPolicyEvent[]
+  requestedGrants          GrantApproval[]         @relation("GrantRequester")
+  approvedGrants           GrantApproval[]         @relation("GrantApprover")
+  eligibilityReviews       EligibilityReview[]
+  approvalsRequested       ApprovalRequest[]       @relation("ApprovalRequester")
+  approvalsDecided         ApprovalRequest[]       @relation("ApprovalDecider")
+  disclosureReviews        DisclosureReview[]
+  researchExports          ResearchExport[]
+  publishedInsights        PublicInsight[]
+  researchAudits           ResearchAudit[]
+  approvedDomains          InstitutionDomain[]
+  createdRevisions         Revision[]              @relation("RevisionCreator")
+  publishedRevisions       Revision[]              @relation("RevisionPublisher")
+  rightsAttestations       RightsAttestation[]
+  uploadSessions           UploadSession[]
+  importJobs               ImportJob[]
+  publicationSchedules     PublicationSchedule[]
+  errata                   RevisionErratum[]
 
   @@schema("app")
 }
@@ -1638,6 +1642,48 @@ model AuditEvent {
 
   @@index([objectType, objectId, occurredAt])
   @@index([actorId, occurredAt])
+  @@schema("app")
+}
+
+model PlatformPolicyVersion {
+  id             String                @id @default(uuid()) @db.Uuid
+  version        Int                   @unique
+  status         String                @default("DRAFT") @db.VarChar(24)
+  settings       Json
+  reason         String                @db.VarChar(1000)
+  sourceVersion  Int?
+  baseVersion    Int                   @default(0)
+  createdById    String                @db.Uuid
+  lastEditedById String                @db.Uuid
+  approvedById   String?               @db.Uuid
+  createdAt      DateTime              @default(now()) @db.Timestamptz(6)
+  approvedAt     DateTime?             @db.Timestamptz(6)
+  effectiveAt    DateTime?             @db.Timestamptz(6)
+  activatedAt    DateTime?             @db.Timestamptz(6)
+  supersededAt   DateTime?             @db.Timestamptz(6)
+  createdBy      User                  @relation("PlatformPolicyCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  lastEditedBy   User                  @relation("PlatformPolicyEditor", fields: [lastEditedById], references: [id], onDelete: Restrict)
+  approvedBy     User?                 @relation("PlatformPolicyApprover", fields: [approvedById], references: [id], onDelete: Restrict)
+  events         PlatformPolicyEvent[]
+
+  @@index([status, effectiveAt])
+  @@schema("app")
+}
+
+model PlatformPolicyEvent {
+  id            String                @id @default(uuid()) @db.Uuid
+  policyId      String                @db.Uuid
+  actorId       String                @db.Uuid
+  action        String                @db.VarChar(32)
+  reason        String                @db.VarChar(1000)
+  beforeHash    String?               @db.VarChar(64)
+  afterHash     String?               @db.VarChar(64)
+  correlationId String                @db.VarChar(120)
+  occurredAt    DateTime              @default(now()) @db.Timestamptz(6)
+  policy        PlatformPolicyVersion @relation(fields: [policyId], references: [id], onDelete: Restrict)
+  actor         User                  @relation(fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([policyId, occurredAt])
   @@schema("app")
 }
 

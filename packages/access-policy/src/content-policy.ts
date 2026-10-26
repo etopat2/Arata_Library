@@ -119,8 +119,14 @@ const overrideFields = [
 export function resolveContentPolicy(
   path: PolicyPath,
   rows: readonly ContentPolicyRow[],
+  platformDefaults: Partial<EffectiveContentPolicy> = {},
 ): EffectiveContentPolicy {
-  const result: EffectiveContentPolicy = { ...defaults, sources: [], sessionLimits: [] };
+  const result: EffectiveContentPolicy = {
+    ...defaults,
+    ...platformDefaults,
+    sources: [],
+    sessionLimits: [],
+  };
   let explicitReadDeny = false;
   for (const scope of policyScopeOrder) {
     const id = path[scope];

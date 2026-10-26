@@ -200,6 +200,31 @@ test('approves and inspects a versioned content policy in the administrator scre
   expect(audit.violations).toEqual([]);
 });
 
+test('loads and previews versioned platform settings in the administrator screen', async ({
+  page,
+}) => {
+  const secret = process.env.AUTH_SESSION_SECRET ?? foundation.AUTH_SESSION_SECRET;
+  if (!secret) throw new Error('Session signing key needed');
+  await page.context().addCookies([
+    { name: 'arata_session', value: policyAdminToken, url: 'http://127.0.0.1:5187' },
+    {
+      name: 'arata_csrf',
+      value: csrfToken(policyAdminToken, secret),
+      url: 'http://127.0.0.1:5187',
+    },
+  ]);
+  await page.goto('/?screen=platform-settings');
+  await expect(page.getByRole('heading', { name: 'Platform settings and policies' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Subscriptions and billing' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Research and disclosure' })).toBeVisible();
+  await page.getByRole('button', { name: 'Preview effects' }).click();
+  await expect(page.getByRole('status').first()).toContainText('Effect preview ready');
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  const audit = await new AxeBuilder({ page }).analyze();
+  expect(audit.violations).toEqual([]);
+});
+
 test('uses the hierarchical Studio to create a persistent standalone draft', async ({ page }) => {
   const secret = process.env.AUTH_SESSION_SECRET ?? foundation.AUTH_SESSION_SECRET;
   if (!secret) throw new Error('Session signing key needed');

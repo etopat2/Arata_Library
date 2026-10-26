@@ -427,6 +427,34 @@ erDiagram
     timestamp_6__with_time_zone validFrom
     timestamp_6__with_time_zone validUntil
   }
+  app_PlatformPolicyEvent {
+    uuid id PK
+    uuid policyId FK
+    uuid actorId FK
+    character_varying_32_ action
+    character_varying_1000_ reason
+    character_varying_64_ beforeHash
+    character_varying_64_ afterHash
+    character_varying_120_ correlationId
+    timestamp_6__with_time_zone occurredAt
+  }
+  app_PlatformPolicyVersion {
+    uuid id PK
+    integer version
+    character_varying_24_ status
+    jsonb settings
+    character_varying_1000_ reason
+    integer sourceVersion
+    integer baseVersion
+    uuid createdById FK
+    uuid lastEditedById FK
+    uuid approvedById FK
+    timestamp_6__with_time_zone createdAt
+    timestamp_6__with_time_zone approvedAt
+    timestamp_6__with_time_zone effectiveAt
+    timestamp_6__with_time_zone activatedAt
+    timestamp_6__with_time_zone supersededAt
+  }
   app_PolicyChange {
     uuid id PK
     uuid policyId FK
@@ -963,6 +991,11 @@ erDiagram
   app_User ||--o{ app_Order : "Order_userId_fkey"
   app_Order ||--o{ app_PaymentAttempt : "PaymentAttempt_orderId_fkey"
   app_Plan ||--o{ app_PlanVersion : "PlanVersion_planId_fkey"
+  app_User ||--o{ app_PlatformPolicyEvent : "PlatformPolicyEvent_actorId_fkey"
+  app_PlatformPolicyVersion ||--o{ app_PlatformPolicyEvent : "PlatformPolicyEvent_policyId_fkey"
+  app_User o|--o{ app_PlatformPolicyVersion : "PlatformPolicyVersion_approvedById_fkey"
+  app_User ||--o{ app_PlatformPolicyVersion : "PlatformPolicyVersion_createdById_fkey"
+  app_User ||--o{ app_PlatformPolicyVersion : "PlatformPolicyVersion_lastEditedById_fkey"
   app_User ||--o{ app_PolicyChange : "PolicyChange_actorId_fkey"
   app_ContentPolicy ||--o{ app_PolicyChange : "PolicyChange_policyId_fkey"
   app_ProcessingPurpose ||--o{ app_PrivacyPreference : "PrivacyPreference_purposeId_fkey"

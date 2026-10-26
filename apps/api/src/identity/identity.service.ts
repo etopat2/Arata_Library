@@ -16,6 +16,7 @@ import type {
   AuthenticatorTransport,
 } from '@simplewebauthn/server';
 import type { ApiConfig } from '../app.js';
+import { PlatformPolicyService } from '../platform-policy/platform-policy.service.js';
 import {
   csrfToken,
   hashPassword,
@@ -103,6 +104,7 @@ export class IdentityService implements OnModuleDestroy {
     @Inject('DB_POOL') private readonly pool: Pool,
     @Inject('APP_CONFIG') readonly config: ApiConfig,
     @Inject(IdentityMailer) readonly mailer: IdentityMailer,
+    @Inject(PlatformPolicyService) private readonly platformPolicy: PlatformPolicyService,
   ) {
     this.redis = new Redis(config.REDIS_URL, {
       lazyConnect: true,
@@ -156,6 +158,7 @@ export class IdentityService implements OnModuleDestroy {
       .digest('hex');
   }
   async throttle(category: string, ip: string, email?: string): Promise<void> {
+    const authPolicy = (await this.platformPolicy.current()).settings.security;
     const keys = [`${this.config.AUTH_RATE_PREFIX}:auth:${category}:ip:${this.bucket(ip)}`];
     if (email)
       keys.push(
@@ -165,8 +168,8 @@ export class IdentityService implements OnModuleDestroy {
       await this.redisReady;
       for (const key of keys) {
         const count = await this.redis.incr(key);
-        if (count === 1) await this.redis.expire(key, 900);
-        if (count > (category === 'login' ? 20 : 8))
+        if (count === 1) await this.redis.expire(key, authPolicy.loginWindowMinutes * 60);
+        if (count > (category === 'login' ? authPolicy.loginRequestsPerWindow : 8))
           throw new HttpException('Please try again later', 429);
       }
     } catch (error) {
@@ -319,6 +322,7 @@ export class IdentityService implements OnModuleDestroy {
     );
     const user = lookup.rows[0];
     const correct = await verifyPassword(password, user?.passwordHash ?? null);
+    const securityPolicy = (await this.platformPolicy.current()).settings.security;
     if (
       !user ||
       !correct ||
@@ -329,8 +333,8 @@ export class IdentityService implements OnModuleDestroy {
     ) {
       if (user && !correct && user.status === 'ACTIVE')
         await this.pool.query(
-          'UPDATE app."User" SET "failedLoginCount"=LEAST("failedLoginCount"+1,1000),"lockedUntil"=CASE WHEN "failedLoginCount"+1>=5 THEN now()+interval \'15 minutes\' ELSE "lockedUntil" END WHERE id=$1',
-          [user.id],
+          'UPDATE app."User" SET "failedLoginCount"=LEAST("failedLoginCount"+1,1000),"lockedUntil"=CASE WHEN "failedLoginCount"+1 >= $2 THEN now()+make_interval(mins => $3) ELSE "lockedUntil" END WHERE id=$1',
+          [user.id, securityPolicy.loginAttemptsPerWindow, securityPolicy.lockoutMinutes],
         );
       throw new HttpException('Invalid credentials or account unavailable', 401);
     }
@@ -342,15 +346,15 @@ export class IdentityService implements OnModuleDestroy {
       const raw = randomToken();
       const id = randomUUID();
       const inserted = await client.query<IdentitySession>(
-        'INSERT INTO app."AuthSession" (id,"userId","tokenHash","expiresAt","createdAt","deviceLabel","lastSeenAt") VALUES ($1,$2,$3,now()+interval \'12 hours\',now(),$4,now()) RETURNING id,"userId","expiresAt","revokedAt","mfaVerifiedAt","createdAt","deviceLabel","lastSeenAt"',
-        [id, user.id, tokenHash(raw), deviceLabel.slice(0, 160)],
+        'INSERT INTO app."AuthSession" (id,"userId","tokenHash","expiresAt","createdAt","deviceLabel","lastSeenAt") VALUES ($1,$2,$3,now()+make_interval(hours => $5),now(),$4,now()) RETURNING id,"userId","expiresAt","revokedAt","mfaVerifiedAt","createdAt","deviceLabel","lastSeenAt"',
+        [id, user.id, tokenHash(raw), deviceLabel.slice(0, 160), securityPolicy.sessionHours],
       );
       await this.audit(client, user.id, 'identity.login', 'AuthSession', id, requestId);
       return { raw, session: inserted.rows[0]! };
     });
   }
 
-  cookieHeaders(raw: string, maxAgeSeconds = 43_200): string[] {
+  cookieHeaders(raw: string, maxAgeSeconds: number): string[] {
     const secure = this.sessionCookie.startsWith('__Host-') ? '; Secure' : '';
     const csrf = csrfToken(raw, this.config.AUTH_SESSION_SECRET);
     return [
@@ -477,13 +481,15 @@ export class IdentityService implements OnModuleDestroy {
   async requestReset(emailInput: string, ip: string, requestId: string): Promise<void> {
     const email = normalizeEmail(emailInput);
     await this.throttle('recovery', ip, email);
+    const recoveryMinutes = (await this.platformPolicy.current()).settings.security
+      .recoveryTokenMinutes;
     const result = await this.tx(async (client) => {
       const user = await client.query<IdentityUser>(
         'SELECT id,email FROM app."User" WHERE email=$1 AND status=\'ACTIVE\' AND "emailVerifiedAt" IS NOT NULL',
         [email],
       );
       if (!user.rows[0]) return null;
-      const raw = await this.issueToken(client, user.rows[0].id, 'PASSWORD_RESET', 30);
+      const raw = await this.issueToken(client, user.rows[0].id, 'PASSWORD_RESET', recoveryMinutes);
       await this.audit(
         client,
         user.rows[0].id,
@@ -499,7 +505,7 @@ export class IdentityService implements OnModuleDestroy {
         await this.mailer.send({
           to: email,
           subject: 'Reset your Arata TechLibrary password',
-          text: `Open ${this.config.WEB_ORIGIN}/?screen=recovery&token=${encodeURIComponent(result)} to reset your password. This link expires in 30 minutes.`,
+          text: `Open ${this.config.WEB_ORIGIN}/?screen=recovery&token=${encodeURIComponent(result)} to reset your password. This link expires in ${recoveryMinutes} minutes.`,
         });
       } catch {
         console.error(
@@ -787,6 +793,7 @@ export class IdentityService implements OnModuleDestroy {
   }
 
   private async rotateSession(client: PoolClient, context: AuthContext, mfa: boolean) {
+    const securityPolicy = (await this.platformPolicy.current()).settings.security;
     const raw = randomToken();
     const id = randomUUID();
     await client.query(
@@ -794,8 +801,15 @@ export class IdentityService implements OnModuleDestroy {
       [context.session.id, context.user.id],
     );
     const result = await client.query<IdentitySession>(
-      'INSERT INTO app."AuthSession" (id,"userId","tokenHash","expiresAt","mfaVerifiedAt","createdAt","deviceLabel","lastSeenAt") VALUES ($1,$2,$3,now()+interval \'12 hours\',$4,now(),$5,now()) RETURNING id,"userId","expiresAt","revokedAt","mfaVerifiedAt","createdAt","deviceLabel","lastSeenAt"',
-      [id, context.user.id, tokenHash(raw), mfa ? new Date() : null, context.session.deviceLabel],
+      'INSERT INTO app."AuthSession" (id,"userId","tokenHash","expiresAt","mfaVerifiedAt","createdAt","deviceLabel","lastSeenAt") VALUES ($1,$2,$3,now()+make_interval(hours => $6),$4,now(),$5,now()) RETURNING id,"userId","expiresAt","revokedAt","mfaVerifiedAt","createdAt","deviceLabel","lastSeenAt"',
+      [
+        id,
+        context.user.id,
+        tokenHash(raw),
+        mfa ? new Date() : null,
+        context.session.deviceLabel,
+        securityPolicy.sessionHours,
+      ],
     );
     return { raw, session: result.rows[0]! };
   }
@@ -1214,9 +1228,10 @@ export class IdentityService implements OnModuleDestroy {
       );
       const raw = randomToken();
       const id = randomUUID();
+      const securityPolicy = (await this.platformPolicy.current()).settings.security;
       const session = await client.query<IdentitySession>(
-        'INSERT INTO app."AuthSession" (id,"userId","tokenHash","expiresAt","mfaVerifiedAt","createdAt","deviceLabel","lastSeenAt") VALUES ($1,$2,$3,now()+interval \'12 hours\',now(),now(),$4,now()) RETURNING id,"userId","expiresAt","revokedAt","mfaVerifiedAt","createdAt","deviceLabel","lastSeenAt"',
-        [id, userId, tokenHash(raw), deviceLabel.slice(0, 160)],
+        'INSERT INTO app."AuthSession" (id,"userId","tokenHash","expiresAt","mfaVerifiedAt","createdAt","deviceLabel","lastSeenAt") VALUES ($1,$2,$3,now()+make_interval(hours => $5),now(),now(),$4,now()) RETURNING id,"userId","expiresAt","revokedAt","mfaVerifiedAt","createdAt","deviceLabel","lastSeenAt"',
+        [id, userId, tokenHash(raw), deviceLabel.slice(0, 160), securityPolicy.sessionHours],
       );
       await this.audit(client, userId, 'identity.passkey_login', 'AuthSession', id, requestId);
       return { raw, session: session.rows[0]! };

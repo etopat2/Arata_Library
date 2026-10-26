@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import csv
 import io
+import os
 import re
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -20,10 +21,11 @@ from docx import Document
 ROOT = Path(__file__).resolve().parents[2]
 DOC = ROOT / "Documentation"
 OUT = DOC / "Implementation"
-SRS = DOC / "Arata_TechLibrary_SRS_v1.0_2026-10-21.docx"
-DESIGN = DOC / "Arata_TechLibrary_Engineering_Design_Package_v1.0"
-CONTRACT = DOC / "Arata_TechLibrary_Step1_Implementation_Contracts_v1.0"
-WIREFRAME = DOC / "Arata_TechLibrary_Wireframe_v3.1"
+SOURCE_DOC = Path(os.environ.get("ARATA_SOURCE_DOCUMENTATION", DOC))
+SRS = SOURCE_DOC / "Arata_TechLibrary_SRS_v1.0_2026-10-21.docx"
+DESIGN = SOURCE_DOC / "Arata_TechLibrary_Engineering_Design_Package_v1.0"
+CONTRACT = SOURCE_DOC / "Arata_TechLibrary_Step1_Implementation_Contracts_v1.0"
+WIREFRAME = SOURCE_DOC / "Arata_TechLibrary_Wireframe_v3.1"
 ID_RE = re.compile(r"^(?:FR-[A-Z]+|NFR-[A-Z]+|RAI-[A-Z]+|BR|DR|INT|SEC)-\d{3}$")
 VERIFICATION_RE = re.compile(r"\s*\[Verification:\s*(.*?)\]\s*$")
 
@@ -269,7 +271,7 @@ def main(check: bool) -> None:
     for path, method, _ in operations:
         operation_by_path[path].append(method)
     models = set(re.findall(r"(?m)^model (\w+) \{", (ROOT / "prisma/schema.prisma").read_text(encoding="utf-8")))
-    if len(models) != 89:
+    if len(models) != 91:
         raise ValueError(f"unexpected Prisma model count: {len(models)}")
 
     prior = rows(OUT / "REQUIREMENT_TRACEABILITY.csv")
