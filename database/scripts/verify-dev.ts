@@ -76,8 +76,8 @@ try {
     report: await checkRole(local.RESEARCH_REPORT_DATABASE_URL, 'SELECT 1 FROM research."ResearchEvent" LIMIT 0', 'SELECT 1 FROM research_private."PseudonymLink" LIMIT 0'),
     identity: await checkRole(local.RESEARCH_IDENTITY_DATABASE_URL, 'SELECT 1 FROM research_private."PseudonymLink" LIMIT 0', 'SELECT 1 FROM research."ResearchEvent" LIMIT 0'),
   };
-  if (!row || row.tables !== 89 || row.enums !== 29 || row.foreign_keys < 155 || row.checks < 79 || row.triggers < 44
-    || migrations.rows.length !== 22 || migrations.rows.some(m => !m.complete)
+  if (!row || row.tables !== 91 || row.enums !== 29 || row.foreign_keys < 160 || row.checks < 85 || row.triggers < 46
+    || migrations.rows.length !== 23 || migrations.rows.some(m => !m.complete)
     || !perms || perms.app_can_research || !perms.app_can_lease || !perms.app_can_preferences || perms.report_can_link || !perms.identity_can_link || !snapshotView.rows[0]?.present || !leaseExpiryIndex.rows[0]?.present
     || !editionOrder.rows[0]?.standalone || !editionOrder.rows[0].volume
     || reviewGuards.rows[0]?.count !== 5 || !reviewGuards.rows[0].child_freezes_review

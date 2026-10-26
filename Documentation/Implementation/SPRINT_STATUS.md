@@ -1,5 +1,8 @@
 # Sprint status
 
+Cross-sprint S01/S08/S11/S13/S16/S18/S19 policy contribution (2026-10-26): the versioned platform settings foundation and supplemental `platform-settings` administrator screen are partially implemented for `FR-ENT-005/006/007/008/010/011`, `FR-PAY-001/002/010/011/012/013/014`, `FR-INS-001/004/005/006/008/009`, `RAI-COL-009/014`, `RAI-PUB-003/008`, `BR-013/018`, `NFR-OPS-001/002/010`, and `SEC-011`. Existing SRS release targets and wireframe screen mappings are unchanged. Specialist/business/legal approvals, scheduled activation, remaining domain consumers and runtime OpenAPI are open in GAP-030–032. Implementation paths and checks are in `PROGRESS.md` and `TEST_RESULTS.md`.
+
+
 Updated: 2026-10-26. The source plan proposes 20 two-week sequencing units; durations are not delivery commitments.
 
 S09 reader settings follow-up: per-account and device preferences now persist for `FR-RDR-002` (`reader`). The signed-in browser restore test passed 1/1, full public browser 11/11, live reader/catalogue API 11/11 and SQL constraints 12/12. Runtime OpenAPI alignment, advanced rendering and release accessibility acceptance remain open.

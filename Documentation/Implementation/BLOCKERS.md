@@ -1,5 +1,14 @@
 # Open gaps and blockers
 
+## Platform policy follow-up — 2026-10-26
+
+| ID | Area | Current evidence and gap | Required next action |
+|---|---|---|---|
+| GAP-030 | Commercial and legal approval | Versioned configuration proposes periods, refund window and operational thresholds; prices are null and plans/trials disabled. Eleven editable documents are explicitly pending review. SRS DEC-01–DEC-12 and formal stakeholder sign-off remain open. | Obtain accountable pricing, tax, provider, legal, privacy, institutional and recovery decisions before any public commercial/research/legal release. Publish only reviewed legal versions. |
+| GAP-031 | Domain consumers | Identity session/rate/recovery, Studio upload and reader defaults consume active settings. Subscription checkout, grant issuance/expiry notifications, institution enrollment, offline licensing, research collection/publication, retention jobs and backup schedules have no complete live consumer yet. | Implement each domain service with server authorization and tests against a single effective version; do not describe configured values alone as a working domain feature. |
+| GAP-032 | Policy operations and contracts | Effective dates require explicit activation after the date; no scheduled activator. Live policy endpoints and DTOs are not in the design-stage OpenAPI/generated client. UI is a supplemental screen outside the source 90-screen wireframe inventory. | Add bounded scheduled activation with audit/notification, reconcile OpenAPI and generated client, add browser accessibility acceptance, and seek UI design review. |
+
+
 Updated: 2026-10-26. These are preparation findings, not claims that the project is blocked in full.
 
 | ID | Severity | Scope | Next action |

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+export * from './platform-policy.js';
 
 const localUrl = z
   .url()

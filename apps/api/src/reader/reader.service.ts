@@ -19,6 +19,7 @@ import {
 import type { AuthContext } from '../identity/identity.service.js';
 import type { ApiConfig } from '../app.js';
 import { seal, unseal } from '../identity/security.js';
+import { PlatformPolicyService } from '../platform-policy/platform-policy.service.js';
 
 type Lesson = {
   id: string;
@@ -52,6 +53,7 @@ export class ReaderService {
   constructor(
     @Inject('DB_POOL') private readonly pool: Pool,
     @Inject('APP_CONFIG') private readonly config: ApiConfig,
+    @Inject(PlatformPolicyService) private readonly platformPolicy: PlatformPolicyService,
   ) {}
 
   async settings(context: AuthContext) {
@@ -226,7 +228,17 @@ export class ReaderService {
          OR "lessonId"=ANY($1::uuid[]) OR "resourceId"=ANY($1::uuid[]))`,
       [ids],
     );
-    return resolveContentPolicy(path, rows.rows);
+    const defaults = (await this.platformPolicy.current()).settings.reader;
+    return resolveContentPolicy(path, rows.rows, {
+      allowCopy: defaults.defaultCopy,
+      allowPrint: defaults.defaultPrint,
+      allowDownload: defaults.defaultDownload,
+      allowExportPdf: defaults.defaultExport,
+      allowExportEpub: defaults.defaultExport,
+      allowOffline: defaults.defaultOffline,
+      watermark: defaults.watermarkEnabled,
+      screenshotMode: defaults.screenshotNoticeEnabled ? 'RESTRICTED_NOTICE' : 'ALLOW',
+    });
   }
 
   private async entitled(context: AuthContext | null, path: PolicyPath): Promise<boolean> {

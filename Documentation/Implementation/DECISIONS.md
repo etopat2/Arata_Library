@@ -1,5 +1,17 @@
 # Implementation decisions
 
+## Platform policy decisions — 2026-10-26
+
+| ID | Status | Sources and issue | Decision and consequence |
+|---|---|---|---|
+| ADR-POL-001 | Technical default adopted; business approval pending | SRS `FR-PAY-001/002/010/011/012/013/014` and DEC-02 leave prices, trial/refund terms and gateway renewal capability for owner validation; Step 1 candidate plan fields are not approved offers. | Use UGX and 1/3/12-month terms as editable proposals. Keep prices null, plans/trials disabled, recurring billing blocked, manual renewal and paid-through cancellation as defaults. A finance-role independent policy approval does not replace legal, pricing or provider release approval. |
+| ADR-POL-002 | Adopted | SRS `FR-IAM-004`, `FR-ENT-005/006`, `FR-INS-008/009`, `RAI-PUB-008`, `SEC-011` require controls even though the task asks for configurable settings. | Expose these controls in the versioned schema but reject attempts to disable mandatory administrator MFA, permanent-grant dual approval, finance refund approval, central institution/domain approval, manual-evidence independent review, or independent research privacy approval. Keep server authorization separate from UI visibility. |
+| ADR-POL-003 | Proposal; privacy approval pending | SRS `RAI-COL-009/014`, `RAI-PUB-003/008`, `BR-013/018` give 180-second idle, 1800-second session separation, 30-second heartbeat and minimum 30 subjects as initial configurable proposals; DEC research lawful basis, retention and disclosure remain open. | Store those values in one validated snapshot; disable collection and public publication initially. Require a specialist privacy role for changed research settings. Independent study/snapshot release approval remains a separate requirement. |
+| ADR-POL-004 | Adopted for current service | SRS `FR-ENT-007/008/010/011` requires inherited/overridden content actions; the existing reader resolver had fixed fallback values. | Inject platform reader defaults below explicit library/publication/edition/chapter/resource policies. Preserve explicit ancestor read veto and entitlement checks. Browser screenshot controls are usage notices and watermarks, never prevention claims. |
+| ADR-POL-005 | Adopted for current service | SRS `NFR-OPS-010` and `SEC-011` require auditable configuration, while draft policy changes must not silently replace production settings. | Use append-only event history, immutable submitted settings, independent approval, UTC effective dates, an active-version uniqueness guard and baseline-version check. Restoration copies an earlier active snapshot to a new draft. A scheduled activator is open work. |
+| ADR-POL-006 | Adopted; agreement approval pending | SRS `FR-INS-001/004/005/006/008/009` distinguishes institution domain ownership from verified member email and requires bounded agreements. | Offer DNS TXT, HTTPS token or independent manual evidence for domain ownership; verified email is a separate member check. Disable institutional benefits until an approved agreement, capacity, domain and member evidence exist. |
+
+
 Updated: 2026-10-22. Decisions here do not amend the SRS. Material owner decisions remain open in `BLOCKERS.md`.
 
 | ID | Status | Sources and issue | Decision and consequence |

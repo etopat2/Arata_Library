@@ -9,6 +9,7 @@ import { PublicPortal } from './PublicPortal.js';
 import { PublishingStudio } from './PublishingStudio.js';
 import { Reader } from './Reader.js';
 import { ContentPolicyAdmin } from './ContentPolicyAdmin.js';
+import { PlatformPolicyAdmin } from './PlatformPolicyAdmin.js';
 import './style.css';
 
 const accountScreens = new Set([
@@ -37,6 +38,8 @@ function App() {
   const studio = new URLSearchParams(location.search).get('screen') === 'studio';
   const reader = new URLSearchParams(location.search).get('screen') === 'reader';
   const policyAdmin = new URLSearchParams(location.search).get('screen') === 'content-policy';
+  const platformSettings =
+    new URLSearchParams(location.search).get('screen') === 'platform-settings';
 
   useEffect(() => {
     void getTheme().then(chooseTheme);
@@ -62,6 +65,7 @@ function App() {
   if (studio) return <PublishingStudio />;
   if (reader) return <Reader />;
   if (policyAdmin) return <ContentPolicyAdmin />;
+  if (platformSettings) return <PlatformPolicyAdmin />;
   if (!account)
     return (
       <PublicPortal

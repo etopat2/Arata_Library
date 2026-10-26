@@ -14,7 +14,7 @@
     "dev:worker": "npm run dev -w @arata/worker",
     "foundation:init-env": "node infrastructure/scripts/init-foundation-env.mjs",
     "foundation:check": "npm run lint && npm run typecheck:foundation && npm run test:foundation && npm run build:foundation",
-    "lint": "eslint apps packages tests --max-warnings=0 && prettier --check \"apps/**/*.{ts,tsx,css,json}\" \"packages/**/*.{ts,tsx,json}\" \"tests/**/*.{ts,tsx}\"",
+    "lint": "eslint apps packages tests --max-warnings=0 && prettier --check \"apps/**/*.{ts,tsx,css,json}\" \"packages/**/*.{ts,tsx,json}\" \"tests/**/*.{ts,tsx}\" --end-of-line auto",
     "format": "prettier --write \"apps/**/*.{ts,tsx,css,json}\" \"packages/**/*.{ts,tsx,json}\" \"tests/**/*.{ts,tsx}\"",
     "typecheck:foundation": "npm run build:packages && npm run typecheck -w @arata/api && npm run typecheck -w @arata/web-pwa && npm run typecheck -w @arata/worker",
     "test:foundation": "vitest run --config vitest.config.ts",

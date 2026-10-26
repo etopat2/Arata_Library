@@ -158,7 +158,13 @@ export class AuthController {
       labelOf(request),
       request.id,
     );
-    response.setHeader('Set-Cookie', this.identity.cookieHeaders(created.raw));
+    response.setHeader(
+      'Set-Cookie',
+      this.identity.cookieHeaders(
+        created.raw,
+        Math.max(0, Math.floor((created.session.expiresAt.getTime() - Date.now()) / 1000)),
+      ),
+    );
     response.setHeader('Cache-Control', 'no-store');
     return wrap(request, sessionView(created.session));
   }
@@ -225,7 +231,13 @@ export class AuthController {
     const values = parse(z.strictObject({ id: uuid, code: z.string().regex(/^\d{6}$/) }), body);
     const context = await this.protected(request, true);
     const rotated = await this.identity.confirmTotp(context, values.id, values.code, request.id);
-    response.setHeader('Set-Cookie', this.identity.cookieHeaders(rotated.raw));
+    response.setHeader(
+      'Set-Cookie',
+      this.identity.cookieHeaders(
+        rotated.raw,
+        Math.max(0, Math.floor((rotated.session.expiresAt.getTime() - Date.now()) / 1000)),
+      ),
+    );
     return wrap(request, sessionView(rotated.session));
   }
 
@@ -251,7 +263,13 @@ export class AuthController {
       values.code,
       request.id,
     );
-    response.setHeader('Set-Cookie', this.identity.cookieHeaders(rotated.raw));
+    response.setHeader(
+      'Set-Cookie',
+      this.identity.cookieHeaders(
+        rotated.raw,
+        Math.max(0, Math.floor((rotated.session.expiresAt.getTime() - Date.now()) / 1000)),
+      ),
+    );
     return wrap(request, sessionView(rotated.session));
   }
 
@@ -320,7 +338,13 @@ export class AuthController {
       labelOf(request),
       request.id,
     );
-    response.setHeader('Set-Cookie', this.identity.cookieHeaders(created.raw));
+    response.setHeader(
+      'Set-Cookie',
+      this.identity.cookieHeaders(
+        created.raw,
+        Math.max(0, Math.floor((created.session.expiresAt.getTime() - Date.now()) / 1000)),
+      ),
+    );
     return wrap(request, sessionView(created.session));
   }
 }

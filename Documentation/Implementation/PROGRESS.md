@@ -1,5 +1,14 @@
 # Implementation progress
 
+## Central platform policy foundation — 2026-10-26
+
+Status: partially implemented. Requirements: `FR-ENT-005/006/007/008/010/011`, `FR-PAY-001/002/010/011/012/013/014`, `FR-INS-001/004/005/006/008/009`, `RAI-COL-009/014`, `RAI-PUB-003/008`, `BR-013/018`, `NFR-OPS-001/002/010`, `SEC-011`. Source wireframes: `content-policy`, `access-grants`, `trial-admin`, `plans-admin`, `institution-portal`, `research-disclosure`, `research-approvals`, `security-audit`, `backups`; supplemental implementation screen `platform-settings` awaits design review.
+
+Paths: `packages/validation/src/platform-policy.ts`, `apps/api/src/platform-policy/`, `apps/api/src/identity/identity.service.ts`, `apps/api/src/studio/uploads.service.ts`, `apps/api/src/reader/reader.service.ts`, `apps/web-pwa/src/PlatformPolicyAdmin.tsx`, `prisma/schema.prisma`, `prisma/migrations/202610260004_platform_policy/`, `Documentation/Policies/Drafts/`, `tests/unit/platform-policy.test.ts`, `tests/integration/platform-policy.test.ts`, `database/erd/`. Versioned drafts, effect preview, independent specialist approval, effective-date activation, historical restoration, admin UI and audit history are live. Identity session/rate/recovery, upload and reader defaults consume the active snapshot. Full subscription, grant, institution, research, retention and backup services remain open (GAP-030–032); no legal draft is active.
+
+Validation: Prisma format/validate/generate passed; additive migration applied to isolated test then development without reset; `db:verify` found 91 tables, 160 foreign keys, 85 checks, 46 triggers, 29 enums and 23 complete migrations; `db:test` passed 12/12; focused policy tests 15/15; full sequential Vitest 59/59; administrator/Studio browser 4/4; lint, strict types, build, design API validation and SRS reconciliation passed. Exact commands, limits and earlier repaired failures are in `TEST_RESULTS.md`.
+
+
 Updated: 2026-10-26. Status describes verified implementation, not design intent.
 
 Signed-in reader preference follow-up (`FR-RDR-002`, `NFR-UX-007`; `reader`): an optional per-account record, CSRF-protected owner API and serialized device sync are live. A focused browser check passed 1/1 after clearing device storage, and the full public PWA browser suite passed 11/11. The live API integration passed 11/11, SQL constraints 12/12 and full application suite 44/44; Prisma drift, role isolation, ERD, types, build and lint passed. Runtime OpenAPI alignment and manual WCAG review remain open.
