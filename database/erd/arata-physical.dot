@@ -56,6 +56,7 @@ digraph ArataPhysicalERD {
   "app_QuizAttempt" [label="app.QuizAttempt\nPK id\nFK userId\nFK quizId\nstatus\nstartedAt\nsubmittedAt?\nscore?", fillcolor="#f7f9fc"];
   "app_QuizQuestion" [label="app.QuizQuestion\nPK id\nFK quizId\nordinal\nkind\npromptAssetId?\nanswerSpec\npoints", fillcolor="#f7f9fc"];
   "app_ReaderLease" [label="app.ReaderLease\nPK id\nFK policyId\nFK userId\nFK sessionId\nexpiresAt\ncreatedAt\nupdatedAt", fillcolor="#f7f9fc"];
+  "app_ReaderPreference" [label="app.ReaderPreference\nPK userId\ntheme\nfontSize\nfontFamily\nlineSpacing\nreducedMotion\nupdatedAt", fillcolor="#f7f9fc"];
   "app_ReadingProgress" [label="app.ReadingProgress\nPK id\nFK userId\nFK editionId\nFK lessonId\nposition?\ncompletedAt?\nupdatedAt", fillcolor="#f7f9fc"];
   "app_ReconciliationItem" [label="app.ReconciliationItem\nPK id\nFK runId\nFK paymentAttemptId?\nproviderRef\noutcome\ndetail?", fillcolor="#f7f9fc"];
   "app_ReconciliationRun" [label="app.ReconciliationRun\nPK id\nprovider\nperiodFrom\nperiodTo\nstartedAt\nendedAt?", fillcolor="#f7f9fc"];
@@ -190,6 +191,7 @@ digraph ArataPhysicalERD {
   "app_ContentPolicy" -> "app_ReaderLease" [label="ReaderLease_policyId_fkey (policyId)\n1 : 0..many"];
   "app_AuthSession" -> "app_ReaderLease" [label="ReaderLease_sessionId_userId_fkey (sessionId, userId)\n1 : 0..many"];
   "app_User" -> "app_ReaderLease" [label="ReaderLease_userId_fkey (userId)\n1 : 0..many"];
+  "app_User" -> "app_ReaderPreference" [label="ReaderPreference_userId_fkey (userId)\n1 : 0..1"];
   "app_Edition" -> "app_ReadingProgress" [label="ReadingProgress_editionId_fkey (editionId)\n1 : 0..many"];
   "app_Lesson" -> "app_ReadingProgress" [label="ReadingProgress_lessonId_fkey (lessonId)\n1 : 0..many"];
   "app_User" -> "app_ReadingProgress" [label="ReadingProgress_userId_fkey (userId)\n1 : 0..many"];

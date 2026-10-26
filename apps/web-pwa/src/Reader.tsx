@@ -1,10 +1,11 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import {
   ApiError,
   createApiClient,
   type CatalogueEditionSummary,
   type ReaderLesson,
   type ReaderManifest,
+  type ReaderSettings,
 } from '@arata/api-client';
 
 const api = createApiClient().reader;
@@ -112,11 +113,11 @@ export function Reader() {
   const [bookmarks, setBookmarks] = useState<{ id: string; anchor: string }[]>([]);
   const [selected, setSelected] = useState('');
   const [note, setNote] = useState('');
-  const [fontSize, setFontSize] = useState(() => {
+  const [fontSize, setFontSize] = useState<ReaderSettings['fontSize']>(() => {
     const stored = Number(localStorage.getItem('arata-reader-font') ?? 18);
-    return [16, 18, 21, 24].includes(stored) ? stored : 18;
+    return ([16, 18, 21, 24].includes(stored) ? stored : 18) as ReaderSettings['fontSize'];
   });
-  const [theme, setTheme] = useState(() => {
+  const [theme, setTheme] = useState<ReaderSettings['theme']>(() => {
     const stored = localStorage.getItem('arata-reader-theme');
     return stored === 'night' || stored === 'sepia' ? stored : 'paper';
   });
@@ -124,9 +125,9 @@ export function Reader() {
     const stored = localStorage.getItem('arata-reader-family');
     return stored === 'serif' || stored === 'mono' ? stored : 'system';
   });
-  const [lineSpacing, setLineSpacing] = useState(() => {
+  const [lineSpacing, setLineSpacing] = useState<ReaderSettings['lineSpacing']>(() => {
     const stored = Number(localStorage.getItem('arata-reader-spacing') ?? 1.75);
-    return [1.5, 1.75, 2].includes(stored) ? stored : 1.75;
+    return ([1.5, 1.75, 2].includes(stored) ? stored : 1.75) as ReaderSettings['lineSpacing'];
   });
   const [reducedMotion, setReducedMotion] = useState(() => {
     const stored = localStorage.getItem('arata-reader-reduced-motion');
@@ -134,12 +135,61 @@ export function Reader() {
       ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
       : stored === 'true';
   });
+  const [accountSync, setAccountSync] = useState(false);
+  const settingsQueue = useRef<Promise<void>>(Promise.resolve());
+  const currentSettings: ReaderSettings = {
+    theme,
+    fontSize,
+    fontFamily,
+    lineSpacing,
+    reducedMotion,
+  };
+  const settingsRef = useRef(currentSettings);
+  settingsRef.current = currentSettings;
+
+  function applySettings(value: ReaderSettings) {
+    settingsRef.current = value;
+    setTheme(value.theme);
+    setFontSize(value.fontSize);
+    setFontFamily(value.fontFamily);
+    setLineSpacing(value.lineSpacing);
+    setReducedMotion(value.reducedMotion);
+    localStorage.setItem('arata-reader-theme', value.theme);
+    localStorage.setItem('arata-reader-font', String(value.fontSize));
+    localStorage.setItem('arata-reader-family', value.fontFamily);
+    localStorage.setItem('arata-reader-spacing', String(value.lineSpacing));
+    localStorage.setItem('arata-reader-reduced-motion', String(value.reducedMotion));
+  }
+
+  function changeSettings(value: Partial<ReaderSettings>) {
+    const next = { ...settingsRef.current, ...value };
+    applySettings(next);
+    if (accountSync) {
+      settingsQueue.current = settingsQueue.current
+        .then(async () => {
+          await api.saveSettings(next);
+        })
+        .catch(() => {
+          setStatus('Your display settings remain on this device; account sync failed.');
+        });
+    }
+  }
 
   useEffect(() => {
     const abort = new AbortController();
     async function load() {
       try {
         if (!initialEdition) throw new Error('Choose an edition from the catalogue.');
+        try {
+          const accountSettings = (await api.settings(abort.signal)).data;
+          if (!abort.signal.aborted) {
+            if (accountSettings) applySettings(accountSettings);
+            setAccountSync(true);
+          }
+        } catch (reason) {
+          if (!(reason instanceof ApiError && reason.status === 401) && !abort.signal.aborted)
+            setStatus('Account settings could not load; device settings remain available.');
+        }
         const toc = (await api.manifest(initialEdition, abort.signal)).data;
         setManifest(toc);
         const target = initialLesson || toc.lessons.find((item) => item.available)?.id;
@@ -400,8 +450,7 @@ export function Reader() {
                   <select
                     value={theme}
                     onChange={(event) => {
-                      setTheme(event.target.value);
-                      localStorage.setItem('arata-reader-theme', event.target.value);
+                      changeSettings({ theme: event.target.value as ReaderSettings['theme'] });
                     }}
                     className="ml-2 rounded border border-slate-500 bg-white p-2 text-slate-900"
                   >
@@ -415,9 +464,9 @@ export function Reader() {
                   <select
                     value={fontSize}
                     onChange={(event) => {
-                      const size = Number(event.target.value);
-                      setFontSize(size);
-                      localStorage.setItem('arata-reader-font', String(size));
+                      changeSettings({
+                        fontSize: Number(event.target.value) as ReaderSettings['fontSize'],
+                      });
                     }}
                     className="ml-2 rounded border border-slate-500 bg-white p-2 text-slate-900"
                   >
@@ -433,8 +482,7 @@ export function Reader() {
                     value={fontFamily}
                     onChange={(event) => {
                       const value = event.target.value as FontFamily;
-                      setFontFamily(value);
-                      localStorage.setItem('arata-reader-family', value);
+                      changeSettings({ fontFamily: value });
                     }}
                     className="ml-2 rounded border border-slate-500 bg-white p-2 text-slate-900"
                   >
@@ -448,9 +496,9 @@ export function Reader() {
                   <select
                     value={lineSpacing}
                     onChange={(event) => {
-                      const value = Number(event.target.value);
-                      setLineSpacing(value);
-                      localStorage.setItem('arata-reader-spacing', String(value));
+                      changeSettings({
+                        lineSpacing: Number(event.target.value) as ReaderSettings['lineSpacing'],
+                      });
                     }}
                     className="ml-2 rounded border border-slate-500 bg-white p-2 text-slate-900"
                   >
@@ -464,11 +512,7 @@ export function Reader() {
                     type="checkbox"
                     checked={reducedMotion}
                     onChange={(event) => {
-                      setReducedMotion(event.target.checked);
-                      localStorage.setItem(
-                        'arata-reader-reduced-motion',
-                        String(event.target.checked),
-                      );
+                      changeSettings({ reducedMotion: event.target.checked });
                     }}
                   />
                   Reduce motion

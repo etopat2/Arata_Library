@@ -552,6 +552,15 @@ erDiagram
     timestamp_6__with_time_zone createdAt
     timestamp_6__with_time_zone updatedAt
   }
+  app_ReaderPreference {
+    uuid userId PK,FK
+    character_varying_10_ theme
+    integer fontSize
+    character_varying_10_ fontFamily
+    integer lineSpacing
+    boolean reducedMotion
+    timestamp_6__with_time_zone updatedAt
+  }
   app_ReadingProgress {
     uuid id PK
     uuid userId FK
@@ -980,6 +989,7 @@ erDiagram
   app_ContentPolicy ||--o{ app_ReaderLease : "ReaderLease_policyId_fkey"
   app_AuthSession ||--o{ app_ReaderLease : "ReaderLease_sessionId_userId_fkey"
   app_User ||--o{ app_ReaderLease : "ReaderLease_userId_fkey"
+  app_User ||--o| app_ReaderPreference : "ReaderPreference_userId_fkey"
   app_Edition ||--o{ app_ReadingProgress : "ReadingProgress_editionId_fkey"
   app_Lesson ||--o{ app_ReadingProgress : "ReadingProgress_lessonId_fkey"
   app_User ||--o{ app_ReadingProgress : "ReadingProgress_userId_fkey"

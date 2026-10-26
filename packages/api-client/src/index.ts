@@ -33,6 +33,13 @@ export interface ReaderManifest {
     preview: boolean;
   }[];
 }
+export interface ReaderSettings {
+  theme: 'paper' | 'sepia' | 'night';
+  fontSize: 16 | 18 | 21 | 24;
+  fontFamily: 'system' | 'serif' | 'mono';
+  lineSpacing: 1.5 | 1.75 | 2;
+  reducedMotion: boolean;
+}
 
 export type CatalogueAccess = 'FREE' | 'SIGN_IN' | 'LOCKED' | 'UPCOMING';
 export interface CatalogueCollection {
@@ -257,6 +264,10 @@ export function createApiClient(baseUrl = '') {
   return {
     request,
     reader: {
+      settings: (signal?: AbortSignal) =>
+        request<ApiData<ReaderSettings | null>>('/reader/settings', 'GET', undefined, signal),
+      saveSettings: (value: ReaderSettings) =>
+        request<ApiData<ReaderSettings>>('/reader/settings', 'PUT', value),
       manifest: (editionId: string, signal?: AbortSignal) =>
         request<ApiData<ReaderManifest>>(
           `/reader/editions/${encodeURIComponent(editionId)}/manifest`,

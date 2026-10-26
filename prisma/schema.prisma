@@ -297,6 +297,7 @@ model User {
   profile                UserProfile?
   sessions               AuthSession[]
   readerLeases           ReaderLease[]
+  readerPreference       ReaderPreference?
   authenticators         Authenticator[]
   verificationTokens     VerificationToken[]
   roles                  RoleAssignment[]
@@ -1048,6 +1049,19 @@ model ReaderLease {
   @@unique([policyId, userId, sessionId])
   @@index([policyId, userId, expiresAt])
   @@index([expiresAt])
+  @@schema("app")
+}
+
+model ReaderPreference {
+  userId        String   @id @db.Uuid
+  theme         String   @default("paper") @db.VarChar(10)
+  fontSize      Int      @default(18)
+  fontFamily    String   @default("system") @db.VarChar(10)
+  lineSpacing   Int      @default(175)
+  reducedMotion Boolean  @default(false)
+  updatedAt     DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@schema("app")
 }
 

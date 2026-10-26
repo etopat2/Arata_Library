@@ -6,9 +6,9 @@ This package defines the PostgreSQL data layer for the SRS baseline. Application
 
 - SRS baseline: `Documentation/Arata_TechLibrary_SRS_v1.0_2026-10-21.docx` (local, intentionally not committed to the public repository).
 - Design guidance: the local Engineering Design Package and Step 1 Implementation Contracts. Conflicts and interpretations are recorded in `Documentation/Implementation/DECISIONS.md`.
-- `prisma/schema.prisma`: 88 models, 29 enums, three schemas. `app` owns operational data, `research` holds pseudonymous events and analysis, and `research_private` holds the identity-to-pseudonym link.
+- `prisma/schema.prisma`: 89 models, 29 enums, three schemas. `app` owns operational data, `research` holds pseudonymous events and analysis, and `research_private` holds the identity-to-pseudonym link.
 - `prisma/migrations`: the initial Prisma model migration followed by versioned SQL for conditional uniqueness, check constraints, triggers, and views. Applied migrations must never be edited; corrections belong in a new migration.
-- `database/erd/arata-physical.mmd`, `.dot`, and `.svg`: generated from the actual PostgreSQL catalog, covering 88 tables and 154 named foreign keys. Generate again with `npm run db:erd` after a relationship or table change. The SVG is large and intended for browser zoom.
+- `database/erd/arata-physical.mmd`, `.dot`, and `.svg`: generated from the actual PostgreSQL catalog, covering 89 tables and 155 named foreign keys. Generate again with `npm run db:erd` after a relationship or table change. The SVG is large and intended for browser zoom.
 - `prisma/seed.dev.ts`: fictional, visibly labelled, unpublished examples for development only.
 
 ## Local setup

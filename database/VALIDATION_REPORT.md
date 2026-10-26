@@ -1,5 +1,9 @@
 # Database validation report
 
+## Account reader preferences — 2026-10-26
+
+Migration `202610260003_reader_preferences` only creates `app."ReaderPreference"`; it changes no existing table or row. It was reviewed and applied first to the isolated test database, then to development, without a reset. The user-owned row has a cascade delete with its account and four PostgreSQL allowlist checks. Prisma format, validate, generate and both migration drift comparisons passed. PostgreSQL 18.4 reports 89 tables, 155 foreign keys, 79 checks, 44 triggers, 29 enums and 22 complete migrations. `db:verify` confirms application read/write privileges without direct preference deletion, research role isolation and UTC. SQL constraints passed 12/12, including invalid settings and deletion. The physical ERD was regenerated. Recovery is a reviewed forward migration or verified backup restore after assessing saved preferences; do not reset a database containing unverified data.
+
 ## Reader-lease expiry index and retention worker - 2026-10-26
 
 The additive `202610260002_reader_lease_cleanup_index` migration creates only an expiry index on `app."ReaderLease"`. It was reviewed and applied first to `arata_techlibrary_test`, then to `arata_techlibrary_dev`, with no reset or row rewrite. Prisma format, validate and generate passed. Both migration drift comparisons found no difference. PostgreSQL 18.4 reports 88 tables, 154 foreign keys, 75 checks, 44 triggers, 29 enums and 21 completed migrations; `db:verify` confirms the index, application lease privileges and research role isolation. The SQL constraint suite passes 11/11. The worker deletes at most 1,000 expired leases per sweep and preserves active leases; its live integration result is in `Documentation/Implementation/TEST_RESULTS.md`. Rolling back this additive index requires a reviewed forward migration or restore from a verified backup; do not reset a database containing unverified data.

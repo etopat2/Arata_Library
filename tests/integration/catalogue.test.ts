@@ -574,6 +574,54 @@ describe('public catalogue and policy boundaries', () => {
     expect(removed.status).toBe(200);
   });
 
+  it('keeps account reader settings private, validated and CSRF protected', async () => {
+    const endpoint = `${base}/api/v1/reader/settings`;
+    expect((await fetch(endpoint)).status).toBe(401);
+    const readerCookie = `arata_session=${sessionToken}`;
+    const before = await fetch(endpoint, { headers: { Cookie: readerCookie } });
+    expect(before.status).toBe(200);
+    expect((await before.json()).data).toBeNull();
+    const settings = {
+      theme: 'night',
+      fontSize: 21,
+      fontFamily: 'serif',
+      lineSpacing: 2,
+      reducedMotion: true,
+    };
+    const missingCsrf = await fetch(endpoint, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Cookie: readerCookie },
+      body: JSON.stringify(settings),
+    });
+    expect(missingCsrf.status).toBe(403);
+    const { csrfToken } = await import('../../apps/api/src/identity/security.js');
+    const csrf = csrfToken(sessionToken, process.env.AUTH_SESSION_SECRET!);
+    const headers = {
+      'Content-Type': 'application/json',
+      Cookie: `${readerCookie}; arata_csrf=${csrf}`,
+      Origin: process.env.WEB_ORIGIN!,
+      'X-CSRF-Token': csrf,
+    };
+    const invalid = await fetch(endpoint, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ ...settings, fontSize: 99 }),
+    });
+    expect(invalid.status).toBe(400);
+    const saved = await fetch(endpoint, { method: 'PUT', headers, body: JSON.stringify(settings) });
+    expect(saved.status).toBe(200);
+    expect((await saved.json()).data).toEqual(settings);
+    const own = await fetch(endpoint, { headers: { Cookie: readerCookie } });
+    expect((await own.json()).data).toEqual(settings);
+    const other = await fetch(endpoint, { headers: { Cookie: `arata_session=${adminToken}` } });
+    expect((await other.json()).data).toBeNull();
+    const stored = await fixture.query<{ count: string }>(
+      `SELECT count(*)::text AS count FROM app."ReaderPreference" WHERE "userId"=$1 AND "lineSpacing"=200`,
+      [readerUserId],
+    );
+    expect(Number(stored.rows[0]!.count)).toBe(1);
+  });
+
   it('rechecks a valid asset grant when an administrator withdraws download permission', async () => {
     const grantResponse = await get(`/reader/lessons/${freeLessonId}/asset-grant`);
     expect(grantResponse.response.status).toBe(200);

@@ -1,13 +1,15 @@
 # Reader and content policy implementation
 
-Status: partial live implementation, 2026-10-25. The SRS remains unsigned. This document records what the application currently does; it does not represent release acceptance.
+Status: partial live implementation, 2026-10-26. The SRS remains unsigned. This document records what the application currently does; it does not represent release acceptance.
 
 ## Implemented paths
 
 - `apps/api/src/reader/`: published current-revision lesson reads, filtered edition manifest and search, explicit progress, bookmarks, encrypted private annotations, short-lived lesson and resource asset grants, and versioned policy administration.
 - `packages/access-policy/src/content-policy.ts`: one resolver for nullable inheritance across library, publication, volume, edition, revision, chapter, lesson and resource. All action defaults deny. Parent read denials cannot be lifted by a child policy. Earliest licence end and strictest concurrent-session cap win. An active approved policy is required.
 - `prisma/migrations/202610250006_reader_policy_fields/`: policy fields, platform/library scope, checks, active/version uniqueness and administrator permission. The migration preflights duplicate versions and is additive.
-- `apps/web-pwa/src/Reader.tsx`, `ContentPolicyAdmin.tsx` and `PublicPortal.tsx`: responsive lesson reader, device-persisted text size/theme/font family/line spacing/reduced motion, contents, search, explicit completion, bookmarks, notes/highlights, rights summary, edition links and administrator policy editor.
+- `apps/web-pwa/src/Reader.tsx`, `ContentPolicyAdmin.tsx` and `PublicPortal.tsx`: responsive lesson reader, device-persisted text size/theme/font family/line spacing/reduced motion with authenticated account sync, contents, search, explicit completion, bookmarks, notes/highlights, rights summary, edition links and administrator policy editor.
+
+An authenticated reader can read and update only their own display settings through `/api/v1/reader/settings`. The account row is optional; until the first update, existing device settings remain in effect. Saved account settings load into device storage at reader startup. Changes are serialized to avoid out-of-order saves. Unknown and out-of-range values are rejected by the API and database; writes require same-origin CSRF. If sync fails, the UI keeps settings on the device and reports that account sync failed. Account deletion cascades to settings. The design-stage `/api/v1/me/reader-settings` contract uses a different shape; runtime OpenAPI alignment remains open in GAP-029.
 
 The reader verifies publication status, current published revision, time, active grants, audience and effective policy on every protected read. `app."EffectiveEntitlement"` filters expired/revoked/ineligible grants; a matching library, publication, volume, edition or resource scope is required for premium access. Public-free content does not require a subscription. Private notes are encrypted using the existing `AUTH_DATA_KEY` and queried only by owner. Asset grants are HMAC signed, bound to the current user/session, expire after one minute, and are rechecked at delivery. Only approved, scanned, rights-confirmed assets inside private storage are served. Downloads create audit events.
 
@@ -20,6 +22,7 @@ The screenshot modes are notices/watermarks and cannot stop operating-system scr
 ## Live routes
 
 - `GET /api/v1/reader/editions/:id/manifest`, `/search?q=...`, `/bookmarks`, `/progress`
+- `GET` and `PUT /api/v1/reader/settings` for the authenticated account
 - `GET /api/v1/reader/lessons/:id`, `/annotations`, `/asset-grant`
 - `POST /api/v1/reader/lessons/:id/progress`, `/bookmarks`, `/annotations`; `DELETE /api/v1/reader/annotations/:id`
 - `GET /api/v1/reader/resources/:id/assets/:assetId/grant` and `/assets/:assetId?grant=...`
@@ -30,7 +33,7 @@ Writes use authenticated same-origin CSRF checks. All SQL values are bound; scop
 
 ## Incomplete acceptance
 
-This does **not** complete FR-RDR-002/003/009/010, FR-ENT-008/010/012/013/016 or the offline and export requirements. Remaining work includes account-synced reader preferences, a standards-complete safe Markdown/diagram/formula/code renderer, synchronized reading position and cross-edition anchor migration, explicit offline/expired-licence screens, offline licence issuance and sync, PDF/EPUB export services, cross-browser file delivery tests, library mapping for publications in multiple libraries, complete runtime OpenAPI alignment and manual WCAG review. Live API tests cover approved lesson and resource files and tampered, expired, wrong-session, revoked-session and policy-revoked grants. A Chromium test verifies the resource-page download and excludes API requests from the service worker app-shell fallback. Cross-browser copy/print behavior is a deterrence and must be described honestly. See `Documentation/Implementation/BLOCKERS.md`.
+This does **not** complete FR-RDR-002/003/009/010, FR-ENT-008/010/012/013/016 or the offline and export requirements. Remaining work includes a standards-complete safe Markdown/diagram/formula/code renderer, synchronized reading position and cross-edition anchor migration, explicit offline/expired-licence screens, offline licence issuance and sync, PDF/EPUB export services, cross-browser file delivery tests, library mapping for publications in multiple libraries, complete runtime OpenAPI alignment and manual WCAG review. Live API tests cover approved lesson and resource files and tampered, expired, wrong-session, revoked-session and policy-revoked grants. A Chromium test verifies the resource-page download and excludes API requests from the service worker app-shell fallback. Cross-browser copy/print behavior is a deterrence and must be described honestly. See `Documentation/Implementation/BLOCKERS.md`.
 
 ## Checks
 

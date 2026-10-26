@@ -54,6 +54,52 @@ export class ReaderService {
     @Inject('APP_CONFIG') private readonly config: ApiConfig,
   ) {}
 
+  async settings(context: AuthContext) {
+    const result = await this.pool.query<{
+      theme: 'paper' | 'sepia' | 'night';
+      fontSize: number;
+      fontFamily: 'system' | 'serif' | 'mono';
+      lineSpacing: number;
+      reducedMotion: boolean;
+    }>(
+      `SELECT theme, "fontSize", "fontFamily", "lineSpacing", "reducedMotion"
+        FROM app."ReaderPreference" WHERE "userId"=$1`,
+      [context.user.id],
+    );
+    const row = result.rows[0];
+    return row ? { ...row, lineSpacing: row.lineSpacing / 100 } : null;
+  }
+
+  async saveSettings(
+    context: AuthContext,
+    value: {
+      theme: 'paper' | 'sepia' | 'night';
+      fontSize: 16 | 18 | 21 | 24;
+      fontFamily: 'system' | 'serif' | 'mono';
+      lineSpacing: 1.5 | 1.75 | 2;
+      reducedMotion: boolean;
+    },
+  ) {
+    await this.pool.query(
+      `INSERT INTO app."ReaderPreference"
+        ("userId", theme, "fontSize", "fontFamily", "lineSpacing", "reducedMotion")
+        VALUES ($1,$2,$3,$4,$5,$6)
+        ON CONFLICT ("userId") DO UPDATE SET theme=EXCLUDED.theme,
+          "fontSize"=EXCLUDED."fontSize", "fontFamily"=EXCLUDED."fontFamily",
+          "lineSpacing"=EXCLUDED."lineSpacing", "reducedMotion"=EXCLUDED."reducedMotion",
+          "updatedAt"=now()`,
+      [
+        context.user.id,
+        value.theme,
+        value.fontSize,
+        value.fontFamily,
+        Math.round(value.lineSpacing * 100),
+        value.reducedMotion,
+      ],
+    );
+    return value;
+  }
+
   private async lesson(id: string): Promise<Lesson> {
     const result = await this.pool.query<Lesson>(
       `SELECT l.id,l.title,l.ordinal,l."bodyMarkdown",l.blocks,l."bodyAssetId",

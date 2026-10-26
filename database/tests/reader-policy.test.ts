@@ -131,3 +131,48 @@ test('reader leases reject duplicate seats, cross-user sessions and invalid expi
     await client.end();
   }
 });
+
+test('reader preferences enforce allowed values and follow account deletion', async () => {
+  const client = new pg.Client({ connectionString: url });
+  await client.connect();
+  try {
+    await client.query('BEGIN');
+    const userId = randomUUID();
+    await client.query(
+      `INSERT INTO app."User" (id,email,"privacyVersion","createdAt","updatedAt")
+       VALUES ($1,$2,'TEST-ONLY',now(),now())`,
+      [userId, `reader-preference-${userId}@example.invalid`],
+    );
+    await client.query(
+      `INSERT INTO app."ReaderPreference" ("userId",theme,"fontSize","fontFamily","lineSpacing")
+       VALUES ($1,'sepia',21,'serif',175)`,
+      [userId],
+    );
+    for (const [column, value] of [
+      ['theme', 'invalid'],
+      ['"fontSize"', 99],
+      ['"fontFamily"', 'invalid'],
+      ['"lineSpacing"', 120],
+    ] as const) {
+      await client.query('SAVEPOINT invalid_reader_preference');
+      await assert.rejects(
+        client.query(`UPDATE app."ReaderPreference" SET ${column}=$2 WHERE "userId"=$1`, [
+          userId,
+          value,
+        ]),
+        (error: unknown) => (error as { code?: string }).code === '23514',
+      );
+      await client.query('ROLLBACK TO SAVEPOINT invalid_reader_preference');
+      await client.query('RELEASE SAVEPOINT invalid_reader_preference');
+    }
+    await client.query(`DELETE FROM app."User" WHERE id=$1`, [userId]);
+    const remaining = await client.query<{ count: string }>(
+      `SELECT count(*)::text AS count FROM app."ReaderPreference" WHERE "userId"=$1`,
+      [userId],
+    );
+    assert.equal(Number(remaining.rows[0]!.count), 0);
+  } finally {
+    await client.query('ROLLBACK').catch(() => undefined);
+    await client.end();
+  }
+});

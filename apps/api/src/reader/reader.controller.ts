@@ -7,6 +7,7 @@ import {
   Inject,
   Param,
   Post,
+  Put,
   Query,
   Req,
   Res,
@@ -28,6 +29,13 @@ const annotation = z.strictObject({
   kind: z.enum(['NOTE', 'HIGHLIGHT']),
   quote: z.string().max(100).optional(),
   note: z.string().max(160).optional(),
+});
+const readerSettings = z.strictObject({
+  theme: z.enum(['paper', 'sepia', 'night']),
+  fontSize: z.union([z.literal(16), z.literal(18), z.literal(21), z.literal(24)]),
+  fontFamily: z.enum(['system', 'serif', 'mono']),
+  lineSpacing: z.union([z.literal(1.5), z.literal(1.75), z.literal(2)]),
+  reducedMotion: z.boolean(),
 });
 function parse<T>(schema: z.ZodType<T>, value: unknown): T {
   const result = schema.safeParse(value);
@@ -61,6 +69,24 @@ export class ReaderController {
       request.headers.cookie,
     );
     return context;
+  }
+
+  @Get('settings')
+  async settings(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
+    response.setHeader('Cache-Control', 'private, no-store');
+    const context = await this.identity.context(request.headers.cookie);
+    return wrap(request, await this.reader.settings(context));
+  }
+
+  @Put('settings')
+  async saveSettings(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+    @Body() body: unknown,
+  ) {
+    response.setHeader('Cache-Control', 'private, no-store');
+    const context = await this.member(request);
+    return wrap(request, await this.reader.saveSettings(context, parse(readerSettings, body)));
   }
 
   @Get('editions/:id/manifest')

@@ -9,7 +9,7 @@ ids = {
     "FR-ENT-010", "FR-ENT-011", "FR-ENT-012", "FR-ENT-013", "FR-ENT-014",
     "FR-ENT-016", "FR-RDR-001", "FR-RDR-002", "FR-RDR-003", "FR-RDR-004",
     "FR-RDR-005", "FR-RDR-006", "FR-RDR-007", "FR-RDR-008", "FR-RDR-009",
-    "FR-RDR-010", "FR-SRC-002", "FR-SRC-005", "FR-SRC-006", "BR-001",
+    "FR-RDR-010", "FR-SRC-002", "FR-SRC-005", "FR-SRC-006", "NFR-UX-007", "BR-001",
     "BR-003", "BR-004", "BR-009", "BR-011",
 }
 anchors = [
@@ -36,6 +36,20 @@ for row in rows:
     if row["requirement_id"] not in ids:
         continue
     found.add(row["requirement_id"])
+    if row["requirement_id"] == "NFR-UX-007":
+        row["implementation_paths"] = ";".join(dict.fromkeys([
+            *[value for value in row["implementation_paths"].split(";") if value],
+            "apps/web-pwa/src/Reader.tsx", "apps/web-pwa/src/style.css",
+            "apps/api/src/reader/reader.controller.ts", "apps/api/src/reader/reader.service.ts",
+            "prisma/migrations/202610260003_reader_preferences",
+            "tests/e2e/catalogue.spec.ts", "tests/integration/catalogue.test.ts",
+        ]))
+        row["implementation_status"] = "Partially implemented; release acceptance open"
+        row["verification_result"] = (
+            "Device and account preference browser tests passed in public suite 11/11; "
+            "live reader API 11/11 and SQL constraints 12/12. Manual WCAG review open."
+        )
+        continue
     existing = [value for value in row["implementation_paths"].split(";") if value]
     admin_browser = ["tests/e2e/studio.spec.ts"] if row["requirement_id"] in {
         "FR-ENT-007", "FR-ENT-008", "FR-ENT-009", "FR-ENT-010", "FR-ENT-014"
@@ -59,6 +73,11 @@ for row in rows:
             *row["implementation_paths"].split(";"),
             "apps/web-pwa/src/style.css",
             "playwright.config.ts",
+            "prisma/schema.prisma",
+            "prisma/migrations/202610260003_reader_preferences",
+            "packages/api-client/src/index.ts",
+            "database/tests/reader-policy.test.ts",
+            "database/scripts/verify-dev.ts",
         ]))
     row["implementation_status"] = "Partially implemented; release acceptance open"
     row["verification_result"] = (
@@ -68,7 +87,7 @@ for row in rows:
     )
     if row["requirement_id"] == "FR-RDR-002":
         row["verification_result"] = (
-            "Device preference Chromium/axe browser 1/1 and PWA build passed; account sync and manual WCAG review open. "
+            "Device preference Chromium/axe browser 1/1; account settings browser 1/1, live API 11/11, SQL constraints 12/12 and PWA build passed. Manual WCAG review open. "
             "Full SRS acceptance remains open."
         )
     note = "Reader paths are live but do not complete offline, export, advanced rendering or release gates; see apps/api/READER.md."
