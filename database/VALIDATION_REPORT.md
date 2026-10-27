@@ -6,6 +6,8 @@ Five additive forward migrations (`202610270001_billing_workflow` through `20261
 
 Hosted clean-schema validation exposed Prisma relationship declarations that did not describe the already applied manual foreign-key update actions and index names. The declarations now match the migrations, with no migration rewrite: `prisma migrate diff --from-migrations prisma/migrations --to-schema prisma/schema.prisma --exit-code` reports no difference. The full SQL suite passed 13/13 after its synthetic paid-state fixture supplied both server verification evidence and a provider transaction ID.
 
+The clean Linux PostgreSQL 18 [database workflow](https://github.com/etopat2/Arata_Library/actions/runs/40501585438) passed for commit `a19e612`, including migration replay, zero drift, role/SQL checks, dependency audit and SBOM generation.
+
 
 ## Account reader preferences — 2026-10-26
 
