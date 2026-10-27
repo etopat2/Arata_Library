@@ -736,8 +736,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List plan records
-         * @description List plan records. Server resolves the current subject, resource scope and policy before returning data; only the fields in the Plan response schema are exposed. Authentication: public; ownership: none; institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export.
+         * List approved free and paid access offers
+         * @description List approved free and paid access offers.
          */
         get: operations["get_plans"];
         put?: never;
@@ -758,8 +758,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Create order record
-         * @description Create order record. Server resolves the current subject, resource scope and policy before returning data; only the fields in the Order response schema are exposed. Authentication: session; ownership: none; institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export. Create an immutable merchant reference and integer minor-unit amount before gateway redirection; this request alone never grants access.
+         * Create an idempotent hosted checkout order without granting access
+         * @description Create an idempotent hosted checkout order without granting access.
          */
         post: operations["post_orders"];
         delete?: never;
@@ -776,8 +776,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get payment details
-         * @description Get payment details. Server resolves the current subject, resource scope and policy before returning data; only the fields in the Payment response schema are exposed. Authentication: session; ownership: none; institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export.
+         * Read only the customer's payment state
+         * @description Read only the customer's payment state.
          */
         get: operations["get_payments_id_status"];
         put?: never;
@@ -798,8 +798,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Create payment record
-         * @description Create payment record. Server resolves the current subject, resource scope and policy before returning data; only the fields in the Payment response schema are exposed. Authentication: webhook; ownership: none; institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export. Verify the active provider signature over exact raw bytes, reject replays, confirm settlement and amount/currency/merchant match, then update access once.
+         * Accept a v3 verif-hash webhook; independently verify settlement
+         * @description Accept a v3 verif-hash webhook; independently verify settlement.
          */
         post: operations["post_payments_webhooks_provider"];
         delete?: never;
@@ -816,8 +816,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List subscription records
-         * @description List subscription records. Server resolves the current subject, resource scope and policy before returning data; only the fields in the Subscription response schema are exposed. Authentication: session; ownership: subject_user; institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export. A renewal cancellation preserves already paid access through its contractual paid-through time.
+         * List the customer's paid subscriptions
+         * @description List the customer's paid subscriptions.
          */
         get: operations["get_me_subscriptions"];
         put?: never;
@@ -838,8 +838,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Cancel future renewal
-         * @description Cancel future renewal. Server resolves the current subject, resource scope and policy before returning data; only the fields in the Subscription response schema are exposed. Authentication: session; ownership: subject_user; institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export. A renewal cancellation preserves already paid access through its contractual paid-through time.
+         * Cancel future renewal while preserving paid-through access
+         * @description Cancel future renewal while preserving paid-through access.
          */
         post: operations["post_me_subscriptions_id_cancel"];
         delete?: never;
@@ -856,8 +856,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List invoice records
-         * @description List invoice records. Server resolves the current subject, resource scope and policy before returning data; only the fields in the Invoice response schema are exposed. Authentication: session; ownership: subject_user; institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export.
+         * List verified invoices owned by the customer
+         * @description List verified invoices owned by the customer.
          */
         get: operations["get_me_invoices"];
         put?: never;
@@ -1404,14 +1404,14 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List plan records
-         * @description List plan records. Server resolves the current subject, resource scope and policy before returning data; only the fields in the Plan response schema are exposed. Authentication: session; ownership: none; institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export.
+         * Read approved plans as a finance officer with MFA
+         * @description Read approved plans as a finance officer with MFA.
          */
         get: operations["get_admin_plans"];
         put?: never;
         /**
-         * Create plan record
-         * @description Create plan record. Server resolves the current subject, resource scope and policy before returning data; only the fields in the Plan response schema are exposed. Authentication: session; ownership: none; institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export.
+         * Create an immutable plan version under an active approved price policy
+         * @description Create an immutable plan version under an active approved price policy.
          */
         post: operations["post_admin_plans"];
         delete?: never;
@@ -1428,8 +1428,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List order records
-         * @description List order records. Server resolves the current subject, resource scope and policy before returning data; only the fields in the Order response schema are exposed. Authentication: session; ownership: none; institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export.
+         * List recent orders for authorized finance staff
+         * @description List recent orders for authorized finance staff.
          */
         get: operations["get_admin_orders"];
         put?: never;
@@ -1450,8 +1450,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Start payment reconciliation
-         * @description Start payment reconciliation. Server resolves the current subject, resource scope and policy before returning data; only the fields in the ReconciliationRun response schema are exposed. Authentication: session; ownership: none; institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export.
+         * Requery a bounded period of payments and submitted refunds
+         * @description Requery a bounded period of payments and submitted refunds.
          */
         post: operations["post_admin_payments_reconcile"];
         delete?: never;
@@ -2128,8 +2128,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List payment records
-         * @description List payment records. Server resolves the current subject, resource scope and policy before returning data; only the fields in the Payment response schema are exposed. Authentication: session; ownership: none; institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export.
+         * List recent provider payment attempts
+         * @description List recent provider payment attempts.
          */
         get: operations["get_admin_payments"];
         put?: never;
@@ -2148,14 +2148,14 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List refund records
-         * @description List refund records. Server resolves the current subject, resource scope and policy before returning data; only the fields in the Refund response schema are exposed. Authentication: session; ownership: none; institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export. Record the verified original transaction, amount, reason and independent approval before finance settlement or entitlement adjustment.
+         * List refund requests and settlement state
+         * @description List refund requests and settlement state.
          */
         get: operations["get_admin_refunds"];
         put?: never;
         /**
-         * Create refund record
-         * @description Create refund record. Server resolves the current subject, resource scope and policy before returning data; only the fields in the Refund response schema are exposed. Authentication: session; ownership: none; institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export. Record the verified original transaction, amount, reason and independent approval before finance settlement or entitlement adjustment.
+         * Request an idempotent refund under the active policy
+         * @description Request an idempotent refund under the active policy.
          */
         post: operations["post_admin_refunds"];
         delete?: never;
@@ -2174,8 +2174,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Approve a reviewed record
-         * @description Approve a reviewed record. Server resolves the current subject, resource scope and policy before returning data; only the fields in the Refund response schema are exposed. Authentication: session; ownership: none; institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export. Record the verified original transaction, amount, reason and independent approval before finance settlement or entitlement adjustment.
+         * Independently approve and submit a verified refund once
+         * @description Independently approve and submit a verified refund once.
          */
         post: operations["post_admin_refund_approve"];
         delete?: never;
@@ -2192,8 +2192,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get reconciliationrun details
-         * @description Get reconciliationrun details. Server resolves the current subject, resource scope and policy before returning data; only the fields in the ReconciliationRun response schema are exposed. Authentication: session; ownership: none; institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export.
+         * Read one bounded reconciliation run with review-safe exception details
+         * @description Read one bounded reconciliation run with review-safe exception details.
          */
         get: operations["get_admin_reconciliation_run"];
         put?: never;
@@ -2688,8 +2688,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get financereport details
-         * @description Get financereport details. Server resolves the current subject, resource scope and policy before returning data; only the fields in the FinanceReport response schema are exposed. Authentication: session; ownership: none; institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export.
+         * Read verified gross receipts, settled refunds and exceptions
+         * @description Read verified gross receipts, settled refunds and exceptions.
          */
         get: operations["get_admin_finance_report"];
         put?: never;
@@ -3318,6 +3318,210 @@ export interface paths {
         get: operations["get_admin_export"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read only the signed-in customer's order
+         * @description Read only the signed-in customer's order.
+         */
+        get: operations["get_orders_id"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/{id}/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Requery the provider before activating any paid access
+         * @description Requery the provider before activating any paid access.
+         */
+        post: operations["post_orders_id_verify"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/{id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Retry a failed order with a fresh idempotency key
+         * @description Retry a failed order with a fresh idempotency key.
+         */
+        post: operations["post_orders_id_retry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/invoices/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read one verified owned invoice
+         * @description Read one verified owned invoice.
+         */
+        get: operations["get_me_invoices_id"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/invoices/{id}/statement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download the owned invoice as a CSV statement with tax review notice
+         * @description Download the owned invoice as a CSV statement with tax review notice.
+         */
+        get: operations["get_me_invoices_id_statement"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/billing-notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List billing notification delivery states for the customer
+         * @description List billing notification delivery states for the customer.
+         */
+        get: operations["get_me_billing_notifications"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/disputes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List finance dispute cases
+         * @description List finance dispute cases.
+         */
+        get: operations["get_admin_disputes"];
+        put?: never;
+        /**
+         * Open an audited payment dispute
+         * @description Open an audited payment dispute.
+         */
+        post: operations["post_admin_disputes"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List verified invoice records for finance
+         * @description List verified invoice records for finance.
+         */
+        get: operations["get_admin_invoices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reconciliation-runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List bounded reconciliation runs and exception counts
+         * @description List bounded reconciliation runs and exception counts.
+         */
+        get: operations["get_admin_reconciliation_runs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/disputes/{id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resolve a dispute with independent review and provider confirmation for wins
+         * @description Resolve a dispute with independent review and provider confirmation for wins.
+         */
+        post: operations["post_admin_disputes_id_resolve"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4902,34 +5106,28 @@ export interface components {
             requestId: string;
         };
         get_plansResponse: {
-            data: components["schemas"]["Plan"][];
-            page: components["schemas"]["PageInfo"];
+            data: components["schemas"]["BillingPlans"];
             requestId: string;
         };
         post_ordersResponse: {
-            data: components["schemas"]["Order"];
+            data: components["schemas"]["BillingOrder"];
             requestId: string;
         };
         get_payments_id_statusResponse: {
-            data: components["schemas"]["Payment"];
+            data: components["schemas"]["BillingPaymentStatus"];
             requestId: string;
         };
-        post_payments_webhooks_providerResponse: {
-            data: components["schemas"]["Payment"];
-            requestId: string;
-        };
+        post_payments_webhooks_providerResponse: components["schemas"]["BillingWebhookReceipt"];
         get_me_subscriptionsResponse: {
-            data: components["schemas"]["Subscription"][];
-            page: components["schemas"]["PageInfo"];
+            data: components["schemas"]["BillingSubscription"][];
             requestId: string;
         };
         post_me_subscriptions_id_cancelResponse: {
-            data: components["schemas"]["Subscription"];
+            data: components["schemas"]["BillingCancellation"];
             requestId: string;
         };
         get_me_invoicesResponse: {
-            data: components["schemas"]["Invoice"][];
-            page: components["schemas"]["PageInfo"];
+            data: components["schemas"]["BillingInvoiceSummary"][];
             requestId: string;
         };
         post_institutional_eligibility_checkResponse: {
@@ -5067,21 +5265,19 @@ export interface components {
             requestId: string;
         };
         get_admin_plansResponse: {
-            data: components["schemas"]["Plan"][];
-            page: components["schemas"]["PageInfo"];
+            data: components["schemas"]["BillingPlans"];
             requestId: string;
         };
         post_admin_plansResponse: {
-            data: components["schemas"]["Plan"];
+            data: components["schemas"]["BillingPlanVersionCreated"];
             requestId: string;
         };
         get_admin_ordersResponse: {
-            data: components["schemas"]["Order"][];
-            page: components["schemas"]["PageInfo"];
+            data: components["schemas"]["BillingOrderRecord"][];
             requestId: string;
         };
         post_admin_payments_reconcileResponse: {
-            data: components["schemas"]["ReconciliationRun"];
+            data: components["schemas"]["BillingReconciliation"];
             requestId: string;
         };
         get_admin_auditResponse: {
@@ -5244,25 +5440,23 @@ export interface components {
             requestId: string;
         };
         get_admin_paymentsResponse: {
-            data: components["schemas"]["Payment"][];
-            page: components["schemas"]["PageInfo"];
+            data: components["schemas"]["BillingPaymentRecord"][];
             requestId: string;
         };
         post_admin_refundsResponse: {
-            data: components["schemas"]["Refund"];
+            data: components["schemas"]["BillingRefundAction"];
             requestId: string;
         };
         post_admin_refund_approveResponse: {
-            data: components["schemas"]["Refund"];
+            data: components["schemas"]["BillingRefundAction"];
             requestId: string;
         };
         get_admin_refundsResponse: {
-            data: components["schemas"]["Refund"][];
-            page: components["schemas"]["PageInfo"];
+            data: components["schemas"]["BillingRefundRecord"][];
             requestId: string;
         };
         get_admin_reconciliation_runResponse: {
-            data: components["schemas"]["ReconciliationRun"];
+            data: components["schemas"]["BillingReconciliationRunDetail"];
             requestId: string;
         };
         post_me_trialsResponse: {
@@ -5389,7 +5583,7 @@ export interface components {
             requestId: string;
         };
         get_admin_finance_reportResponse: {
-            data: components["schemas"]["FinanceReport"];
+            data: components["schemas"]["BillingFinanceReport"];
             requestId: string;
         };
         get_admin_feature_flagsResponse: {
@@ -5541,6 +5735,342 @@ export interface components {
         };
         get_admin_exportResponse: {
             data: components["schemas"]["AdminExport"];
+            requestId: string;
+        };
+        BillingPlan: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            name: string;
+            version: number;
+            /** Format: uuid */
+            planVersionId: string;
+            currencyCode: string;
+            amountMinor: number;
+            periodMonths: number;
+            scopeKind: string;
+            scopeId: string | null;
+            scopeTitle: string;
+            automaticRenewal: boolean;
+            cancellation: string;
+            refundWindowDays: number;
+            trialDays: number;
+        };
+        BillingPlans: {
+            free: {
+                name: string;
+                priceMinor: number;
+                currency: string;
+                description: string;
+            };
+            paid: components["schemas"]["BillingPlan"][];
+            policyVersion: number;
+        };
+        BillingOrder: {
+            /** Format: uuid */
+            id: string;
+            status: string;
+            paymentStatus: string;
+            /** Format: uuid */
+            planVersionId: string;
+            amountMinor: number;
+            currency: string;
+            checkoutUrl: string | null;
+            subscriptionId: string | null;
+        };
+        BillingPaymentStatus: {
+            /** Format: uuid */
+            id: string;
+            status: string;
+            verifiedAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: uuid */
+            orderId: string;
+            orderStatus: string;
+        };
+        BillingSubscription: {
+            /** Format: uuid */
+            id: string;
+            status: string;
+            currentPeriodStart: string | null;
+            currentPeriodEnd: string | null;
+            cancelAtPeriodEnd: boolean;
+            name: string;
+            scopeKind: string;
+            scopeId: string | null;
+            periodMonths: number | null;
+        };
+        BillingInvoiceSummary: {
+            /** Format: uuid */
+            id: string;
+            invoiceNumber: string;
+            currencyCode: string;
+            totalMinor: number;
+            /** Format: date-time */
+            issuedAt: string;
+            /** Format: uuid */
+            orderId: string;
+        };
+        BillingInvoice: {
+            /** Format: uuid */
+            id: string;
+            invoiceNumber: string;
+            currencyCode: string;
+            totalMinor: number;
+            /** Format: date-time */
+            issuedAt: string;
+            /** Format: uuid */
+            orderId: string;
+            /** Format: date-time */
+            paidAt: string;
+            planName: string;
+            periodMonths: number | null;
+            scopeKind: string;
+            scopeId: string | null;
+            tax: string;
+        };
+        BillingNotification: {
+            /** Format: uuid */
+            id: string;
+            kind: string;
+            status: string;
+            /** Format: date-time */
+            createdAt: string;
+            sentAt: string | null;
+        };
+        BillingFinanceReport: {
+            paidOrders: number;
+            grossMinor: string;
+            settledRefundMinor: string;
+            pendingOrders: number;
+            openDisputes: number;
+            currency: string;
+        };
+        BillingPlanVersionCreated: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            version: number;
+        };
+        BillingCancellation: {
+            /** Format: uuid */
+            id: string;
+            cancelAtPeriodEnd: boolean;
+            /** Format: date-time */
+            paidThrough: string;
+        };
+        BillingRefundAction: {
+            /** Format: uuid */
+            id: string;
+            status: string;
+        };
+        BillingDisputeAction: {
+            /** Format: uuid */
+            id: string;
+            status: string;
+        };
+        BillingReconciliation: {
+            /** Format: uuid */
+            id: string;
+            examined: number;
+            refundsExamined: number;
+            batchLimited: boolean;
+            exceptions: number;
+        };
+        BillingReconciliationRunSummary: {
+            /** Format: uuid */
+            id: string;
+            provider: string;
+            /** Format: date-time */
+            periodFrom: string;
+            /** Format: date-time */
+            periodTo: string;
+            /** Format: date-time */
+            startedAt: string;
+            endedAt: string | null;
+            examined: number;
+            exceptions: number;
+        };
+        BillingReconciliationItem: {
+            /** Format: uuid */
+            id: string;
+            paymentAttemptId: string | null;
+            providerRef: string;
+            outcome: string;
+            detail: {
+                code: string;
+            } | null;
+        };
+        BillingReconciliationRunDetail: {
+            /** Format: uuid */
+            id: string;
+            provider: string;
+            /** Format: date-time */
+            periodFrom: string;
+            /** Format: date-time */
+            periodTo: string;
+            /** Format: date-time */
+            startedAt: string;
+            endedAt: string | null;
+            items: components["schemas"]["BillingReconciliationItem"][];
+        };
+        BillingWebhookReceipt: {
+            received: boolean;
+        };
+        BillingStatementText: string;
+        BillingOrderRecord: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            userId: string;
+            merchantRef: string;
+            currencyCode: string;
+            totalMinor: string;
+            status: string;
+            /** Format: date-time */
+            createdAt: string;
+            paidAt: string | null;
+        };
+        BillingPaymentRecord: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            orderId: string;
+            provider: string;
+            providerRef: string | null;
+            status: string;
+            verifiedAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        BillingRefundRecord: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            paymentAttemptId: string;
+            amountMinor: string;
+            status: string;
+            reason: string | null;
+            requestedById: string | null;
+            approvedById: string | null;
+            /** Format: date-time */
+            requestedAt: string;
+            approvedAt: string | null;
+            settledAt: string | null;
+        };
+        BillingDisputeRecord: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            paymentAttemptId: string;
+            status: string;
+            reason: string;
+            /** Format: date-time */
+            openedAt: string;
+            resolvedAt: string | null;
+        };
+        BillingInvoiceRecord: {
+            /** Format: uuid */
+            id: string;
+            invoiceNumber: string;
+            /** Format: uuid */
+            orderId: string;
+            currencyCode: string;
+            totalMinor: string;
+            /** Format: date-time */
+            issuedAt: string;
+            /** Format: uuid */
+            userId: string;
+            status: string;
+        };
+        BillingOrderCreateInput: {
+            /** Format: uuid */
+            planVersionId: string;
+            /** Format: uuid */
+            renewalSubscriptionId?: string;
+            /** Format: uuid */
+            upgradeFromId?: string;
+        };
+        BillingPlanCreateInput: {
+            name: string;
+            /** @enum {string} */
+            period: "monthly" | "quarterly" | "annual";
+            /** @enum {string} */
+            scopeKind: "LIBRARY" | "PUBLICATION" | "VOLUME";
+            /** Format: uuid */
+            scopeId?: string;
+            amountMinor: number;
+        };
+        BillingRefundCreateInput: {
+            /** Format: uuid */
+            paymentAttemptId: string;
+            amountMinor: number;
+            reason: string;
+        };
+        BillingDisputeCreateInput: {
+            /** Format: uuid */
+            paymentAttemptId: string;
+            providerCaseId: string;
+            reason: string;
+        };
+        BillingDisputeResolveInput: {
+            /** @enum {string} */
+            decision: "WON" | "LOST";
+        };
+        BillingReconcileInput: {
+            /** Format: date-time */
+            from: string;
+            /** Format: date-time */
+            to: string;
+        };
+        BillingWebhookInput: {
+            data: {
+                tx_ref: string;
+            };
+        };
+        get_orders_idResponse: {
+            data: components["schemas"]["BillingOrder"];
+            requestId: string;
+        };
+        post_orders_id_verifyResponse: {
+            data: components["schemas"]["BillingOrder"];
+            requestId: string;
+        };
+        post_orders_id_retryResponse: {
+            data: components["schemas"]["BillingOrder"];
+            requestId: string;
+        };
+        get_me_invoices_idResponse: {
+            data: components["schemas"]["BillingInvoice"];
+            requestId: string;
+        };
+        get_me_invoices_id_statementResponse: {
+            data: components["schemas"]["BillingStatementText"];
+            requestId: string;
+        };
+        get_me_billing_notificationsResponse: {
+            data: components["schemas"]["BillingNotification"][];
+            requestId: string;
+        };
+        get_admin_disputesResponse: {
+            data: components["schemas"]["BillingDisputeRecord"][];
+            requestId: string;
+        };
+        get_admin_invoicesResponse: {
+            data: components["schemas"]["BillingInvoiceRecord"][];
+            requestId: string;
+        };
+        get_admin_reconciliation_runsResponse: {
+            data: components["schemas"]["BillingReconciliationRunSummary"][];
+            requestId: string;
+        };
+        post_admin_disputesResponse: {
+            data: components["schemas"]["BillingDisputeAction"];
+            requestId: string;
+        };
+        post_admin_disputes_id_resolveResponse: {
+            data: components["schemas"]["BillingDisputeAction"];
             requestId: string;
         };
     };
@@ -13782,23 +14312,14 @@ export interface operations {
     };
     get_plans: {
         parameters: {
-            query?: {
-                /** @description Opaque cursor from the preceding page; do not construct it. */
-                cursor?: string;
-                /** @description Maximum page size. */
-                limit?: number;
-                /** @description Allowlisted sort key; prefix - requests descending order. */
-                sort?: "name" | "-name" | "id" | "-id";
-                /** @description Filter by a domain-valid record status. */
-                status?: string;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Plan result; only authorized data is returned. */
+            /** @description List approved free and paid access offers. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -13806,10 +14327,15 @@ export interface operations {
                 content: {
                     /**
                      * @example {
-                     *       "data": [],
-                     *       "page": {
-                     *         "limit": 1,
-                     *         "hasMore": true
+                     *       "data": {
+                     *         "free": {
+                     *           "name": "sample",
+                     *           "priceMinor": 1,
+                     *           "currency": "sample",
+                     *           "description": "sample"
+                     *         },
+                     *         "paid": [],
+                     *         "policyVersion": 1
                      *       },
                      *       "requestId": "sample"
                      *     }
@@ -13985,29 +14511,24 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Opaque 8–128 character key. Same actor, operation, key and body returns the original result; changed body is 409. */
                 "Idempotency-Key": string;
-                /** @description Bound to the authenticated cookie session. */
                 "X-CSRF-Token": string;
             };
             path?: never;
             cookie?: never;
         };
-        /** @description Validated OrderCreateInput DTO. Unknown fields are rejected. */
         requestBody: {
             content: {
                 /**
                  * @example {
-                 *       "planId": "sample",
-                 *       "returnUrl": "https://example.invalid/resource",
-                 *       "cancelUrl": "https://example.invalid/resource"
+                 *       "planVersionId": "00000000-0000-4000-8000-000000000001"
                  *     }
                  */
-                "application/json": components["schemas"]["OrderCreateInput"];
+                "application/json": components["schemas"]["BillingOrderCreateInput"];
             };
         };
         responses: {
-            /** @description Order result; only authorized data is returned. */
+            /** @description Create an idempotent hosted checkout order without granting access. */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -14016,12 +14537,14 @@ export interface operations {
                     /**
                      * @example {
                      *       "data": {
-                     *         "id": "sample",
-                     *         "merchantReference": "sample",
-                     *         "amountMinor": 0,
-                     *         "currency": "UGX",
+                     *         "id": "00000000-0000-4000-8000-000000000001",
                      *         "status": "sample",
-                     *         "createdAt": "2026-10-22T00:00:00Z"
+                     *         "paymentStatus": "sample",
+                     *         "planVersionId": "00000000-0000-4000-8000-000000000001",
+                     *         "amountMinor": 1,
+                     *         "currency": "sample",
+                     *         "checkoutUrl": null,
+                     *         "subscriptionId": null
                      *       },
                      *       "requestId": "sample"
                      *     }
@@ -14198,14 +14721,13 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description Stable id identifier. */
                 id: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Payment result; only authorized data is returned. */
+            /** @description Read only the customer's payment state. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -14214,12 +14736,12 @@ export interface operations {
                     /**
                      * @example {
                      *       "data": {
-                     *         "id": "sample",
-                     *         "orderId": "sample",
-                     *         "provider": "sample",
+                     *         "id": "00000000-0000-4000-8000-000000000001",
                      *         "status": "sample",
-                     *         "amountMinor": 0,
-                     *         "currency": "UGX"
+                     *         "verifiedAt": null,
+                     *         "createdAt": "2026-10-27T00:00:00Z",
+                     *         "orderId": "00000000-0000-4000-8000-000000000001",
+                     *         "orderStatus": "sample"
                      *       },
                      *       "requestId": "sample"
                      *     }
@@ -14394,37 +14916,36 @@ export interface operations {
     post_payments_webhooks_provider: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                "verif-hash": string;
+            };
             path: {
-                /** @description Stable provider identifier. */
-                provider: string;
+                provider: "flutterwave_v3";
             };
             cookie?: never;
         };
-        /** @description Raw provider payload. Verify the active provider's exact signature scheme over the unmodified bytes before parsing or state changes. */
         requestBody: {
             content: {
-                "application/octet-stream": string;
+                /**
+                 * @example {
+                 *       "data": {
+                 *         "tx_ref": "sample"
+                 *       }
+                 *     }
+                 */
+                "application/json": components["schemas"]["BillingWebhookInput"];
             };
         };
         responses: {
-            /** @description Payment result; only authorized data is returned. */
-            202: {
+            /** @description Accept a v3 verif-hash webhook; independently verify settlement. */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     /**
                      * @example {
-                     *       "data": {
-                     *         "id": "sample",
-                     *         "orderId": "sample",
-                     *         "provider": "sample",
-                     *         "status": "sample",
-                     *         "amountMinor": 0,
-                     *         "currency": "UGX"
-                     *       },
-                     *       "requestId": "sample"
+                     *       "received": true
                      *     }
                      */
                     "application/json": components["schemas"]["post_payments_webhooks_providerResponse"];
@@ -14596,23 +15117,14 @@ export interface operations {
     };
     get_me_subscriptions: {
         parameters: {
-            query?: {
-                /** @description Opaque cursor from the preceding page; do not construct it. */
-                cursor?: string;
-                /** @description Maximum page size. */
-                limit?: number;
-                /** @description Allowlisted sort key; prefix - requests descending order. */
-                sort?: "id" | "-id";
-                /** @description Filter by a domain-valid record status. */
-                status?: string;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Subscription result; only authorized data is returned. */
+            /** @description List the customer's paid subscriptions. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -14621,10 +15133,6 @@ export interface operations {
                     /**
                      * @example {
                      *       "data": [],
-                     *       "page": {
-                     *         "limit": 1,
-                     *         "hasMore": true
-                     *       },
                      *       "requestId": "sample"
                      *     }
                      */
@@ -14799,21 +15307,17 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Opaque 8–128 character key. Same actor, operation, key and body returns the original result; changed body is 409. */
-                "Idempotency-Key": string;
-                /** @description Bound to the authenticated cookie session. */
                 "X-CSRF-Token": string;
             };
             path: {
-                /** @description Stable id identifier. */
                 id: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Subscription result; only authorized data is returned. */
-            200: {
+            /** @description Cancel future renewal while preserving paid-through access. */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -14821,11 +15325,9 @@ export interface operations {
                     /**
                      * @example {
                      *       "data": {
-                     *         "id": "sample",
-                     *         "planId": "sample",
-                     *         "status": "sample",
-                     *         "startsAt": "2026-10-22T00:00:00Z",
-                     *         "paidThroughAt": "2026-10-22T00:00:00Z"
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "cancelAtPeriodEnd": true,
+                     *         "paidThrough": "2026-10-27T00:00:00Z"
                      *       },
                      *       "requestId": "sample"
                      *     }
@@ -14999,21 +15501,14 @@ export interface operations {
     };
     get_me_invoices: {
         parameters: {
-            query?: {
-                /** @description Opaque cursor from the preceding page; do not construct it. */
-                cursor?: string;
-                /** @description Maximum page size. */
-                limit?: number;
-                /** @description Allowlisted sort key; prefix - requests descending order. */
-                sort?: "issuedAt" | "-issuedAt" | "id" | "-id";
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Invoice result; only authorized data is returned. */
+            /** @description List verified invoices owned by the customer. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -15022,10 +15517,6 @@ export interface operations {
                     /**
                      * @example {
                      *       "data": [],
-                     *       "page": {
-                     *         "limit": 1,
-                     *         "hasMore": true
-                     *       },
                      *       "requestId": "sample"
                      *     }
                      */
@@ -21868,23 +22359,14 @@ export interface operations {
     };
     get_admin_plans: {
         parameters: {
-            query?: {
-                /** @description Opaque cursor from the preceding page; do not construct it. */
-                cursor?: string;
-                /** @description Maximum page size. */
-                limit?: number;
-                /** @description Allowlisted sort key; prefix - requests descending order. */
-                sort?: "name" | "-name" | "id" | "-id";
-                /** @description Filter by a domain-valid record status. */
-                status?: string;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Plan result; only authorized data is returned. */
+            /** @description Read approved plans as a finance officer with MFA. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -21892,10 +22374,15 @@ export interface operations {
                 content: {
                     /**
                      * @example {
-                     *       "data": [],
-                     *       "page": {
-                     *         "limit": 1,
-                     *         "hasMore": true
+                     *       "data": {
+                     *         "free": {
+                     *           "name": "sample",
+                     *           "priceMinor": 1,
+                     *           "currency": "sample",
+                     *           "description": "sample"
+                     *         },
+                     *         "paid": [],
+                     *         "policyVersion": 1
                      *       },
                      *       "requestId": "sample"
                      *     }
@@ -22071,34 +22558,26 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Opaque 8–128 character key. Same actor, operation, key and body returns the original result; changed body is 409. */
-                "Idempotency-Key": string;
-                /** @description Bound to the authenticated cookie session. */
                 "X-CSRF-Token": string;
             };
             path?: never;
             cookie?: never;
         };
-        /** @description Validated PlanCreateInput DTO. Unknown fields are rejected. */
         requestBody: {
             content: {
                 /**
                  * @example {
-                 *       "code": "sample",
                  *       "name": "sample",
-                 *       "priceMinor": 0,
-                 *       "currency": "UGX",
-                 *       "billingPeriod": "one_time",
-                 *       "scopeType": "publication",
-                 *       "scopeId": "sample",
-                 *       "termsVersion": "sample"
+                 *       "period": "monthly",
+                 *       "scopeKind": "LIBRARY",
+                 *       "amountMinor": 1
                  *     }
                  */
-                "application/json": components["schemas"]["PlanCreateInput"];
+                "application/json": components["schemas"]["BillingPlanCreateInput"];
             };
         };
         responses: {
-            /** @description Plan result; only authorized data is returned. */
+            /** @description Create an immutable plan version under an active approved price policy. */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -22107,12 +22586,9 @@ export interface operations {
                     /**
                      * @example {
                      *       "data": {
-                     *         "id": "sample",
+                     *         "id": "00000000-0000-4000-8000-000000000001",
                      *         "code": "sample",
-                     *         "name": "sample",
-                     *         "priceMinor": 0,
-                     *         "currency": "UGX",
-                     *         "status": "sample"
+                     *         "version": 1
                      *       },
                      *       "requestId": "sample"
                      *     }
@@ -22287,14 +22763,7 @@ export interface operations {
     get_admin_orders: {
         parameters: {
             query?: {
-                /** @description Opaque cursor from the preceding page; do not construct it. */
-                cursor?: string;
-                /** @description Maximum page size. */
                 limit?: number;
-                /** @description Allowlisted sort key; prefix - requests descending order. */
-                sort?: "createdAt" | "-createdAt" | "id" | "-id";
-                /** @description Filter by a domain-valid record status. */
-                status?: string;
             };
             header?: never;
             path?: never;
@@ -22302,7 +22771,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Order result; only authorized data is returned. */
+            /** @description List recent orders for authorized finance staff. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -22311,10 +22780,6 @@ export interface operations {
                     /**
                      * @example {
                      *       "data": [],
-                     *       "page": {
-                     *         "limit": 1,
-                     *         "hasMore": true
-                     *       },
                      *       "requestId": "sample"
                      *     }
                      */
@@ -22489,31 +22954,25 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Opaque 8–128 character key. Same actor, operation, key and body returns the original result; changed body is 409. */
-                "Idempotency-Key": string;
-                /** @description Bound to the authenticated cookie session. */
                 "X-CSRF-Token": string;
             };
             path?: never;
             cookie?: never;
         };
-        /** @description Validated ReconcileInput DTO. Unknown fields are rejected. */
         requestBody: {
             content: {
                 /**
                  * @example {
-                 *       "provider": "sample",
-                 *       "from": "2026-10-22T00:00:00Z",
-                 *       "to": "2026-10-22T00:00:00Z",
-                 *       "reason": "sample"
+                 *       "from": "2026-10-27T00:00:00Z",
+                 *       "to": "2026-10-27T00:00:00Z"
                  *     }
                  */
-                "application/json": components["schemas"]["ReconcileInput"];
+                "application/json": components["schemas"]["BillingReconcileInput"];
             };
         };
         responses: {
-            /** @description ReconciliationRun result; only authorized data is returned. */
-            200: {
+            /** @description Requery a bounded period of payments and submitted refunds. */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -22521,7 +22980,11 @@ export interface operations {
                     /**
                      * @example {
                      *       "data": {
-                     *         "id": "sample"
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "examined": 1,
+                     *         "refundsExamined": 1,
+                     *         "batchLimited": true,
+                     *         "exceptions": 1
                      *       },
                      *       "requestId": "sample"
                      *     }
@@ -30250,14 +30713,7 @@ export interface operations {
     get_admin_payments: {
         parameters: {
             query?: {
-                /** @description Opaque cursor from the preceding page; do not construct it. */
-                cursor?: string;
-                /** @description Maximum page size. */
                 limit?: number;
-                /** @description Allowlisted sort key; prefix - requests descending order. */
-                sort?: "id" | "-id";
-                /** @description Filter by a domain-valid record status. */
-                status?: string;
             };
             header?: never;
             path?: never;
@@ -30265,7 +30721,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Payment result; only authorized data is returned. */
+            /** @description List recent provider payment attempts. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -30274,10 +30730,6 @@ export interface operations {
                     /**
                      * @example {
                      *       "data": [],
-                     *       "page": {
-                     *         "limit": 1,
-                     *         "hasMore": true
-                     *       },
                      *       "requestId": "sample"
                      *     }
                      */
@@ -30451,14 +30903,7 @@ export interface operations {
     get_admin_refunds: {
         parameters: {
             query?: {
-                /** @description Opaque cursor from the preceding page; do not construct it. */
-                cursor?: string;
-                /** @description Maximum page size. */
                 limit?: number;
-                /** @description Allowlisted sort key; prefix - requests descending order. */
-                sort?: "createdAt" | "-createdAt" | "id" | "-id";
-                /** @description Filter by a domain-valid record status. */
-                status?: string;
             };
             header?: never;
             path?: never;
@@ -30466,7 +30911,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Refund result; only authorized data is returned. */
+            /** @description List refund requests and settlement state. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -30475,10 +30920,6 @@ export interface operations {
                     /**
                      * @example {
                      *       "data": [],
-                     *       "page": {
-                     *         "limit": 1,
-                     *         "hasMore": true
-                     *       },
                      *       "requestId": "sample"
                      *     }
                      */
@@ -30651,34 +31092,30 @@ export interface operations {
     };
     post_admin_refunds: {
         parameters: {
-            query?: never;
+            query?: {
+                limit?: number;
+            };
             header: {
-                /** @description Opaque 8–128 character key. Same actor, operation, key and body returns the original result; changed body is 409. */
                 "Idempotency-Key": string;
-                /** @description Bound to the authenticated cookie session. */
                 "X-CSRF-Token": string;
-                /** @description Recent MFA proof bound to this action and actor. */
-                "X-Step-Up-Token": string;
             };
             path?: never;
             cookie?: never;
         };
-        /** @description Validated RefundCreateInput DTO. Unknown fields are rejected. */
         requestBody: {
             content: {
                 /**
                  * @example {
-                 *       "paymentId": "sample",
-                 *       "amountMinor": 0,
-                 *       "currency": "UGX",
-                 *       "reason": "sample"
+                 *       "paymentAttemptId": "00000000-0000-4000-8000-000000000001",
+                 *       "amountMinor": 1,
+                 *       "reason": "Review required"
                  *     }
                  */
-                "application/json": components["schemas"]["RefundCreateInput"];
+                "application/json": components["schemas"]["BillingRefundCreateInput"];
             };
         };
         responses: {
-            /** @description Refund result; only authorized data is returned. */
+            /** @description Request an idempotent refund under the active policy. */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -30687,12 +31124,8 @@ export interface operations {
                     /**
                      * @example {
                      *       "data": {
-                     *         "id": "sample",
-                     *         "paymentId": "sample",
-                     *         "amountMinor": 0,
-                     *         "currency": "UGX",
-                     *         "status": "sample",
-                     *         "createdAt": "2026-10-22T00:00:00Z"
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "status": "sample"
                      *       },
                      *       "requestId": "sample"
                      *     }
@@ -30868,33 +31301,17 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Opaque 8–128 character key. Same actor, operation, key and body returns the original result; changed body is 409. */
-                "Idempotency-Key": string;
-                /** @description Bound to the authenticated cookie session. */
                 "X-CSRF-Token": string;
-                /** @description Recent MFA proof bound to this action and actor. */
-                "X-Step-Up-Token": string;
             };
             path: {
-                /** @description Stable id identifier. */
                 id: string;
             };
             cookie?: never;
         };
-        /** @description Validated ReasonInput DTO. Unknown fields are rejected. */
-        requestBody: {
-            content: {
-                /**
-                 * @example {
-                 *       "reason": "sample"
-                 *     }
-                 */
-                "application/json": components["schemas"]["ReasonInput"];
-            };
-        };
+        requestBody?: never;
         responses: {
-            /** @description Refund result; only authorized data is returned. */
-            200: {
+            /** @description Independently approve and submit a verified refund once. */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -30902,12 +31319,8 @@ export interface operations {
                     /**
                      * @example {
                      *       "data": {
-                     *         "id": "sample",
-                     *         "paymentId": "sample",
-                     *         "amountMinor": 0,
-                     *         "currency": "UGX",
-                     *         "status": "sample",
-                     *         "createdAt": "2026-10-22T00:00:00Z"
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "status": "sample"
                      *       },
                      *       "requestId": "sample"
                      *     }
@@ -31084,14 +31497,13 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description Stable id identifier. */
                 id: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description ReconciliationRun result; only authorized data is returned. */
+            /** @description Read one bounded reconciliation run with review-safe exception details. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -31100,7 +31512,13 @@ export interface operations {
                     /**
                      * @example {
                      *       "data": {
-                     *         "id": "sample"
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "provider": "sample",
+                     *         "periodFrom": "2026-10-27T00:00:00Z",
+                     *         "periodTo": "2026-10-27T00:00:00Z",
+                     *         "startedAt": "2026-10-27T00:00:00Z",
+                     *         "endedAt": null,
+                     *         "items": []
                      *       },
                      *       "requestId": "sample"
                      *     }
@@ -36807,7 +37225,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description FinanceReport result; only authorized data is returned. */
+            /** @description Read verified gross receipts, settled refunds and exceptions. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -36815,7 +37233,14 @@ export interface operations {
                 content: {
                     /**
                      * @example {
-                     *       "data": {},
+                     *       "data": {
+                     *         "paidOrders": 1,
+                     *         "grossMinor": "0",
+                     *         "settledRefundMinor": "0",
+                     *         "pendingOrders": 1,
+                     *         "openDisputes": 1,
+                     *         "currency": "sample"
+                     *       },
                      *       "requestId": "sample"
                      *     }
                      */
@@ -44130,6 +44555,2164 @@ export interface operations {
                      *     }
                      */
                     "application/json": components["schemas"]["get_admin_exportResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_orders_id: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Read only the signed-in customer's order. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": {
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "status": "sample",
+                     *         "paymentStatus": "sample",
+                     *         "planVersionId": "00000000-0000-4000-8000-000000000001",
+                     *         "amountMinor": 1,
+                     *         "currency": "sample",
+                     *         "checkoutUrl": null,
+                     *         "subscriptionId": null
+                     *       },
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["get_orders_idResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_orders_id_verify: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Requery the provider before activating any paid access. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": {
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "status": "sample",
+                     *         "paymentStatus": "sample",
+                     *         "planVersionId": "00000000-0000-4000-8000-000000000001",
+                     *         "amountMinor": 1,
+                     *         "currency": "sample",
+                     *         "checkoutUrl": null,
+                     *         "subscriptionId": null
+                     *       },
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["post_orders_id_verifyResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_orders_id_retry: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Retry a failed order with a fresh idempotency key. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": {
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "status": "sample",
+                     *         "paymentStatus": "sample",
+                     *         "planVersionId": "00000000-0000-4000-8000-000000000001",
+                     *         "amountMinor": 1,
+                     *         "currency": "sample",
+                     *         "checkoutUrl": null,
+                     *         "subscriptionId": null
+                     *       },
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["post_orders_id_retryResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_me_invoices_id: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Read one verified owned invoice. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": {
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "invoiceNumber": "sample",
+                     *         "currencyCode": "sample",
+                     *         "totalMinor": 1,
+                     *         "issuedAt": "2026-10-27T00:00:00Z",
+                     *         "orderId": "00000000-0000-4000-8000-000000000001",
+                     *         "paidAt": "2026-10-27T00:00:00Z",
+                     *         "planName": "sample",
+                     *         "periodMonths": null,
+                     *         "scopeKind": "sample",
+                     *         "scopeId": null,
+                     *         "tax": "sample"
+                     *       },
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["get_me_invoices_idResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_me_invoices_id_statement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Download the owned invoice as a CSV statement with tax review notice. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example Invoice,Issued UTC,Plan,Currency,Amount minor,Tax note */
+                    "text/csv": components["schemas"]["BillingStatementText"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_me_billing_notifications: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List billing notification delivery states for the customer. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [],
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["get_me_billing_notificationsResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_admin_disputes: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List finance dispute cases. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [],
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["get_admin_disputesResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_admin_disputes: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header: {
+                "X-CSRF-Token": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "paymentAttemptId": "00000000-0000-4000-8000-000000000001",
+                 *       "providerCaseId": "sample",
+                 *       "reason": "Review required"
+                 *     }
+                 */
+                "application/json": components["schemas"]["BillingDisputeCreateInput"];
+            };
+        };
+        responses: {
+            /** @description Open an audited payment dispute. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": {
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "status": "sample"
+                     *       },
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["post_admin_disputesResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_admin_invoices: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List verified invoice records for finance. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [],
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["get_admin_invoicesResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_admin_reconciliation_runs: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List bounded reconciliation runs and exception counts. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [],
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["get_admin_reconciliation_runsResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_admin_disputes_id_resolve: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "decision": "WON"
+                 *     }
+                 */
+                "application/json": components["schemas"]["BillingDisputeResolveInput"];
+            };
+        };
+        responses: {
+            /** @description Resolve a dispute with independent review and provider confirmation for wins. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": {
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "status": "sample"
+                     *       },
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["post_admin_disputes_id_resolveResponse"];
                 };
             };
             /** @description Invalid request */

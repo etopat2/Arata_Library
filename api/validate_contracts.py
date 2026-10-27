@@ -52,7 +52,7 @@ def validate_all():
             if policy_id not in policy["policies"]: errors.append(f"Missing policy: {key}")
             else:
                 rule = policy["policies"][policy_id]
-                if rule.get("mfa") and not any(p.get("name") == "X-Step-Up-Token" for p in op.get("parameters", [])):
+                if rule.get("mfa") and op.get("x-mfa-evidence") != "verified-session" and not any(p.get("name") == "X-Step-Up-Token" for p in op.get("parameters", [])):
                     errors.append(f"Missing step-up parameter: {key}")
                 if rule.get("purposeRequired") and not any(p.get("name") == "X-Research-Purpose" for p in op.get("parameters", [])):
                     errors.append(f"Missing research purpose parameter: {key}")
@@ -64,7 +64,9 @@ def validate_all():
                 errors.append(f"Missing operational control or acceptance scenario: {key}")
             if method.upper() in {"POST", "PUT", "PATCH"} and "requestBody" not in op and key not in {
                 "POST /api/v1/auth/logout", "POST /api/v1/resources/{id}/download",
-                "POST /api/v1/me/subscriptions/{id}/cancel", "POST /api/v1/me/notifications/{id}/read"}:
+                "POST /api/v1/me/subscriptions/{id}/cancel", "POST /api/v1/me/notifications/{id}/read",
+                "POST /api/v1/orders/{id}/verify", "POST /api/v1/orders/{id}/retry",
+                "POST /api/v1/admin/refunds/{id}/approve"}:
                 errors.append(f"Missing request DTO: {key}")
             for p in op.get("parameters", []):
                 if "$ref" in p and p["$ref"].split("/")[-1] not in spec["components"].get("parameters", {}): errors.append(f"Unknown parameter ref: {key}")
@@ -78,7 +80,7 @@ def validate_all():
             success = [v for k,v in op["responses"].items() if k.startswith("2")]
             if len(success) != 1: errors.append(f"Expected one typed success: {key}")
             for code, response in op["responses"].items():
-                if code.startswith("2") and "application/json" not in response.get("content", {}): errors.append(f"Missing typed response: {key}")
+                if code.startswith("2") and not ({"application/json", "text/csv"} & set(response.get("content", {}))): errors.append(f"Missing typed response: {key}")
                 if code.startswith("4") or code.startswith("5"):
                     if "application/problem+json" not in response.get("content", {}): errors.append(f"Nonstandard error: {key} {code}")
                 for medium in response.get("content", {}).values():

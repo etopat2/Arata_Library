@@ -31,6 +31,9 @@ import { ReaderService } from './reader/reader.service.js';
 import { PolicyAdminController } from './reader/policy-admin.controller.js';
 import { PlatformPolicyController } from './platform-policy/platform-policy.controller.js';
 import { PlatformPolicyService } from './platform-policy/platform-policy.service.js';
+import { BillingController } from './billing/billing.controller.js';
+import { BillingService } from './billing/billing.service.js';
+import { configuredGateway } from './billing/gateway.js';
 
 export type ApiConfig = ReturnType<typeof loadConfig>;
 export function loadConfig() {
@@ -92,6 +95,7 @@ class HealthController {
     ReaderController,
     PolicyAdminController,
     PlatformPolicyController,
+    BillingController,
   ],
   providers: [
     { provide: 'APP_CONFIG', useFactory: loadConfig },
@@ -109,6 +113,8 @@ class HealthController {
     StudioImports,
     ReaderService,
     PlatformPolicyService,
+    { provide: 'BILLING_GATEWAY', useFactory: configuredGateway },
+    BillingService,
   ],
 })
 class AppModule {}
@@ -131,6 +137,7 @@ export async function createApp() {
       'Authorization',
       'X-Request-Id',
       'X-CSRF-Token',
+      'Idempotency-Key',
       'X-Upload-Offset',
       'Content-Type',
     ],

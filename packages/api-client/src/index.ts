@@ -236,6 +236,7 @@ export function createApiClient(baseUrl = '') {
     method = 'GET',
     body?: unknown,
     signal?: AbortSignal,
+    extraHeaders?: Record<string, string>,
   ): Promise<T> {
     const response = await fetch(`${baseUrl}/api/v1${path}`, {
       method,
@@ -246,6 +247,7 @@ export function createApiClient(baseUrl = '') {
         ...(['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) && csrf()
           ? { 'X-CSRF-Token': csrf()! }
           : {}),
+        ...extraHeaders,
       },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       ...(signal ? { signal } : {}),
@@ -263,6 +265,89 @@ export function createApiClient(baseUrl = '') {
   }
   return {
     request,
+    billing: {
+      plans: () =>
+        request<{
+          data: {
+            free: { name: string; description: string; priceMinor: number; currency: string };
+            paid: {
+              id: string;
+              planVersionId: string;
+              name: string;
+              amountMinor: number;
+              currencyCode: string;
+              periodMonths: number;
+              scopeKind: string;
+              scopeId: string | null;
+              scopeTitle: string;
+              refundWindowDays: number;
+              trialDays: number;
+            }[];
+          };
+        }>('/plans'),
+      checkout: (
+        planVersionId: string,
+        key: string,
+        options: { renewalSubscriptionId?: string; upgradeFromId?: string } = {},
+      ) =>
+        request<{ data: { id: string; status: string; checkoutUrl: string | null } }>(
+          '/orders',
+          'POST',
+          { planVersionId, ...options },
+          undefined,
+          { 'Idempotency-Key': key },
+        ),
+      order: (id: string) =>
+        request<{
+          data: {
+            id: string;
+            status: string;
+            paymentStatus: string;
+            planVersionId: string;
+            checkoutUrl: string | null;
+          };
+        }>(`/orders/${id}`),
+      verify: (id: string) =>
+        request<{ data: { id: string; status: string; paymentStatus: string } }>(
+          `/orders/${id}/verify`,
+          'POST',
+        ),
+      retry: (id: string, key: string) =>
+        request<{ data: { id: string; status: string; checkoutUrl: string | null } }>(
+          `/orders/${id}/retry`,
+          'POST',
+          undefined,
+          undefined,
+          { 'Idempotency-Key': key },
+        ),
+      subscriptions: () =>
+        request<{
+          data: {
+            id: string;
+            name: string;
+            status: string;
+            currentPeriodEnd: string | null;
+            cancelAtPeriodEnd: boolean;
+            scopeKind: string;
+            scopeId: string | null;
+          }[];
+        }>('/me/subscriptions'),
+      cancel: (id: string) =>
+        request<{ data: { id: string; paidThrough: string | null } }>(
+          `/me/subscriptions/${id}/cancel`,
+          'POST',
+        ),
+      invoices: () =>
+        request<{
+          data: {
+            id: string;
+            invoiceNumber: string;
+            totalMinor: number;
+            currencyCode: string;
+            issuedAt: string;
+          }[];
+        }>('/me/invoices'),
+    },
     reader: {
       settings: (signal?: AbortSignal) =>
         request<ApiData<ReaderSettings | null>>('/reader/settings', 'GET', undefined, signal),

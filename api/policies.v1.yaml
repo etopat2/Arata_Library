@@ -543,7 +543,7 @@ policies:
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
   post_orders:
     effect: allow
     authentication: session
@@ -556,12 +556,12 @@ policies:
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
   get_payments_id_status:
     effect: allow
     authentication: session
     rolesAny: []
-    ownership: none
+    ownership: subject_user
     institutionBoundary: none
     entitlement: none
     contentPermission: none
@@ -569,7 +569,7 @@ policies:
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
   post_payments_webhooks_provider:
     effect: allow
     authentication: webhook
@@ -582,7 +582,7 @@ policies:
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
   get_me_subscriptions:
     effect: allow
     authentication: session
@@ -595,7 +595,7 @@ policies:
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
   post_me_subscriptions_id_cancel:
     effect: allow
     authentication: session
@@ -608,7 +608,7 @@ policies:
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
   get_me_invoices:
     effect: allow
     authentication: session
@@ -621,7 +621,7 @@ policies:
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
   post_institutional_eligibility_check:
     effect: allow
     authentication: session
@@ -1095,31 +1095,29 @@ policies:
     authentication: session
     rolesAny:
     - finance
-    - platform_admin
     ownership: none
     institutionBoundary: none
     entitlement: none
     contentPermission: none
-    mfa: false
+    mfa: true
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
   post_admin_plans:
     effect: allow
     authentication: session
     rolesAny:
     - finance
-    - platform_admin
     ownership: none
     institutionBoundary: none
     entitlement: none
     contentPermission: none
-    mfa: false
+    mfa: true
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
   get_admin_orders:
     effect: allow
     authentication: session
@@ -1129,11 +1127,11 @@ policies:
     institutionBoundary: none
     entitlement: none
     contentPermission: none
-    mfa: false
+    mfa: true
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
   post_admin_payments_reconcile:
     effect: allow
     authentication: session
@@ -1143,11 +1141,11 @@ policies:
     institutionBoundary: none
     entitlement: none
     contentPermission: none
-    mfa: false
+    mfa: true
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
   get_admin_audit:
     effect: allow
     authentication: session
@@ -1673,11 +1671,11 @@ policies:
     institutionBoundary: none
     entitlement: none
     contentPermission: none
-    mfa: false
+    mfa: true
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
   post_admin_refunds:
     effect: allow
     authentication: session
@@ -1691,7 +1689,7 @@ policies:
     reasonRequired: true
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
   post_admin_refund_approve:
     effect: allow
     authentication: session
@@ -1702,10 +1700,10 @@ policies:
     entitlement: none
     contentPermission: none
     mfa: true
-    reasonRequired: true
+    reasonRequired: false
     distinctApprover: true
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
   get_admin_refunds:
     effect: allow
     authentication: session
@@ -1715,11 +1713,11 @@ policies:
     institutionBoundary: none
     entitlement: none
     contentPermission: none
-    mfa: false
+    mfa: true
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
   get_admin_reconciliation_run:
     effect: allow
     authentication: session
@@ -1729,11 +1727,11 @@ policies:
     institutionBoundary: none
     entitlement: none
     contentPermission: none
-    mfa: false
+    mfa: true
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
   post_me_trials:
     effect: allow
     authentication: session
@@ -2137,11 +2135,11 @@ policies:
     institutionBoundary: none
     entitlement: none
     contentPermission: none
-    mfa: false
+    mfa: true
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
   get_admin_feature_flags:
     effect: allow
     authentication: session
@@ -2669,3 +2667,151 @@ policies:
       institution_memberships:
       - platform_admin
     sensitiveExportApproval: true
+  get_orders_id:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
+  post_orders_id_verify:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
+  post_orders_id_retry:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
+  get_me_invoices_id:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
+  get_me_invoices_id_statement:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
+  get_me_billing_notifications:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
+  get_admin_disputes:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - finance
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
+  get_admin_invoices:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - finance
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
+  get_admin_reconciliation_runs:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - finance
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
+  post_admin_disputes:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - finance
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: false
+    purposeRequired: false
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
+  post_admin_disputes_id_resolve:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - finance
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: true
+    purposeRequired: false
+    note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'

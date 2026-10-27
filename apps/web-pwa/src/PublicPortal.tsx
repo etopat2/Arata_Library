@@ -362,6 +362,9 @@ export function PublicPortal({
             <a className={linkStyle} href={href('search')}>
               Search
             </a>
+            <a className={linkStyle} href={href('pricing')}>
+              Plans
+            </a>
           </nav>
           <a className={outlineStyle} href={href('login')}>
             Sign in
@@ -385,6 +388,9 @@ export function PublicPortal({
               </a>
               <a className={linkStyle} href={href('search')}>
                 Search
+              </a>
+              <a className={linkStyle} href={href('pricing')}>
+                Plans
               </a>
             </nav>
           </details>

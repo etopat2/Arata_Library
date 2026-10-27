@@ -23,7 +23,7 @@ def make_handler():
         def log_message(self, *_): pass
 
         def _send(self, status, body, media="application/json"):
-            payload = json.dumps(body).encode()
+            payload = (body if media == "text/csv" else json.dumps(body)).encode()
             self.send_response(status); self.send_header("Content-Type", media)
             self.send_header("Content-Length", str(len(payload))); self.end_headers()
             self.wfile.write(payload)
@@ -48,8 +48,9 @@ def make_handler():
                 except Exception:
                     return self._send(400, {"type": "https://api.arata.example/problems/400", "title": "Invalid request", "status": 400, "code": "VALIDATION_FAILED", "requestId": "stub"}, "application/problem+json")
             success_code = next(int(code) for code in match["responses"] if code.startswith("2"))
-            success = match["responses"][str(success_code)]["content"]["application/json"]["example"]
-            self._send(success_code, success)
+            content = match["responses"][str(success_code)]["content"]
+            media = "application/json" if "application/json" in content else "text/csv"
+            self._send(success_code, content[media]["example"], media)
 
         def do_GET(self): self._handle()
         def do_POST(self): self._handle()

@@ -1,5 +1,26 @@
 # Validation results
 
+## Subscriptions and billing — 2026-10-27
+
+Requirements: partial `FR-PAY-001`–`010`, `012`–`018`, `BR-007/008`, `FR-ENT-001/004`, `SEC-011`; `FR-PAY-011` trial issuance remains open. Screens: `pricing`, `checkout`, `payment-result`, `my-subscription`, `invoices`, `plans-admin`, `finance-dashboard`, `transactions`, `refunds`; supplemental `disputes` awaits design review. Paths are listed in `PROGRESS.md`.
+
+| Check | Result | Evidence and limit |
+|---|---|---|
+| Prisma and physical database | Passed | `prisma validate`, `prisma migrate status`, `db:verify`: 28 applied migrations, PostgreSQL 18.4 UTC, 92 tables, 167 FKs, 91 checks, 47 triggers, 29 enums; application/research role isolation passed. All five billing migrations were applied to test then development without reset. |
+| Database constraints | Passed | `node --import tsx --test database/tests/billing.test.ts`: 1/1; duplicate order, forged paid state, missing server verification, changed payment amount and invalid plan scope rejected. |
+| Payment lifecycle | Passed locally | `npx vitest run tests/integration/billing.test.ts tests/integration/billing-http.test.ts tests/unit/billing-gateway.test.ts tests/unit/billing-csv.test.ts --reporter=dot --silent`: 21/21 across four suites in isolated `arata_techlibrary_test`, with fake provider and no charges. Covers pending/failed/mismatch, duplicate/delayed/concurrent verification, signed/forged webhooks, renewal/upgrades, reversal, refund approval/settlement, dispute freeze/restoration, expiry, concurrent checkout initialization, reconciliation, invoice CSV safety and finance access. |
+| HTTP authorization | Passed locally | `npx vitest run tests/integration/billing-http.test.ts --reporter=dot`: 4/4, anonymous, owner, finance permission/MFA, CSRF and invoice non-disclosure. |
+| Gateway adapter | Passed locally | `tests/unit/billing-gateway.test.ts`: hosted UGX options, signature check, malformed redirect, server verification and live-key gate; mocked HTTP only. |
+| API contract | Passed | `api:build`, `api:types`, `api:validate`, `api:test`: 201 operations/170 paths/401 schemas/201 policy and trace rows; 7/7 stub and billing overlay tests. Coverage regeneration retains 238 direct operation anchors of 287 SRS IDs, including `INT-006/008/010`. |
+| Foundation lint/types/tests/build | Passed locally | Follow-up full sequential `npm run foundation:check`: lint, strict types, 80/80 Vitest and API/PWA/worker production builds passed. Focused billing tests passed 21/21. |
+| Browser and accessibility | Passed locally | `npx playwright test tests/e2e/billing.spec.ts --reporter=line`: 3/3 covering pricing, small-screen/axe accessibility and protected billing routes. Manual WCAG review remains open. |
+| Flutterwave sandbox | Not run | User confirmed no sandbox credentials. The API fails closed without them. No real or sandbox charge was made; provider response shape, mobile-money/card checkout, actual webhook delivery and refund retrieval remain GAP-033. |
+
+Initial hosted runs for commit `f228414` found three reproducibility gaps: the generated API coverage file was stale, Prisma relation/index declarations did not mirror previously committed SQL foreign-key update actions and names, and a legacy SQL payment test did not supply provider verification evidence. The generator, schema mappings and synthetic test fixture were corrected without altering an applied migration. Local `prisma validate`, `migrate diff --from-migrations --to-schema --exit-code`, `db:verify`, full `db:test` (13/13), repository-wide typecheck, API build/validation and `foundation:check` (80/80) pass. Hosted commit `a19e612` passed [database](https://github.com/etopat2/Arata_Library/actions/runs/40501585438), [API contracts](https://github.com/etopat2/Arata_Library/actions/runs/40501585137) and [application foundation](https://github.com/etopat2/Arata_Library/actions/runs/40501585244), including the container build and running-service smoke.
+
+`build_reconciliation.py --check` could not run in this isolated worktree because the ignored source SRS package is absent here. Comparing the committed and updated traceability files confirms the exact same 287 original requirement IDs, with no added or removed row. The authoritative SRS was not changed.
+
+
 ## Central platform policy foundation — 2026-10-26
 
 Requirements: partial `FR-ENT-005/006/007/008/010/011`, `FR-PAY-001/002/010/011/012/013/014`, `FR-INS-001/004/005/006/008/009`, `RAI-COL-009/014`, `RAI-PUB-003/008`, `BR-013/018`, `NFR-OPS-001/002/010`, `SEC-011`. Screens: `content-policy`, `access-grants`, `trial-admin`, `plans-admin`, `institution-portal`, `research-disclosure`, `research-approvals`, `security-audit`, `backups`; new supplemental `platform-settings`. Paths and remaining acceptance are in `PROGRESS.md` and GAP-030–032.

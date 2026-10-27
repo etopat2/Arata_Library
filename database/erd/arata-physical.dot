@@ -24,7 +24,7 @@ digraph ArataPhysicalERD {
   "app_EligibilityReview" [label="app.EligibilityReview\nPK id\nFK membershipId\nFK reviewerId\ndecision\nreason\nreviewedAt", fillcolor="#f7f9fc"];
   "app_Entitlement" [label="app.Entitlement\nPK id\nFK userId\nsource\nstatus\nscope\nFK publicationId?\nFK volumeId?\nFK editionId?\nFK resourceId?\nFK orderId?\nFK subscriptionId?\nFK trialUsageId?\nFK membershipId?\nstartsAt\nendsAt?\nrevokedAt?\nreason?\ncreatedAt", fillcolor="#f7f9fc"];
   "app_EntitlementEvent" [label="app.EntitlementEvent\nPK id\nFK entitlementId\naction\nreason?\nactorId?\noccurredAt", fillcolor="#f7f9fc"];
-  "app_GatewayEvent" [label="app.GatewayEvent\nPK id\nprovider\nproviderEventId\nFK paymentAttemptId?\npayloadHash\nsignatureValid\nreceivedAt\nprocessedAt?", fillcolor="#f7f9fc"];
+  "app_GatewayEvent" [label="app.GatewayEvent\nPK id\nprovider\nproviderEventId\nFK paymentAttemptId?\npayloadHash\nsignatureValid\nreceivedAt\nprocessedAt?\nserverVerifiedAt?", fillcolor="#f7f9fc"];
   "app_GrantApproval" [label="app.GrantApproval\nPK id\nFK entitlementId\nFK requestedById\nFK approvedById?\nstatus\nreason\nrequestedAt\ndecidedAt?", fillcolor="#f7f9fc"];
   "app_ImportJob" [label="app.ImportJob\nPK id\nFK assetId\nFK editionId\nFK actorId\nidempotencyKey\nstatus\npreview?\nprogress\nfailureCode?\nconfirmedAt?\ncreatedAt\nupdatedAt\nFK revisionId?\nattempts\nleaseUntil?", fillcolor="#f7f9fc"];
   "app_Institution" [label="app.Institution\nPK id\nlegalName\nstatus\nverificationMode\napprovedAt?\ncreatedAt", fillcolor="#f7f9fc"];
@@ -36,9 +36,10 @@ digraph ArataPhysicalERD {
   "app_Notification" [label="app.Notification\nPK id\nFK userId\nkind\nstatus\ntemplateCode\ncreatedAt\nsentAt?", fillcolor="#f7f9fc"];
   "app_NotificationPreference" [label="app.NotificationPreference\nPK userId\nemail\ninApp\nupdatedAt", fillcolor="#f7f9fc"];
   "app_OfflineLicence" [label="app.OfflineLicence\nPK id\nFK userId\nFK editionId\nFK revisionId\ndeviceHash\nmanifestHash\nissuedAt\nexpiresAt\nrevokedAt?", fillcolor="#f7f9fc"];
-  "app_Order" [label="app.Order\nPK id\nFK userId\nFK planVersionId\nmerchantRef\nidempotencyKey\ncurrencyCode\ntotalMinor\nstatus\ncreatedAt\npaidAt?", fillcolor="#f7f9fc"];
+  "app_Order" [label="app.Order\nPK id\nFK userId\nFK planVersionId\nmerchantRef\nidempotencyKey\ncurrencyCode\ntotalMinor\nstatus\ncreatedAt\npaidAt?\nFK subscriptionId?\nFK upgradeFromId?", fillcolor="#f7f9fc"];
   "app_OutboxEvent" [label="app.OutboxEvent\nPK id\naggregateType\naggregateId\neventType\nidempotencyKey\npayload\noccurredAt\npublishedAt?\nattemptCount", fillcolor="#f7f9fc"];
-  "app_PaymentAttempt" [label="app.PaymentAttempt\nPK id\nFK orderId\nprovider\nproviderRef?\nidempotencyKey\namountMinor\ncurrencyCode\nstatus\nverifiedAt?\ncreatedAt", fillcolor="#f7f9fc"];
+  "app_PaymentAttempt" [label="app.PaymentAttempt\nPK id\nFK orderId\nprovider\nproviderRef?\nidempotencyKey\namountMinor\ncurrencyCode\nstatus\nverifiedAt?\ncreatedAt\ncheckoutUrl?\nproviderTransactionId?", fillcolor="#f7f9fc"];
+  "app_PaymentDispute" [label="app.PaymentDispute\nPK id\nFK paymentAttemptId\nproviderCaseId?\nstatus\nreason\nopenedAt\nresolvedAt?\nFK reportedById?\nFK resolvedById?", fillcolor="#f7f9fc"];
   "app_Permission" [label="app.Permission\nPK id\ncode\ndescription?", fillcolor="#f7f9fc"];
   "app_Plan" [label="app.Plan\nPK id\ncode\nname\nactive", fillcolor="#f7f9fc"];
   "app_PlanVersion" [label="app.PlanVersion\nPK id\nFK planId\nversion\ncurrencyCode\namountMinor\nperiodMonths?\nscopeKind\nscopeId?\ntermsHash\nvalidFrom\nvalidUntil?", fillcolor="#f7f9fc"];
@@ -62,7 +63,7 @@ digraph ArataPhysicalERD {
   "app_ReadingProgress" [label="app.ReadingProgress\nPK id\nFK userId\nFK editionId\nFK lessonId\nposition?\ncompletedAt?\nupdatedAt", fillcolor="#f7f9fc"];
   "app_ReconciliationItem" [label="app.ReconciliationItem\nPK id\nFK runId\nFK paymentAttemptId?\nproviderRef\noutcome\ndetail?", fillcolor="#f7f9fc"];
   "app_ReconciliationRun" [label="app.ReconciliationRun\nPK id\nprovider\nperiodFrom\nperiodTo\nstartedAt\nendedAt?", fillcolor="#f7f9fc"];
-  "app_Refund" [label="app.Refund\nPK id\nFK paymentAttemptId\nproviderRefundId?\nidempotencyKey\namountMinor\nstatus\napprovedAt?\nsettledAt?", fillcolor="#f7f9fc"];
+  "app_Refund" [label="app.Refund\nPK id\nFK paymentAttemptId\nproviderRefundId?\nidempotencyKey\namountMinor\nstatus\napprovedAt?\nsettledAt?\nreason?\nFK requestedById?\nFK approvedById?\ncorrelationId?\nrequestedAt", fillcolor="#f7f9fc"];
   "app_Resource" [label="app.Resource\nPK id\ntitle\naccessClass\nlicenceCode\npublishedAt?\nwithdrawnAt?\nFK publicationId?\nFK volumeId?\nFK editionId?\nFK revisionId?\nFK chapterId?\nFK lessonId?\ncreatedAt\ndescription?\nformat?\nbodyText?\nattribution?\ncopyrightNotice?", fillcolor="#f7f9fc"];
   "app_ResourceAttachment" [label="app.ResourceAttachment\nPK resourceId\nPK assetId\nordinal", fillcolor="#f7f9fc"];
   "app_RetentionPolicy" [label="app.RetentionPolicy\nPK id\nFK purposeId\ndataClass\ndays?\nlegalBasis\napprovedAt?\nversion", fillcolor="#f7f9fc"];
@@ -164,8 +165,13 @@ digraph ArataPhysicalERD {
   "app_Revision" -> "app_OfflineLicence" [label="OfflineLicence_revisionId_editionId_fkey (revisionId, editionId)\n1 : 0..many"];
   "app_User" -> "app_OfflineLicence" [label="OfflineLicence_userId_fkey (userId)\n1 : 0..many"];
   "app_PlanVersion" -> "app_Order" [label="Order_planVersionId_fkey (planVersionId)\n1 : 0..many"];
+  "app_Subscription" -> "app_Order" [label="Order_subscriptionId_fkey (subscriptionId)\n0..1 : 0..many"];
+  "app_Subscription" -> "app_Order" [label="Order_upgradeFromId_fkey (upgradeFromId)\n0..1 : 0..many"];
   "app_User" -> "app_Order" [label="Order_userId_fkey (userId)\n1 : 0..many"];
   "app_Order" -> "app_PaymentAttempt" [label="PaymentAttempt_orderId_fkey (orderId)\n1 : 0..many"];
+  "app_PaymentAttempt" -> "app_PaymentDispute" [label="PaymentDispute_paymentAttemptId_fkey (paymentAttemptId)\n1 : 0..many"];
+  "app_User" -> "app_PaymentDispute" [label="PaymentDispute_reportedById_fkey (reportedById)\n0..1 : 0..many"];
+  "app_User" -> "app_PaymentDispute" [label="PaymentDispute_resolvedById_fkey (resolvedById)\n0..1 : 0..many"];
   "app_Plan" -> "app_PlanVersion" [label="PlanVersion_planId_fkey (planId)\n1 : 0..many"];
   "app_User" -> "app_PlatformPolicyEvent" [label="PlatformPolicyEvent_actorId_fkey (actorId)\n1 : 0..many"];
   "app_PlatformPolicyVersion" -> "app_PlatformPolicyEvent" [label="PlatformPolicyEvent_policyId_fkey (policyId)\n1 : 0..many"];
@@ -205,6 +211,8 @@ digraph ArataPhysicalERD {
   "app_PaymentAttempt" -> "app_ReconciliationItem" [label="ReconciliationItem_paymentAttemptId_fkey (paymentAttemptId)\n0..1 : 0..many"];
   "app_ReconciliationRun" -> "app_ReconciliationItem" [label="ReconciliationItem_runId_fkey (runId)\n1 : 0..many"];
   "app_PaymentAttempt" -> "app_Refund" [label="Refund_paymentAttemptId_fkey (paymentAttemptId)\n1 : 0..many"];
+  "app_User" -> "app_Refund" [label="refund_approver_fk (approvedById)\n0..1 : 0..many"];
+  "app_User" -> "app_Refund" [label="refund_requester_fk (requestedById)\n0..1 : 0..many"];
   "app_Chapter" -> "app_Resource" [label="Resource_chapterId_fkey (chapterId)\n0..1 : 0..many"];
   "app_Edition" -> "app_Resource" [label="Resource_editionId_fkey (editionId)\n0..1 : 0..many"];
   "app_Lesson" -> "app_Resource" [label="Resource_lessonId_fkey (lessonId)\n0..1 : 0..many"];

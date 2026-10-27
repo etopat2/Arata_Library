@@ -1,6 +1,6 @@
 # API to SRS coverage
 
-238 of 287 SRS IDs have a direct v1 operation anchor. These are design links; no service acceptance test has passed.
+238 of 287 SRS IDs have a direct v1 operation anchor. These are design links; runtime acceptance is recorded separately in the implementation test results.
 
 The remaining IDs may be UI, PWA, worker, database, infrastructure or policy requirements. They remain in the authoritative traceability matrix and are not waived.
 

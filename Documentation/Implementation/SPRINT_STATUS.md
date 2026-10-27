@@ -1,5 +1,8 @@
 # Sprint status
 
+S11/S12 commerce contribution (2026-10-27): live paid plan/order/payment/subscription, finance, refund, dispute and reconciliation paths are implemented behind an approved-price and test-credential gate (`FR-PAY-001`–`010`, `012`–`018`, `BR-007/008`; screens `pricing`, `checkout`, `payment-result`, `my-subscription`, `invoices`, `plans-admin`, `finance-dashboard`, `transactions`, `refunds`). `FR-PAY-011` trial issuance and final tax/legal requirements remain open. The user has no Flutterwave sandbox credentials, so live provider conformance and production release remain blocked by GAP-033–035. Validated code paths and exact remaining work are in `PROGRESS.md`, `TEST_RESULTS.md` and `apps/api/BILLING.md`; original SRS release targets remain unchanged.
+
+
 Cross-sprint S01/S08/S11/S13/S16/S18/S19 policy contribution (2026-10-26): the versioned platform settings foundation and supplemental `platform-settings` administrator screen are partially implemented for `FR-ENT-005/006/007/008/010/011`, `FR-PAY-001/002/010/011/012/013/014`, `FR-INS-001/004/005/006/008/009`, `RAI-COL-009/014`, `RAI-PUB-003/008`, `BR-013/018`, `NFR-OPS-001/002/010`, and `SEC-011`. Existing SRS release targets and wireframe screen mappings are unchanged. Specialist/business/legal approvals, scheduled activation, remaining domain consumers and runtime OpenAPI are open in GAP-030–032. Implementation paths and checks are in `PROGRESS.md` and `TEST_RESULTS.md`.
 
 
