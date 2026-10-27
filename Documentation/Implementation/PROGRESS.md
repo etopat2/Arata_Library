@@ -8,6 +8,8 @@ Paths: `apps/api/src/billing/`, `apps/api/BILLING.md`, `apps/web-pwa/src/Billing
 
 The live API creates immutable orders and hosted UGX card/mobile-money checkout sessions under approved versioned plan settings. Server-to-server verification, signed v3 webhook intake, database guards, idempotent settlement, manual renewal, upgrade, paid-through cancellation, expiry/grace, invoices, independent refund approval, disputes, reconciliation, notifications and finance views are implemented. Free content remains independent. Test-mode credentials were not supplied, so actual provider sandbox behavior is **unverified** and checkout remains closed without credentials. Prices, tax wording, legal terms and live provider activation remain GAP-030 and GAP-033–035. Test evidence is in `TEST_RESULTS.md`; no production charge was made.
 
+The hosted CI follow-up aligned the Prisma relation declarations and generated API coverage with the replayed migrations and current endpoints, and refreshed a synthetic database payment fixture to satisfy server-verification controls. The migration files were not rewritten. Local regression results and hosted rerun status are tracked in `TEST_RESULTS.md`.
+
 
 ## Central platform policy foundation — 2026-10-26
 

@@ -4,6 +4,8 @@
 
 Five additive forward migrations (`202610270001_billing_workflow` through `202610270005_refund_chronology`) extend orders, payment attempts, gateway verification evidence, refunds, disputes, reconciliation indexes and the free plan record. The migrations were reviewed and applied to the isolated test database and then local development without reset or destructive changes. `prisma validate`, `prisma migrate status` and `db:verify` passed: PostgreSQL 18.4 in UTC, 92 tables, 167 foreign keys, 91 checks, 47 triggers, 29 enums and 28 complete migrations. Application/research role isolation passed. `database/tests/billing.test.ts` rejected duplicate orders, unverified paid state, mutable payment amounts and invalid plan scope. The physical ERD source and SVG were regenerated. Recovery is a reviewed corrective forward migration or a verified backup restore; never reset a database with unverified data. Payment provider sandbox conformance remains GAP-033.
 
+Hosted clean-schema validation exposed Prisma relationship declarations that did not describe the already applied manual foreign-key update actions and index names. The declarations now match the migrations, with no migration rewrite: `prisma migrate diff --from-migrations prisma/migrations --to-schema prisma/schema.prisma --exit-code` reports no difference. The full SQL suite passed 13/13 after its synthetic paid-state fixture supplied both server verification evidence and a provider transaction ID.
+
 
 ## Account reader preferences — 2026-10-26
 

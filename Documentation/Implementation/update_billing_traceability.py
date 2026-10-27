@@ -37,6 +37,29 @@ for row in rows:
     if note not in row["mapping_note"]:
         row["mapping_note"] = (row["mapping_note"].rstrip() + " " + note).strip()
 
+integration_anchors = {
+    "INT-006": "apps/api/src/billing/gateway.ts;apps/api/src/billing/billing.controller.ts;tests/unit/billing-gateway.test.ts",
+    "INT-008": "apps/api/src/billing/billing.service.ts;tests/integration/billing.test.ts",
+    "INT-010": "apps/api/src/billing/billing.service.ts;apps/api/BILLING.md;tests/integration/billing.test.ts",
+}
+for row in rows:
+    requirement_id = row["requirement_id"]
+    if requirement_id not in integration_anchors:
+        continue
+    existing = [item for item in row["implementation_paths"].split(";") if item]
+    for item in ("api/billing_runtime.py;" + integration_anchors[requirement_id]).split(";"):
+        if item not in existing:
+            existing.append(item)
+    row["implementation_paths"] = ";".join(existing)
+    row["implementation_status"] = "Partially implemented; other integration domains open"
+    row["verification_result"] = (
+        "Billing adapter, replay and reconciliation tests passed locally; "
+        "provider sandbox and other integration domains remain open"
+    )
+    note = "Billing API anchors restored; full cross-domain integration acceptance remains open."
+    if note not in row["mapping_note"]:
+        row["mapping_note"] = (row["mapping_note"].rstrip() + " " + note).strip()
+
 with path.open("w", encoding="utf-8", newline="") as output:
     writer = csv.DictWriter(output, fieldnames=fields, lineterminator="\n")
     writer.writeheader()

@@ -218,7 +218,9 @@ test("verified payment and order activation require signed matching events; dupl
     VALUES ($1, 'TEST_PROVIDER', 'event-1', $2, $3, true)`, [eventId, paymentId, "c".repeat(64)]);
   await rejectSql(client, `INSERT INTO app."GatewayEvent" (id, provider, "providerEventId", "paymentAttemptId", "payloadHash", "signatureValid")
     VALUES ($1, 'TEST_PROVIDER', 'event-1', $2, $3, true)`, [randomUUID(), paymentId, "d".repeat(64)], "23505");
-  await client.query(`UPDATE app."PaymentAttempt" SET status = 'VERIFIED', "verifiedAt" = now() WHERE id = $1`, [paymentId]);
+  await rejectSql(client, `UPDATE app."PaymentAttempt" SET status = 'VERIFIED', "verifiedAt" = now() WHERE id = $1`, [paymentId], "23514");
+  await client.query(`UPDATE app."GatewayEvent" SET "serverVerifiedAt" = now() WHERE id = $1`, [eventId]);
+  await client.query(`UPDATE app."PaymentAttempt" SET status = 'VERIFIED', "verifiedAt" = now(), "providerTransactionId" = 'TEST-TRANSACTION-1' WHERE id = $1`, [paymentId]);
   await client.query(`UPDATE app."Order" SET status = 'PAID', "paidAt" = now() WHERE id = $1`, [orderId]);
   await client.query(`INSERT INTO app."Entitlement" (id, "userId", source, status, scope, "orderId", "startsAt", "endsAt")
     VALUES ($1, $2, 'PAID', 'ACTIVE', 'LIBRARY', $3, now(), now() + interval '30 days')`, [randomUUID(), userId, orderId]);

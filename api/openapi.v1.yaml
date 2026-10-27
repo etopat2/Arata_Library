@@ -8862,6 +8862,7 @@ paths:
       - FR-PAY-004
       - FR-PAY-006
       - BR-008
+      - INT-008
       x-policy-id: post_orders
       x-authorized-roles: []
       x-entitlement-condition: none
@@ -8884,6 +8885,7 @@ paths:
       - T-FR-PAY-004
       - T-FR-PAY-006
       - T-BR-008
+      - T-INT-008
       x-acceptance-scenarios:
       - authorized request returns the declared schema
       - malformed request or state is denied
@@ -8942,6 +8944,7 @@ paths:
       x-requirement-ids:
       - FR-PAY-005
       - FR-PAY-009
+      - INT-010
       x-policy-id: get_payments_id_status
       x-authorized-roles: []
       x-entitlement-condition: none
@@ -8958,6 +8961,7 @@ paths:
       x-acceptance-tests:
       - T-FR-PAY-005
       - T-FR-PAY-009
+      - T-INT-010
       x-acceptance-scenarios:
       - authorized request returns the declared schema
       - malformed request or state is denied
@@ -9011,6 +9015,8 @@ paths:
       - FR-PAY-006
       - FR-PAY-007
       - BR-008
+      - INT-006
+      - INT-010
       x-policy-id: post_payments_webhooks_provider
       x-authorized-roles: []
       x-entitlement-condition: none
@@ -9033,6 +9039,8 @@ paths:
       - T-FR-PAY-006
       - T-FR-PAY-007
       - T-BR-008
+      - T-INT-006
+      - T-INT-010
       x-acceptance-scenarios:
       - authorized request returns the declared schema
       - malformed request or state is denied
@@ -16591,6 +16599,7 @@ paths:
       x-requirement-ids:
       - FR-PAY-015
       - FR-PAY-018
+      - INT-010
       x-policy-id: post_admin_payments_reconcile
       x-authorized-roles:
       - finance
@@ -16612,6 +16621,7 @@ paths:
       x-acceptance-tests:
       - T-FR-PAY-015
       - T-FR-PAY-018
+      - T-INT-010
       x-acceptance-scenarios:
       - authorized request returns the declared schema
       - malformed request or state is denied

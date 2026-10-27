@@ -101,12 +101,12 @@ SCHEMAS = {
 # method, path, response data schema, request DTO, SRS anchors, short description
 ROUTES = [
     ("GET", "/plans", "BillingPlans", None, "FR-PAY-001 FR-PAY-002", "List approved free and paid access offers."),
-    ("POST", "/orders", "BillingOrder", "BillingOrderCreateInput", "FR-PAY-003 FR-PAY-004 FR-PAY-006 BR-008", "Create an idempotent hosted checkout order without granting access."),
+    ("POST", "/orders", "BillingOrder", "BillingOrderCreateInput", "FR-PAY-003 FR-PAY-004 FR-PAY-006 BR-008 INT-008", "Create an idempotent hosted checkout order without granting access."),
     ("GET", "/orders/{id}", "BillingOrder", None, "FR-PAY-003 FR-PAY-009", "Read only the signed-in customer's order."),
     ("POST", "/orders/{id}/verify", "BillingOrder", None, "FR-PAY-005 FR-PAY-007 BR-008", "Requery the provider before activating any paid access."),
     ("POST", "/orders/{id}/retry", "BillingOrder", None, "FR-PAY-006 FR-PAY-008 FR-PAY-009", "Retry a failed order with a fresh idempotency key."),
-    ("GET", "/payments/{id}/status", "BillingPaymentStatus", None, "FR-PAY-005 FR-PAY-009", "Read only the customer's payment state."),
-    ("POST", "/payments/webhooks/{provider}", "BillingWebhookReceipt", "BillingWebhookInput", "FR-PAY-005 FR-PAY-006 FR-PAY-007 BR-008", "Accept a v3 verif-hash webhook; independently verify settlement."),
+    ("GET", "/payments/{id}/status", "BillingPaymentStatus", None, "FR-PAY-005 FR-PAY-009 INT-010", "Read only the customer's payment state."),
+    ("POST", "/payments/webhooks/{provider}", "BillingWebhookReceipt", "BillingWebhookInput", "FR-PAY-005 FR-PAY-006 FR-PAY-007 BR-008 INT-006 INT-010", "Accept a v3 verif-hash webhook; independently verify settlement."),
     ("GET", "/me/subscriptions", "BillingSubscription", None, "FR-PAY-009 FR-PAY-010 FR-PAY-012 BR-007", "List the customer's paid subscriptions."),
     ("POST", "/me/subscriptions/{id}/cancel", "BillingCancellation", None, "FR-PAY-012 BR-007", "Cancel future renewal while preserving paid-through access."),
     ("GET", "/me/invoices", "BillingInvoiceSummary", None, "FR-PAY-009 FR-PAY-018", "List verified invoices owned by the customer."),
@@ -127,7 +127,7 @@ ROUTES = [
     ("POST", "/admin/refunds/{id}/approve", "BillingRefundAction", None, "FR-PAY-013 FR-PAY-014", "Independently approve and submit a verified refund once."),
     ("POST", "/admin/disputes", "BillingDisputeAction", "BillingDisputeCreateInput", "FR-PAY-014 FR-PAY-015", "Open an audited payment dispute."),
     ("POST", "/admin/disputes/{id}/resolve", "BillingDisputeAction", "BillingDisputeResolveInput", "FR-PAY-014 FR-PAY-015", "Resolve a dispute with independent review and provider confirmation for wins."),
-    ("POST", "/admin/payments/reconcile", "BillingReconciliation", "BillingReconcileInput", "FR-PAY-015 FR-PAY-018", "Requery a bounded period of payments and submitted refunds."),
+    ("POST", "/admin/payments/reconcile", "BillingReconciliation", "BillingReconcileInput", "FR-PAY-015 FR-PAY-018 INT-010", "Requery a bounded period of payments and submitted refunds."),
 ]
 
 
