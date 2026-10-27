@@ -1,5 +1,10 @@
 # API contract validation report
 
+## Billing runtime overlay — 2026-10-27
+
+`billing_runtime.py` reconciles 28 running `/api/v1` billing operations with the generated OpenAPI 3.1 contract. The regenerated contract has 201 unique operations, 170 paths, 401 schemas, 201 policy rows and 201 endpoint trace rows. `api:validate` passed schema, security, example, acceptance-ID and duplicate checks; `api:test` passed 7/7 against the test-only stub, including exact billing path/DTO/finance MFA assertions. TypeScript definitions regenerated in `api/generated/v1.ts`. The billing service also has isolated PostgreSQL and HTTP authorization tests in `tests/integration/` and `database/tests/`; those results are recorded separately in `Documentation/Implementation/TEST_RESULTS.md`. The stub does not verify real gateway behavior; Flutterwave sandbox credentials are unavailable (GAP-033).
+
+
 Date: 2026-10-23 (Africa/Kampala). Branch: `feat/api-contracts`.
 
 | Check | Result | Evidence |

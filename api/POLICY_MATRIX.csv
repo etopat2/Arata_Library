@@ -41,7 +41,7 @@ GET,/api/v1/learning/projects,get_learning_projects,session,,none,none,active_sc
 POST,/api/v1/learning/projects,post_learning_projects,session,,none,none,active_scope_or_free,read,False,False,False,False,False,{},deny
 GET,/api/v1/plans,get_plans,public,,none,none,none,none,False,False,False,False,False,{},deny
 POST,/api/v1/orders,post_orders,session,,none,none,none,none,False,False,False,False,False,{},deny
-GET,/api/v1/payments/{id}/status,get_payments_id_status,session,,none,none,none,none,False,False,False,False,False,{},deny
+GET,/api/v1/payments/{id}/status,get_payments_id_status,session,,subject_user,none,none,none,False,False,False,False,False,{},deny
 POST,/api/v1/payments/webhooks/{provider},post_payments_webhooks_provider,webhook,,none,none,none,none,False,False,False,False,False,{},deny
 GET,/api/v1/me/subscriptions,get_me_subscriptions,session,,subject_user,none,none,none,False,False,False,False,False,{},deny
 POST,/api/v1/me/subscriptions/{id}/cancel,post_me_subscriptions_id_cancel,session,,subject_user,none,none,none,False,False,False,False,False,{},deny
@@ -78,10 +78,10 @@ POST,/api/v1/admin/institutions/{id}/domains,post_admin_institutions_id_domains,
 POST,/api/v1/admin/institution-memberships/{id}/review,post_admin_institution_memberships_id_review,session,platform_admin,none,none,none,none,False,False,False,False,False,{},deny
 GET,/api/v1/admin/cohorts,get_admin_cohorts,session,platform_admin;institution_manager,none,verified_membership_or_scoped_admin,none,none,False,False,False,False,False,{},deny
 POST,/api/v1/admin/cohorts,post_admin_cohorts,session,platform_admin,none,verified_membership_or_scoped_admin,none,none,False,False,False,False,False,{},deny
-GET,/api/v1/admin/plans,get_admin_plans,session,finance;platform_admin,none,none,none,none,False,False,False,False,False,{},deny
-POST,/api/v1/admin/plans,post_admin_plans,session,finance;platform_admin,none,none,none,none,False,False,False,False,False,{},deny
-GET,/api/v1/admin/orders,get_admin_orders,session,finance,none,none,none,none,False,False,False,False,False,{},deny
-POST,/api/v1/admin/payments/reconcile,post_admin_payments_reconcile,session,finance,none,none,none,none,False,False,False,False,False,{},deny
+GET,/api/v1/admin/plans,get_admin_plans,session,finance,none,none,none,none,True,False,False,False,False,{},deny
+POST,/api/v1/admin/plans,post_admin_plans,session,finance,none,none,none,none,True,False,False,False,False,{},deny
+GET,/api/v1/admin/orders,get_admin_orders,session,finance,none,none,none,none,True,False,False,False,False,{},deny
+POST,/api/v1/admin/payments/reconcile,post_admin_payments_reconcile,session,finance,none,none,none,none,True,False,False,False,False,{},deny
 GET,/api/v1/admin/audit,get_admin_audit,session,security_admin;platform_admin,none,none,none,none,False,False,False,False,False,{},deny
 POST,/api/v1/research/events,post_research_events,session,,subject_user,none,none,research_consent,False,False,False,False,False,{},deny
 GET,/api/v1/admin/research/dashboard,get_admin_research_dashboard,session,research_analyst;research_admin,none,research_isolation,none,none,True,False,False,True,False,{},deny
@@ -119,11 +119,11 @@ GET,/api/v1/health/live,get_health_live,public,,none,none,none,none,False,False,
 GET,/api/v1/health/ready,get_health_ready,service,,none,none,none,none,False,False,False,False,False,{},deny
 GET,/api/v1/admin/system/health,get_admin_system_health,session,platform_admin;security_admin,none,none,none,none,False,False,False,False,False,{},deny
 GET,/api/v1/me/refunds,get_me_refunds,session,,subject_user,none,none,none,False,False,False,False,False,{},deny
-GET,/api/v1/admin/payments,get_admin_payments,session,finance,none,none,none,none,False,False,False,False,False,{},deny
+GET,/api/v1/admin/payments,get_admin_payments,session,finance,none,none,none,none,True,False,False,False,False,{},deny
 POST,/api/v1/admin/refunds,post_admin_refunds,session,finance,none,none,none,none,True,True,False,False,False,{},deny
-POST,/api/v1/admin/refunds/{id}/approve,post_admin_refund_approve,session,finance,none,none,none,none,True,True,True,False,False,{},deny
-GET,/api/v1/admin/refunds,get_admin_refunds,session,finance,none,none,none,none,False,False,False,False,False,{},deny
-GET,/api/v1/admin/reconciliation-runs/{id},get_admin_reconciliation_run,session,finance,none,none,none,none,False,False,False,False,False,{},deny
+POST,/api/v1/admin/refunds/{id}/approve,post_admin_refund_approve,session,finance,none,none,none,none,True,False,True,False,False,{},deny
+GET,/api/v1/admin/refunds,get_admin_refunds,session,finance,none,none,none,none,True,False,False,False,False,{},deny
+GET,/api/v1/admin/reconciliation-runs/{id},get_admin_reconciliation_run,session,finance,none,none,none,none,True,False,False,False,False,{},deny
 POST,/api/v1/me/trials,post_me_trials,session,,subject_user,none,none,none,False,False,False,False,False,{},deny
 POST,/api/v1/admin/institutions/{id}/domains/{domainId}/approve,post_admin_domain_approve,session,platform_admin,none,verified_membership_or_scoped_admin,none,none,True,True,True,False,False,{},deny
 GET,/api/v1/admin/institutions/{id}/memberships,get_admin_institution_memberships,session,platform_admin;institution_manager,none,verified_membership_or_scoped_admin,none,none,False,False,False,False,False,{},deny
@@ -152,7 +152,7 @@ GET,/api/v1/me/support-tickets,get_me_support_tickets,session,,subject_user,none
 POST,/api/v1/me/support-tickets,post_me_support_ticket,session,,subject_user,none,none,none,False,False,False,False,False,{},deny
 GET,/api/v1/admin/support-tickets,get_admin_support_tickets,session,support;platform_admin,none,none,none,none,False,False,False,False,False,{},deny
 POST,/api/v1/admin/support-tickets/{id}/resolve,post_admin_support_ticket_resolve,session,support;platform_admin,none,none,none,none,False,False,False,False,False,{},deny
-GET,/api/v1/admin/finance/report,get_admin_finance_report,session,finance,none,none,none,none,False,False,False,False,False,{},deny
+GET,/api/v1/admin/finance/report,get_admin_finance_report,session,finance,none,none,none,none,True,False,False,False,False,{},deny
 GET,/api/v1/admin/feature-flags,get_admin_feature_flags,session,platform_admin,none,none,none,none,False,False,False,False,False,{},deny
 PATCH,/api/v1/admin/feature-flags/{id},patch_admin_feature_flag,session,platform_admin,none,none,none,none,True,True,False,False,False,{},deny
 GET,/api/v1/me/consents,get_me_consents,session,,subject_user,none,none,none,False,False,False,False,False,{},deny
@@ -189,3 +189,14 @@ GET,/api/v1/admin/institutions/{id}/impact-report,get_admin_institution_impact_r
 POST,/api/v1/me/ai/questions,post_me_ai_question,session,,subject_user,none,active_scope_or_free,ai_consent_and_read,False,False,False,False,False,{},deny
 POST,/api/v1/admin/exports,post_admin_export,session,platform_admin;finance;security_admin,none,none,none,none,True,True,False,False,True,"{""audit"": [""security_admin""], ""finance"": [""finance""], ""institution_memberships"": [""platform_admin""], ""users"": [""platform_admin""]}",deny
 GET,/api/v1/admin/exports/{id},get_admin_export,session,platform_admin;finance;security_admin,export_scope,none,none,none,False,False,False,False,True,"{""audit"": [""security_admin""], ""finance"": [""finance""], ""institution_memberships"": [""platform_admin""], ""users"": [""platform_admin""]}",deny
+GET,/api/v1/orders/{id},get_orders_id,session,,subject_user,none,none,none,False,False,False,False,False,{},deny
+POST,/api/v1/orders/{id}/verify,post_orders_id_verify,session,,subject_user,none,none,none,False,False,False,False,False,{},deny
+POST,/api/v1/orders/{id}/retry,post_orders_id_retry,session,,subject_user,none,none,none,False,False,False,False,False,{},deny
+GET,/api/v1/me/invoices/{id},get_me_invoices_id,session,,subject_user,none,none,none,False,False,False,False,False,{},deny
+GET,/api/v1/me/invoices/{id}/statement,get_me_invoices_id_statement,session,,subject_user,none,none,none,False,False,False,False,False,{},deny
+GET,/api/v1/me/billing-notifications,get_me_billing_notifications,session,,subject_user,none,none,none,False,False,False,False,False,{},deny
+GET,/api/v1/admin/disputes,get_admin_disputes,session,finance,none,none,none,none,True,False,False,False,False,{},deny
+GET,/api/v1/admin/invoices,get_admin_invoices,session,finance,none,none,none,none,True,False,False,False,False,{},deny
+GET,/api/v1/admin/reconciliation-runs,get_admin_reconciliation_runs,session,finance,none,none,none,none,True,False,False,False,False,{},deny
+POST,/api/v1/admin/disputes,post_admin_disputes,session,finance,none,none,none,none,True,True,False,False,False,{},deny
+POST,/api/v1/admin/disputes/{id}/resolve,post_admin_disputes_id_resolve,session,finance,none,none,none,none,True,False,True,False,False,{},deny

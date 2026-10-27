@@ -1,5 +1,10 @@
 # Database validation report
 
+## Billing migrations — 2026-10-27
+
+Five additive forward migrations (`202610270001_billing_workflow` through `202610270005_refund_chronology`) extend orders, payment attempts, gateway verification evidence, refunds, disputes, reconciliation indexes and the free plan record. The migrations were reviewed and applied to the isolated test database and then local development without reset or destructive changes. `prisma validate`, `prisma migrate status` and `db:verify` passed: PostgreSQL 18.4 in UTC, 92 tables, 167 foreign keys, 91 checks, 47 triggers, 29 enums and 28 complete migrations. Application/research role isolation passed. `database/tests/billing.test.ts` rejected duplicate orders, unverified paid state, mutable payment amounts and invalid plan scope. The physical ERD source and SVG were regenerated. Recovery is a reviewed corrective forward migration or a verified backup restore; never reset a database with unverified data. Payment provider sandbox conformance remains GAP-033.
+
+
 ## Account reader preferences — 2026-10-26
 
 Migration `202610260003_reader_preferences` only creates `app."ReaderPreference"`; it changes no existing table or row. It was reviewed and applied first to the isolated test database, then to development, without a reset. The user-owned row has a cascade delete with its account and four PostgreSQL allowlist checks. Prisma format, validate, generate and both migration drift comparisons passed. PostgreSQL 18.4 reports 89 tables, 155 foreign keys, 79 checks, 44 triggers, 29 enums and 22 complete migrations. `db:verify` confirms application read/write privileges without direct preference deletion, research role isolation and UTC. SQL constraints passed 12/12, including invalid settings and deletion. The physical ERD was regenerated. Recovery is a reviewed forward migration or verified backup restore after assessing saved preferences; do not reset a database containing unverified data.

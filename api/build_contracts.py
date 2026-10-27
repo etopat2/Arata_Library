@@ -13,6 +13,7 @@ import yaml
 from schema_library import base_schemas, ENTITY_FIELDS, ref, obj, arr, ID, DATE, SHORT, STATUS, INT, string
 from input_library import F, input_schema
 from operation_additions import ADDITIONS
+from billing_runtime import apply_billing_runtime
 
 ROOT = Path(__file__).resolve().parent.parent
 API = ROOT / "api"
@@ -678,6 +679,7 @@ def build():
             "webhookSignature": {"type": "apiKey", "in": "header", "name": "X-Provider-Signature", "description": "Provider-specific verified signature; configured adapter enforces timestamp and replay window."},
             "serviceToken": {"type": "http", "scheme": "bearer", "bearerFormat": "opaque-service-token"}},
             "schemas": components}}
+    apply_billing_runtime(spec, policies, trace, requirement_rows)
     (API / "openapi.v1.yaml").write_text(yaml.safe_dump(spec, sort_keys=False, allow_unicode=True, width=120), encoding="utf-8")
     (API / "policies.v1.yaml").write_text(yaml.safe_dump({"version": 1, "defaultEffect": "deny", "evaluationOrder": ["authentication", "rolesAny", "ownership", "institutionBoundary", "entitlement", "contentPermission", "mfa", "reasonRequired", "distinctApprover"], "policies": policies}, sort_keys=False, allow_unicode=True, width=120), encoding="utf-8")
     with (API / "ENDPOINT_TRACEABILITY.csv").open("w", encoding="utf-8", newline="") as f:
@@ -696,7 +698,7 @@ def build():
             "default_effect": "deny"})
     with (API / "POLICY_MATRIX.csv").open("w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=list(policy_rows[0]), lineterminator="\n"); writer.writeheader(); writer.writerows(policy_rows)
-    print(f"Generated {len(inventory)} operations, {len(components)} schemas, {len(policies)} policies")
+    print(f"Generated {sum(len(item) for item in paths.values())} operations, {len(components)} schemas, {len(policies)} policies")
 
 
 if __name__ == "__main__": build()

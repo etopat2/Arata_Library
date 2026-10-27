@@ -56,7 +56,7 @@ def send(stub, method, path, operation, context, body_override=None):
     request = Request(stub+path, data=raw, headers=headers, method=method)
     try:
         with urlopen(request, timeout=5) as response:
-            return response.status, json.load(response)
+            return response.status, response.read().decode() if response.headers.get_content_type() == "text/csv" else json.loads(response.read())
     except HTTPError as error:
         return error.code, json.load(error)
 
@@ -76,7 +76,8 @@ def test_every_operation_against_stub(contract, stub):
             status, result = send(stub, method.upper(), path, operation, full_context(rule))
             expected = int(next(code for code in operation["responses"] if code.startswith("2")))
             assert status == expected, (method, path, result)
-            schema = operation["responses"][str(status)]["content"]["application/json"]["schema"]
+            content = operation["responses"][str(status)]["content"]
+            schema = content["application/json"]["schema"] if "application/json" in content else content["text/csv"]["schema"]
             Draft202012Validator(schema, resolver=resolver).validate(result)
 
 

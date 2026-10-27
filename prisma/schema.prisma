@@ -1127,6 +1127,8 @@ model Subscription {
   user               User               @relation(fields: [userId], references: [id], onDelete: Restrict)
   planVersion        PlanVersion        @relation(fields: [planVersionId], references: [id], onDelete: Restrict)
   entitlements       Entitlement[]
+  orders             Order[]
+  upgrades           Order[]            @relation("UpgradeSource")
 
   @@index([userId, status, currentPeriodEnd])
   @@schema("app")
@@ -1156,8 +1158,12 @@ model Order {
   status          OrderStatus      @default(PENDING)
   createdAt       DateTime         @default(now()) @db.Timestamptz(6)
   paidAt          DateTime?        @db.Timestamptz(6)
+  subscriptionId  String?          @db.Uuid
+  upgradeFromId   String?          @db.Uuid
   user            User             @relation(fields: [userId], references: [id], onDelete: Restrict)
   planVersion     PlanVersion      @relation(fields: [planVersionId], references: [id], onDelete: Restrict)
+  subscription    Subscription?    @relation(fields: [subscriptionId], references: [id], onDelete: Restrict)
+  upgradeFrom     Subscription?    @relation("UpgradeSource", fields: [upgradeFromId], references: [id], onDelete: Restrict)
   paymentAttempts PaymentAttempt[]
   invoice         Invoice?
   entitlements    Entitlement[]
@@ -1167,22 +1173,26 @@ model Order {
 }
 
 model PaymentAttempt {
-  id                  String               @id @default(uuid()) @db.Uuid
-  orderId             String               @db.Uuid
-  provider            String               @db.VarChar(80)
-  providerRef         String?              @db.VarChar(160)
-  idempotencyKey      String               @unique @db.VarChar(160)
-  amountMinor         BigInt
-  currencyCode        String               @db.VarChar(3)
-  status              PaymentStatus        @default(INITIATED)
-  verifiedAt          DateTime?            @db.Timestamptz(6)
-  createdAt           DateTime             @default(now()) @db.Timestamptz(6)
-  order               Order                @relation(fields: [orderId], references: [id], onDelete: Restrict)
-  gatewayEvents       GatewayEvent[]
-  refunds             Refund[]
-  reconciliationItems ReconciliationItem[]
+  id                    String               @id @default(uuid()) @db.Uuid
+  orderId               String               @db.Uuid
+  provider              String               @db.VarChar(80)
+  providerRef           String?              @db.VarChar(160)
+  providerTransactionId String?              @db.VarChar(160)
+  idempotencyKey        String               @unique @db.VarChar(160)
+  amountMinor           BigInt
+  currencyCode          String               @db.VarChar(3)
+  status                PaymentStatus        @default(INITIATED)
+  verifiedAt            DateTime?            @db.Timestamptz(6)
+  checkoutUrl           String?              @db.VarChar(2048)
+  createdAt             DateTime             @default(now()) @db.Timestamptz(6)
+  order                 Order                @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  gatewayEvents         GatewayEvent[]
+  refunds               Refund[]
+  disputes              PaymentDispute[]
+  reconciliationItems   ReconciliationItem[]
 
   @@unique([provider, providerRef])
+  @@unique([provider, providerTransactionId])
   @@index([orderId, status])
   @@schema("app")
 }
@@ -1194,6 +1204,7 @@ model GatewayEvent {
   paymentAttemptId String?         @db.Uuid
   payloadHash      String          @db.VarChar(128)
   signatureValid   Boolean         @default(false)
+  serverVerifiedAt DateTime?       @db.Timestamptz(6)
   receivedAt       DateTime        @default(now()) @db.Timestamptz(6)
   processedAt      DateTime?       @db.Timestamptz(6)
   paymentAttempt   PaymentAttempt? @relation(fields: [paymentAttemptId], references: [id], onDelete: Restrict)
@@ -1221,11 +1232,34 @@ model Refund {
   providerRefundId String?        @unique @db.VarChar(160)
   idempotencyKey   String         @unique @db.VarChar(160)
   amountMinor      BigInt
+  requestedAt      DateTime       @default(now()) @db.Timestamptz(6)
   status           RefundStatus   @default(REQUESTED)
   approvedAt       DateTime?      @db.Timestamptz(6)
   settledAt        DateTime?      @db.Timestamptz(6)
+  reason           String?
+  requestedById    String?        @db.Uuid
+  approvedById     String?        @db.Uuid
+  correlationId    String?        @db.VarChar(80)
   paymentAttempt   PaymentAttempt @relation(fields: [paymentAttemptId], references: [id], onDelete: Restrict)
 
+  @@index([requestedAt(sort: Desc)])
+  @@schema("app")
+}
+
+model PaymentDispute {
+  id               String         @id @default(uuid()) @db.Uuid
+  paymentAttemptId String         @db.Uuid
+  providerCaseId   String?        @db.VarChar(160)
+  status           String         @db.VarChar(24)
+  reason           String
+  openedAt         DateTime       @default(now()) @db.Timestamptz(6)
+  resolvedAt       DateTime?      @db.Timestamptz(6)
+  reportedById     String?        @db.Uuid
+  resolvedById     String?        @db.Uuid
+  paymentAttempt   PaymentAttempt @relation(fields: [paymentAttemptId], references: [id], onDelete: Restrict)
+
+  @@unique([paymentAttemptId, providerCaseId])
+  @@index([status, openedAt])
   @@schema("app")
 }
 
@@ -1252,6 +1286,8 @@ model ReconciliationItem {
   paymentAttempt   PaymentAttempt?   @relation(fields: [paymentAttemptId], references: [id], onDelete: Restrict)
 
   @@unique([runId, providerRef])
+  @@index([paymentAttemptId])
+  @@index([providerRef])
   @@schema("app")
 }
 

@@ -1,5 +1,14 @@
 # Implementation progress
 
+## Subscriptions, billing and payments — 2026-10-27
+
+Status: **partial live implementation; public paid launch closed**. Requirements: `FR-PAY-001`–`018`, `BR-007/008`, `FR-ENT-001/004`, `SEC-011`; `FR-PAY-011` trial issuance and the tax-specific part of `FR-PAY-018` remain open. Screens: `pricing`, `checkout`, `payment-result`, `my-subscription`, `invoices`, `plans-admin`, `finance-dashboard`, `transactions`, `refunds`; supplemental `disputes` awaits wireframe review.
+
+Paths: `apps/api/src/billing/`, `apps/api/BILLING.md`, `apps/web-pwa/src/BillingScreens.tsx`, `packages/api-client/src/index.ts`, `packages/validation/src/index.ts`, `prisma/schema.prisma`, `prisma/migrations/202610270001_billing_workflow/`–`202610270005_refund_chronology/`, `api/billing_runtime.py`, `api/openapi.v1.yaml`, `api/policies.v1.yaml`, `api/generated/v1.ts`, `database/erd/`, `tests/integration/billing*.test.ts`, `tests/unit/billing-gateway.test.ts`, `database/tests/billing.test.ts`, `tests/e2e/billing.spec.ts`.
+
+The live API creates immutable orders and hosted UGX card/mobile-money checkout sessions under approved versioned plan settings. Server-to-server verification, signed v3 webhook intake, database guards, idempotent settlement, manual renewal, upgrade, paid-through cancellation, expiry/grace, invoices, independent refund approval, disputes, reconciliation, notifications and finance views are implemented. Free content remains independent. Test-mode credentials were not supplied, so actual provider sandbox behavior is **unverified** and checkout remains closed without credentials. Prices, tax wording, legal terms and live provider activation remain GAP-030 and GAP-033–035. Test evidence is in `TEST_RESULTS.md`; no production charge was made.
+
+
 ## Central platform policy foundation — 2026-10-26
 
 Status: partially implemented. Requirements: `FR-ENT-005/006/007/008/010/011`, `FR-PAY-001/002/010/011/012/013/014`, `FR-INS-001/004/005/006/008/009`, `RAI-COL-009/014`, `RAI-PUB-003/008`, `BR-013/018`, `NFR-OPS-001/002/010`, `SEC-011`. Source wireframes: `content-policy`, `access-grants`, `trial-admin`, `plans-admin`, `institution-portal`, `research-disclosure`, `research-approvals`, `security-audit`, `backups`; supplemental implementation screen `platform-settings` awaits design review.

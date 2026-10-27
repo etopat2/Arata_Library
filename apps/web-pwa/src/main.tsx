@@ -10,6 +10,7 @@ import { PublishingStudio } from './PublishingStudio.js';
 import { Reader } from './Reader.js';
 import { ContentPolicyAdmin } from './ContentPolicyAdmin.js';
 import { PlatformPolicyAdmin } from './PlatformPolicyAdmin.js';
+import { BillingScreens } from './BillingScreens.js';
 import './style.css';
 
 const accountScreens = new Set([
@@ -40,6 +41,18 @@ function App() {
   const policyAdmin = new URLSearchParams(location.search).get('screen') === 'content-policy';
   const platformSettings =
     new URLSearchParams(location.search).get('screen') === 'platform-settings';
+  const billingScreen = new Set([
+    'pricing',
+    'checkout',
+    'payment-result',
+    'my-subscription',
+    'invoices',
+    'finance-dashboard',
+    'transactions',
+    'refunds',
+    'disputes',
+    'plans-admin',
+  ]).has(new URLSearchParams(location.search).get('screen') ?? '');
 
   useEffect(() => {
     void getTheme().then(chooseTheme);
@@ -66,6 +79,7 @@ function App() {
   if (reader) return <Reader />;
   if (policyAdmin) return <ContentPolicyAdmin />;
   if (platformSettings) return <PlatformPolicyAdmin />;
+  if (billingScreen) return <BillingScreens />;
   if (!account)
     return (
       <PublicPortal

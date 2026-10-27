@@ -259,6 +259,7 @@ erDiagram
     boolean signatureValid
     timestamp_6__with_time_zone receivedAt
     timestamp_6__with_time_zone processedAt
+    timestamp_6__with_time_zone serverVerifiedAt
   }
   app_GrantApproval {
     uuid id PK
@@ -379,6 +380,8 @@ erDiagram
     app__OrderStatus_ status
     timestamp_6__with_time_zone createdAt
     timestamp_6__with_time_zone paidAt
+    uuid subscriptionId FK
+    uuid upgradeFromId FK
   }
   app_OutboxEvent {
     uuid id PK
@@ -402,6 +405,19 @@ erDiagram
     app__PaymentStatus_ status
     timestamp_6__with_time_zone verifiedAt
     timestamp_6__with_time_zone createdAt
+    character_varying_2048_ checkoutUrl
+    character_varying_160_ providerTransactionId
+  }
+  app_PaymentDispute {
+    uuid id PK
+    uuid paymentAttemptId FK
+    character_varying_160_ providerCaseId
+    character_varying_24_ status
+    text reason
+    timestamp_6__with_time_zone openedAt
+    timestamp_6__with_time_zone resolvedAt
+    uuid reportedById FK
+    uuid resolvedById FK
   }
   app_Permission {
     uuid id PK
@@ -623,6 +639,11 @@ erDiagram
     app__RefundStatus_ status
     timestamp_6__with_time_zone approvedAt
     timestamp_6__with_time_zone settledAt
+    text reason
+    uuid requestedById FK
+    uuid approvedById FK
+    character_varying_80_ correlationId
+    timestamp_6__with_time_zone requestedAt
   }
   app_Resource {
     uuid id PK
@@ -988,8 +1009,13 @@ erDiagram
   app_Revision ||--o{ app_OfflineLicence : "OfflineLicence_revisionId_editionId_fkey"
   app_User ||--o{ app_OfflineLicence : "OfflineLicence_userId_fkey"
   app_PlanVersion ||--o{ app_Order : "Order_planVersionId_fkey"
+  app_Subscription o|--o{ app_Order : "Order_subscriptionId_fkey"
+  app_Subscription o|--o{ app_Order : "Order_upgradeFromId_fkey"
   app_User ||--o{ app_Order : "Order_userId_fkey"
   app_Order ||--o{ app_PaymentAttempt : "PaymentAttempt_orderId_fkey"
+  app_PaymentAttempt ||--o{ app_PaymentDispute : "PaymentDispute_paymentAttemptId_fkey"
+  app_User o|--o{ app_PaymentDispute : "PaymentDispute_reportedById_fkey"
+  app_User o|--o{ app_PaymentDispute : "PaymentDispute_resolvedById_fkey"
   app_Plan ||--o{ app_PlanVersion : "PlanVersion_planId_fkey"
   app_User ||--o{ app_PlatformPolicyEvent : "PlatformPolicyEvent_actorId_fkey"
   app_PlatformPolicyVersion ||--o{ app_PlatformPolicyEvent : "PlatformPolicyEvent_policyId_fkey"
@@ -1029,6 +1055,8 @@ erDiagram
   app_PaymentAttempt o|--o{ app_ReconciliationItem : "ReconciliationItem_paymentAttemptId_fkey"
   app_ReconciliationRun ||--o{ app_ReconciliationItem : "ReconciliationItem_runId_fkey"
   app_PaymentAttempt ||--o{ app_Refund : "Refund_paymentAttemptId_fkey"
+  app_User o|--o{ app_Refund : "refund_approver_fk"
+  app_User o|--o{ app_Refund : "refund_requester_fk"
   app_Chapter o|--o{ app_Resource : "Resource_chapterId_fkey"
   app_Edition o|--o{ app_Resource : "Resource_editionId_fkey"
   app_Lesson o|--o{ app_Resource : "Resource_lessonId_fkey"

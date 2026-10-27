@@ -34,9 +34,57 @@ export const apiEnvironment = z
       .string()
       .regex(/^[a-zA-Z0-9_-]{1,64}$/)
       .default('arata'),
+    BILLING_JOBS_ENABLED: z.enum(['0', '1']).default('1'),
+    FLUTTERWAVE_TEST_SECRET_KEY: z
+      .string()
+      .regex(/^FLWSECK_TEST[-_]/)
+      .optional(),
+    FLUTTERWAVE_TEST_WEBHOOK_HASH: z.string().min(24).optional(),
+    FLUTTERWAVE_TEST_ACCOUNT_ID: z.string().regex(/^\d+$/).optional(),
+    BILLING_LIVE_ENABLED: z.enum(['0', '1']).default('0'),
+    FLUTTERWAVE_LIVE_SECRET_KEY: z
+      .string()
+      .regex(/^FLWSECK[-_](?!TEST[-_])/)
+      .optional(),
+    FLUTTERWAVE_LIVE_WEBHOOK_HASH: z.string().min(24).optional(),
+    FLUTTERWAVE_LIVE_ACCOUNT_ID: z.string().regex(/^\d+$/).optional(),
     REDIS_URL: z.url().refine((value) => ['redis:', 'rediss:'].includes(new URL(value).protocol)),
   })
   .superRefine((values, context) => {
+    const gatewayFields = [
+      'FLUTTERWAVE_TEST_SECRET_KEY',
+      'FLUTTERWAVE_TEST_WEBHOOK_HASH',
+      'FLUTTERWAVE_TEST_ACCOUNT_ID',
+    ] as const;
+    if (
+      gatewayFields.some((field) => !!values[field]) &&
+      gatewayFields.some((field) => !values[field])
+    )
+      context.addIssue({
+        code: 'custom',
+        path: ['FLUTTERWAVE_TEST_SECRET_KEY'],
+        message: 'All sandbox gateway settings must be supplied together',
+      });
+    const liveFields = [
+      'FLUTTERWAVE_LIVE_SECRET_KEY',
+      'FLUTTERWAVE_LIVE_WEBHOOK_HASH',
+      'FLUTTERWAVE_LIVE_ACCOUNT_ID',
+    ] as const;
+    if (liveFields.some((field) => !!values[field]) && liveFields.some((field) => !values[field]))
+      context.addIssue({
+        code: 'custom',
+        path: ['FLUTTERWAVE_LIVE_SECRET_KEY'],
+        message: 'All live gateway settings must be supplied together',
+      });
+    if (
+      values.BILLING_LIVE_ENABLED === '1' &&
+      (values.NODE_ENV !== 'production' || liveFields.some((field) => !values[field]))
+    )
+      context.addIssue({
+        code: 'custom',
+        path: ['BILLING_LIVE_ENABLED'],
+        message: 'Live billing requires production mode and all live credentials',
+      });
     if (values.NODE_ENV !== 'production') return;
     if (!values.WEB_ORIGIN.startsWith('https://'))
       context.addIssue({ code: 'custom', path: ['WEB_ORIGIN'], message: 'HTTPS is required' });

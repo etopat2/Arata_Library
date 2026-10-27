@@ -1,5 +1,15 @@
 # Implementation decisions
 
+## Billing decisions — 2026-10-27
+
+| ID | Status | Sources and issue | Resolution |
+|---|---|---|---|
+| ADR-PAY-001 | Implemented; business approval open | SRS `FR-PAY-001/002/010/012`, `BR-007`; the platform policy defaults have null prices, disabled paid plans/trials and `automaticRenewalEnabled=false`. The SRS permits manual renewal when recurring debit capability is unconfirmed. | Keep all paid offers unavailable until a finance-approved policy version enables a period and price. Implement manual renewal only, with UTC calendar-month periods, configurable grace/reminders and paid-through cancellation. Do not imply provider recurring debit, invent prices or apply unapproved proration. |
+| ADR-PAY-002 | Implemented for Flutterwave v3; sandbox evidence open | SRS `FR-PAY-005/006/007`, `BR-008` requires exact provider signature and server verification. The prior design-stage `api/openapi.v1.yaml` used a generic `X-Provider-Signature` and raw octet-stream request, while the selected Flutterwave v3 webhook uses `verif-hash` with JSON data. | Scope the gateway adapter and runtime OpenAPI overlay to v3 `verif-hash`, authenticate before reading the reference, then call verify-by-reference server to server. Match merchant account, amount, UGX currency, reference and transaction ID before committing paid state. A signed callback or browser redirect alone cannot activate access; database constraints guard direct writes. Other gateways require separate adapters. |
+| ADR-PAY-003 | Implemented; tax approval open | SRS `FR-PAY-009/013/014/015/018`, `BR-008`; refunds and reversals must preserve an auditable original payment, while final Ugandan tax and dispute terms have not been approved. | Keep integer UGX amounts and immutable paid invoices; report gross and settled refunds separately using decimal-string aggregates. Export a clearly labelled CSV statement without statutory tax claims. Require recent finance MFA, distinct refund/dispute reviewer and original provider verification; issue a refund at most once where provider retry idempotency is unproven. A full settled refund or reversal revokes only that order's paid entitlement; independent free/grant access remains additive. |
+| ADR-PAY-004 | Implemented gate; provider validation open | SRS `FR-PAY-004/017`; the user has no Flutterwave test credentials and live payment would be production-impacting. | Development uses only test credentials when present, otherwise checkout fails closed. Production requires an explicit `BILLING_LIVE_ENABLED=1` and a separate live credential set; automated tests use a fake gateway and never charge. Actual provider response/webhook/refund shapes and enabled Uganda methods must be validated in sandbox before enabling paid offers. |
+
+
 ## Platform policy decisions — 2026-10-26
 
 | ID | Status | Sources and issue | Decision and consequence |
