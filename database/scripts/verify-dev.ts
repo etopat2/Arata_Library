@@ -54,6 +54,7 @@ try {
     app_can_research: boolean;
     app_can_lease: boolean;
     app_can_preferences: boolean;
+    app_can_prune_decisions: boolean;
     report_can_link: boolean;
     identity_can_link: boolean;
   }>(`
@@ -66,6 +67,8 @@ try {
        AND has_table_privilege('arata_app_dev', 'app."ReaderPreference"', 'INSERT')
        AND has_table_privilege('arata_app_dev', 'app."ReaderPreference"', 'UPDATE')
        AND NOT has_table_privilege('arata_app_dev', 'app."ReaderPreference"', 'DELETE')) AS app_can_preferences,
+      (has_table_privilege('arata_app_dev', 'app."AccessDecisionLog"', 'INSERT')
+       AND has_table_privilege('arata_app_dev', 'app."AccessDecisionLog"', 'DELETE')) AS app_can_prune_decisions,
       has_schema_privilege('arata_research_report_dev', 'research_private', 'USAGE') AS report_can_link,
       has_table_privilege('arata_research_identity_dev', 'research_private."PseudonymLink"', 'SELECT') AS identity_can_link`);
   const snapshotView = await client.query<{ present: boolean }>(
@@ -117,17 +120,18 @@ try {
   };
   if (
     !row ||
-    row.tables !== 92 ||
+    row.tables !== 96 ||
     row.enums !== 29 ||
-    row.foreign_keys < 167 ||
-    row.checks < 91 ||
-    row.triggers < 47 ||
-    migrations.rows.length !== 28 ||
+    row.foreign_keys < 180 ||
+    row.checks < 103 ||
+    row.triggers < 54 ||
+    migrations.rows.length !== 31 ||
     migrations.rows.some((m) => !m.complete) ||
     !perms ||
     perms.app_can_research ||
     !perms.app_can_lease ||
     !perms.app_can_preferences ||
+    !perms.app_can_prune_decisions ||
     perms.report_can_link ||
     !perms.identity_can_link ||
     !snapshotView.rows[0]?.present ||

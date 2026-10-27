@@ -1,5 +1,22 @@
 # Validation results
 
+## Unified access entitlements — 2026-10-27
+
+Requirements: `FR-ENT-001`–`006`, `009/015`, partial `FR-PAY-011`, `FR-INS-005`–`011`, `BR-001`–`006`; free promotion is a subfeature of still-open paid gift `FR-ENT-017`. Wireframe screens: `entitlements`, `access-grants`, `trial-admin`, `eligibility`, `eligibility-status`, `institution-roster`, `institution-policies`; supplemental `institution-access` awaits design review. Paths: `apps/api/src/entitlements/`, `packages/access-policy/src/entitlements.ts`, `apps/web-pwa/src/EntitlementScreens.tsx`, `prisma/migrations/202610270006_unified_entitlements/`–`202610270008_paid_entitlement_recovery/`, `api/entitlement_runtime.py`, `database/tests/entitlements.test.ts`, `tests/unit/entitlements.test.ts`, `tests/integration/entitlements-http.test.ts`, `tests/e2e/entitlements.spec.ts`.
+
+| Check | Result | Evidence and limit |
+|---|---|---|
+| `npm run db:format`, `db:validate`, `db:generate` | Pass | Strict Prisma schema formatted, validated and client generated. |
+| `npm run db:migrate:test`, `db:migrate:deploy`, `db:migrate:status`, `db:verify`, Prisma migrate diff | Pass | Three additive forward migrations applied to isolated test then development without reset. 31 complete migrations; UTC PostgreSQL 18.4; 96 tables, 180 FKs, 103 checks, 54 triggers, 29 enums; zero Prisma drift; app role has no research schema access. |
+| `npm run db:test` | 16/16 pass | Referential integrity, scope, independent grant/campaign approval, source validity, paid guards, immutable manual history and retention-related constraints. |
+| Focused unit and HTTP checks | Pass | Resolver 4/4; billing plus entitlement integration 19/19; isolated entitlement HTTP 8/8 after retention scenario. Checks CSRF, RBAC, MFA, self-approval denial, overlap, revocation, bulk approval, one-use free code and pruning. |
+| Full `vitest run --config vitest.config.ts --silent` | 92/92 pass | Includes prior reader, billing, identity, policy and Studio regression checks. |
+| `npm run api:build`, `api:validate`, `api:types`, `api:test` | Pass | 215 OpenAPI operations, 438 schemas and 215 machine-testable policies validated; 9 contract tests passed. Generated TypeScript API types. |
+| `npm run lint`, `typecheck:foundation`, `build:foundation` | Pass | ESLint/Prettier, strict API/PWA/worker types, installable PWA production build. |
+| `playwright test tests/e2e/entitlements.spec.ts` | 1/1 pass | Real admin recipient search, own-access screen, 390px layout and axe accessibility. An initial contrast failure was corrected before the passing rerun. |
+
+The first full regression run found that manual-grant immutability also blocked billing-owned PAID dispute restoration and expiry fixture adjustments. Corrective migration `202610270008_paid_entitlement_recovery` restored those verified billing transitions; focused billing/entitlement tests and the full 92-test suite then passed. Provider sandbox conformance, full institutional enrollment, paid gift purchase/refund, concurrency/load and production release reviews remain open in GAP-033–038. No real payment was attempted.
+
 ## Subscriptions and billing — 2026-10-27
 
 Requirements: partial `FR-PAY-001`–`010`, `012`–`018`, `BR-007/008`, `FR-ENT-001/004`, `SEC-011`; `FR-PAY-011` trial issuance remains open. Screens: `pricing`, `checkout`, `payment-result`, `my-subscription`, `invoices`, `plans-admin`, `finance-dashboard`, `transactions`, `refunds`; supplemental `disputes` awaits design review. Paths are listed in `PROGRESS.md`.

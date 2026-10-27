@@ -3984,59 +3984,24 @@ paths:
     get:
       operationId: get_me_entitlements
       tags:
-      - me
-      summary: List entitlement records
-      description: 'List entitlement records. Server resolves the current subject, resource scope and policy before returning
-        data; only the fields in the Entitlement response schema are exposed. Authentication: session; ownership: subject_user;
-        institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through
-        a more permissive list, filter or export.'
+      - entitlements
+      summary: List all own access sources and their current states.
+      description: List all own access sources and their current states. Server checks active policy, scope, ownership and
+        current source state at request time.
       security:
       - cookieAuth: []
-      parameters:
-      - name: cursor
-        in: query
-        required: false
-        description: Opaque cursor from the preceding page; do not construct it.
-        schema: *id001
-      - name: limit
-        in: query
-        required: false
-        description: Maximum page size.
-        schema:
-          type: integer
-          minimum: 1
-          maximum: 100
-          default: 20
-      - name: sort
-        in: query
-        required: false
-        description: Allowlisted sort key; prefix - requests descending order.
-        schema:
-          type: string
-          minLength: 1
-          maxLength: 500
-          enum:
-          - id
-          - -id
-      - name: status
-        in: query
-        required: false
-        description: Filter by a domain-valid record status.
-        schema: *id002
+      parameters: []
       responses:
         '200':
-          description: Entitlement result; only authorized data is returned.
+          description: List all own access sources and their current states.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/get_me_entitlementsResponse'
               example:
                 data: []
-                page:
-                  limit: 1
-                  hasMore: true
                 requestId: sample
-        '400':
+        '400': &id014
           description: Invalid request
           content:
             application/problem+json:
@@ -4048,7 +4013,7 @@ paths:
                 status: 400
                 code: REQUEST_ERROR
                 requestId: sample
-        '401':
+        '401': &id015
           description: Authentication required
           content:
             application/problem+json:
@@ -4060,7 +4025,7 @@ paths:
                 status: 401
                 code: REQUEST_ERROR
                 requestId: sample
-        '403':
+        '403': &id016
           description: Access denied
           content:
             application/problem+json:
@@ -4072,7 +4037,7 @@ paths:
                 status: 403
                 code: REQUEST_ERROR
                 requestId: sample
-        '404':
+        '404': &id017
           description: Not found
           content:
             application/problem+json:
@@ -4084,7 +4049,7 @@ paths:
                 status: 404
                 code: REQUEST_ERROR
                 requestId: sample
-        '409':
+        '409': &id018
           description: State conflict
           content:
             application/problem+json:
@@ -4096,7 +4061,7 @@ paths:
                 status: 409
                 code: REQUEST_ERROR
                 requestId: sample
-        '412':
+        '412': &id019
           description: Precondition failed
           content:
             application/problem+json:
@@ -4108,7 +4073,7 @@ paths:
                 status: 412
                 code: REQUEST_ERROR
                 requestId: sample
-        '422':
+        '422': &id020
           description: Business rule violation
           content:
             application/problem+json:
@@ -4120,7 +4085,7 @@ paths:
                 status: 422
                 code: REQUEST_ERROR
                 requestId: sample
-        '429':
+        '429': &id021
           description: Rate limit exceeded
           content:
             application/problem+json:
@@ -4132,7 +4097,7 @@ paths:
                 status: 429
                 code: REQUEST_ERROR
                 requestId: sample
-        '500':
+        '500': &id022
           description: Unexpected server error
           content:
             application/problem+json:
@@ -4145,61 +4110,61 @@ paths:
                 code: REQUEST_ERROR
                 requestId: sample
       x-requirement-ids:
+      - BR-004
+      - FR-ENT-001
+      - FR-ENT-002
+      - FR-ENT-003
+      - FR-ENT-004
+      - FR-IAM-007
+      - FR-INS-011
       - INT-001
       - INT-002
       - INT-003
+      - INT-004
       - INT-005
       - INT-009
       - SEC-001
-      - INT-004
+      x-implemented-requirement-ids:
       - FR-ENT-001
       - FR-ENT-002
       - FR-ENT-004
-      - FR-INS-011
-      - BR-004
-      - FR-IAM-007
-      - FR-ENT-003
       x-policy-id: get_me_entitlements
       x-authorized-roles: []
+      x-required-permission: authenticated-account
       x-entitlement-condition: none
       x-rate-limit:
-        bucket: read
-        limit: 60
-        windowSeconds: 60
-        key: subject-or-source-ip
+        bucket: none
+        limit: 0
+        windowSeconds: null
+        policySetting: none
+        key: none
       x-idempotency:
         required: false
-        scope: actor+operation+key
-        retention: configured per domain
-      x-audit-event: api.get_me_entitlements
-      x-audit-fields:
-      - actorId
-      - operationId
-      - resourceType
-      - resourceId
-      - outcome
-      - requestId
-      - occurredAt
+        scope: single-use trial, claim or locked state transition
+      x-audit-event: none
+      x-audit-fields: []
       x-acceptance-tests:
+      - T-BR-004
+      - T-FR-ENT-001
+      - T-FR-ENT-002
+      - T-FR-ENT-003
+      - T-FR-ENT-004
+      - T-FR-IAM-007
+      - T-FR-INS-011
       - T-INT-001
       - T-INT-002
       - T-INT-003
+      - T-INT-004
       - T-INT-005
       - T-INT-009
       - T-SEC-001
-      - T-INT-004
-      - T-FR-ENT-001
-      - T-FR-ENT-002
-      - T-FR-ENT-004
-      - T-FR-INS-011
-      - T-BR-004
-      - T-FR-IAM-007
-      - T-FR-ENT-003
       x-acceptance-scenarios:
-      - valid DTO and authorized state returns the declared success schema
-      - unknown fields or malformed values return a problem response
-      - missing required security or policy evidence is denied without data disclosure
+      - authorized request returns declared DTO
+      - invalid scope or state is denied
+      - independent approval and current source evidence are enforced where applicable
       x-csrf-protection: false
+      x-mfa-evidence: none
+      x-no-request-body: false
   /api/v1/me/bookmarks:
     get:
       operationId: get_me_bookmarks
@@ -14085,175 +14050,46 @@ paths:
     get:
       operationId: get_admin_entitlements
       tags:
-      - admin
-      summary: List entitlement records
-      description: 'List entitlement records. Server resolves the current subject, resource scope and policy before returning
-        data; only the fields in the Entitlement response schema are exposed. Authentication: session; ownership: grant_scope;
-        institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through
-        a more permissive list, filter or export. Resolve inherited action policy and independent additive grants at UTC decision
-        time; changes require scope checks and audit evidence.'
+      - entitlements
+      summary: List scoped grants and approval state.
+      description: List scoped grants and approval state. Server checks active policy, scope, ownership and current source
+        state at request time.
       security:
       - cookieAuth: []
       parameters:
-      - name: cursor
+      - name: userId
         in: query
         required: false
-        description: Opaque cursor from the preceding page; do not construct it.
-        schema: *id001
+        schema: *id013
       - name: limit
         in: query
         required: false
-        description: Maximum page size.
         schema:
           type: integer
           minimum: 1
-          maximum: 100
-          default: 20
-      - name: sort
-        in: query
-        required: false
-        description: Allowlisted sort key; prefix - requests descending order.
-        schema:
-          type: string
-          minLength: 1
-          maxLength: 500
-          enum:
-          - id
-          - -id
-      - name: status
-        in: query
-        required: false
-        description: Filter by a domain-valid record status.
-        schema: *id002
+          maximum: 200
+          default: 100
       responses:
         '200':
-          description: Entitlement result; only authorized data is returned.
+          description: List scoped grants and approval state.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/get_admin_entitlementsResponse'
               example:
                 data: []
-                page:
-                  limit: 1
-                  hasMore: true
                 requestId: sample
-        '400':
-          description: Invalid request
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/400
-                title: Invalid request
-                status: 400
-                code: REQUEST_ERROR
-                requestId: sample
-        '401':
-          description: Authentication required
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/401
-                title: Authentication required
-                status: 401
-                code: REQUEST_ERROR
-                requestId: sample
-        '403':
-          description: Access denied
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/403
-                title: Access denied
-                status: 403
-                code: REQUEST_ERROR
-                requestId: sample
-        '404':
-          description: Not found
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/404
-                title: Not found
-                status: 404
-                code: REQUEST_ERROR
-                requestId: sample
-        '409':
-          description: State conflict
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/409
-                title: State conflict
-                status: 409
-                code: REQUEST_ERROR
-                requestId: sample
-        '412':
-          description: Precondition failed
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/412
-                title: Precondition failed
-                status: 412
-                code: REQUEST_ERROR
-                requestId: sample
-        '422':
-          description: Business rule violation
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/422
-                title: Business rule violation
-                status: 422
-                code: REQUEST_ERROR
-                requestId: sample
-        '429':
-          description: Rate limit exceeded
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/429
-                title: Rate limit exceeded
-                status: 429
-                code: REQUEST_ERROR
-                requestId: sample
-        '500':
-          description: Unexpected server error
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/500
-                title: Unexpected server error
-                status: 500
-                code: REQUEST_ERROR
-                requestId: sample
+        '400': *id014
+        '401': *id015
+        '403': *id016
+        '404': *id017
+        '409': *id018
+        '412': *id019
+        '422': *id020
+        '429': *id021
+        '500': *id022
       x-requirement-ids:
-      - INT-001
-      - INT-002
-      - INT-003
-      - INT-005
-      - INT-009
-      - SEC-001
-      - INT-004
+      - BR-004
       - FR-ENT-001
       - FR-ENT-002
       - FR-ENT-003
@@ -14261,38 +14097,35 @@ paths:
       - FR-ENT-005
       - FR-ENT-006
       - FR-ENT-015
-      - BR-004
       - FR-OPS-003
+      - INT-001
+      - INT-002
+      - INT-003
+      - INT-004
+      - INT-005
+      - INT-009
+      - SEC-001
+      x-implemented-requirement-ids:
+      - FR-ENT-003
+      - FR-ENT-006
       x-policy-id: get_admin_entitlements
       x-authorized-roles:
-      - platform_admin
+      - SYSTEM_ADMIN
+      x-required-permission: ENTITLEMENT_READ
       x-entitlement-condition: none
       x-rate-limit:
-        bucket: read
-        limit: 60
-        windowSeconds: 60
-        key: subject-or-source-ip
+        bucket: none
+        limit: 0
+        windowSeconds: null
+        policySetting: none
+        key: none
       x-idempotency:
         required: false
-        scope: actor+operation+key
-        retention: configured per domain
-      x-audit-event: api.get_admin_entitlements
-      x-audit-fields:
-      - actorId
-      - operationId
-      - resourceType
-      - resourceId
-      - outcome
-      - requestId
-      - occurredAt
+        scope: single-use trial, claim or locked state transition
+      x-audit-event: none
+      x-audit-fields: []
       x-acceptance-tests:
-      - T-INT-001
-      - T-INT-002
-      - T-INT-003
-      - T-INT-005
-      - T-INT-009
-      - T-SEC-001
-      - T-INT-004
+      - T-BR-004
       - T-FR-ENT-001
       - T-FR-ENT-002
       - T-FR-ENT-003
@@ -14300,184 +14133,74 @@ paths:
       - T-FR-ENT-005
       - T-FR-ENT-006
       - T-FR-ENT-015
-      - T-BR-004
       - T-FR-OPS-003
+      - T-INT-001
+      - T-INT-002
+      - T-INT-003
+      - T-INT-004
+      - T-INT-005
+      - T-INT-009
+      - T-SEC-001
       x-acceptance-scenarios:
-      - valid DTO and authorized state returns the declared success schema
-      - unknown fields or malformed values return a problem response
-      - missing required security or policy evidence is denied without data disclosure
+      - authorized request returns declared DTO
+      - invalid scope or state is denied
+      - independent approval and current source evidence are enforced where applicable
       x-csrf-protection: false
+      x-mfa-evidence: verified-session
+      x-no-request-body: false
     post:
       operationId: post_admin_entitlements
       tags:
-      - admin
-      summary: Create entitlement record
-      description: 'Create entitlement record. Server resolves the current subject, resource scope and policy before returning
-        data; only the fields in the Entitlement response schema are exposed. Authentication: session; ownership: grant_scope;
-        institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through
-        a more permissive list, filter or export. Resolve inherited action policy and independent additive grants at UTC decision
-        time; changes require scope checks and audit evidence.'
+      - entitlements
+      summary: Request a scoped access grant for independent review.
+      description: Request a scoped access grant for independent review. Server checks active policy, scope, ownership and
+        current source state at request time.
       security:
       - cookieAuth: []
       parameters:
-      - name: Idempotency-Key
-        in: header
-        required: true
-        description: Opaque 8–128 character key. Same actor, operation, key and body returns the original result; changed
-          body is 409.
+      - name: userId
+        in: query
+        required: false
+        schema: *id013
+      - name: limit
+        in: query
+        required: false
         schema:
-          type: string
-          minLength: 8
-          maxLength: 128
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 100
       - name: X-CSRF-Token
         in: header
         required: true
-        description: Bound to the authenticated cookie session.
         schema:
           type: string
           minLength: 16
-          maxLength: 256
-      - name: X-Step-Up-Token
-        in: header
-        required: true
-        description: Recent MFA proof bound to this action and actor.
-        schema:
-          type: string
-          minLength: 16
-          maxLength: 512
       responses:
-        '201':
-          description: Entitlement result; only authorized data is returned.
+        '200':
+          description: Request a scoped access grant for independent review.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/post_admin_entitlementsResponse'
               example:
                 data:
-                  id: sample
-                  source: sample
-                  scopeType: publication
-                  scopeId: sample
-                  startsAt: '2026-10-22T00:00:00Z'
-                  expiresAt: '2026-10-22T00:00:00Z'
-                  status: sample
+                  id: 00000000-0000-4000-8000-000000000001
+                  status: PENDING
+                  startsAt: '2026-10-27T00:00:00Z'
+                  endsAt: null
                 requestId: sample
-        '400':
-          description: Invalid request
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/400
-                title: Invalid request
-                status: 400
-                code: REQUEST_ERROR
-                requestId: sample
-        '401':
-          description: Authentication required
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/401
-                title: Authentication required
-                status: 401
-                code: REQUEST_ERROR
-                requestId: sample
-        '403':
-          description: Access denied
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/403
-                title: Access denied
-                status: 403
-                code: REQUEST_ERROR
-                requestId: sample
-        '404':
-          description: Not found
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/404
-                title: Not found
-                status: 404
-                code: REQUEST_ERROR
-                requestId: sample
-        '409':
-          description: State conflict
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/409
-                title: State conflict
-                status: 409
-                code: REQUEST_ERROR
-                requestId: sample
-        '412':
-          description: Precondition failed
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/412
-                title: Precondition failed
-                status: 412
-                code: REQUEST_ERROR
-                requestId: sample
-        '422':
-          description: Business rule violation
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/422
-                title: Business rule violation
-                status: 422
-                code: REQUEST_ERROR
-                requestId: sample
-        '429':
-          description: Rate limit exceeded
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/429
-                title: Rate limit exceeded
-                status: 429
-                code: REQUEST_ERROR
-                requestId: sample
-        '500':
-          description: Unexpected server error
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/500
-                title: Unexpected server error
-                status: 500
-                code: REQUEST_ERROR
-                requestId: sample
+        '400': *id014
+        '401': *id015
+        '403': *id016
+        '404': *id017
+        '409': *id018
+        '412': *id019
+        '422': *id020
+        '429': *id021
+        '500': *id022
       x-requirement-ids:
-      - INT-001
-      - INT-002
-      - INT-003
-      - INT-005
-      - INT-009
-      - SEC-001
-      - INT-004
+      - BR-004
       - FR-ENT-001
       - FR-ENT-002
       - FR-ENT-003
@@ -14485,41 +14208,40 @@ paths:
       - FR-ENT-005
       - FR-ENT-006
       - FR-ENT-015
-      - BR-004
       - FR-OPS-003
+      - INT-001
+      - INT-002
+      - INT-003
+      - INT-004
+      - INT-005
+      - INT-009
+      - SEC-001
+      x-implemented-requirement-ids:
+      - FR-ENT-003
+      - FR-ENT-005
+      - FR-ENT-006
       x-policy-id: post_admin_entitlements
       x-authorized-roles:
-      - platform_admin
+      - SYSTEM_ADMIN
+      x-required-permission: ENTITLEMENT_GRANT
       x-entitlement-condition: none
       x-rate-limit:
-        bucket: write
-        limit: 30
-        windowSeconds: 60
-        key: subject-or-source-ip
+        bucket: identity-auth:permission
+        limit: 8
+        windowSeconds: null
+        policySetting: security.loginWindowMinutes
+        key: hashed-admin-account
       x-idempotency:
-        required: true
-        scope: actor+operation+key
-        retention: configured per domain
-      x-audit-event: api.post_admin_entitlements
+        required: false
+        scope: single-use trial, claim or locked state transition
+      x-audit-event: entitlement.post_admin_entitlements
       x-audit-fields:
       - actorId
-      - operationId
-      - resourceType
       - resourceId
-      - outcome
       - requestId
       - occurredAt
-      - reason
-      - stepUpEvidenceId
-      - approvalReference
       x-acceptance-tests:
-      - T-INT-001
-      - T-INT-002
-      - T-INT-003
-      - T-INT-005
-      - T-INT-009
-      - T-SEC-001
-      - T-INT-004
+      - T-BR-004
       - T-FR-ENT-001
       - T-FR-ENT-002
       - T-FR-ENT-003
@@ -14527,446 +14249,191 @@ paths:
       - T-FR-ENT-005
       - T-FR-ENT-006
       - T-FR-ENT-015
-      - T-BR-004
       - T-FR-OPS-003
+      - T-INT-001
+      - T-INT-002
+      - T-INT-003
+      - T-INT-004
+      - T-INT-005
+      - T-INT-009
+      - T-SEC-001
       x-acceptance-scenarios:
-      - valid DTO and authorized state returns the declared success schema
-      - unknown fields or malformed values return a problem response
-      - missing required security or policy evidence is denied without data disclosure
-      - independent approver and recent MFA are required
+      - authorized request returns declared DTO
+      - invalid scope or state is denied
+      - independent approval and current source evidence are enforced where applicable
       x-csrf-protection: true
+      x-mfa-evidence: verified-session
+      x-no-request-body: false
       requestBody:
         required: true
-        description: Validated GrantCreateInput DTO. Unknown fields are rejected.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GrantCreateInput'
+              $ref: '#/components/schemas/EntitlementGrantInput'
             example:
-              recipientUserId: sample
-              scopeType: publication
-              scopeId: sample
-              startsAt: '2026-10-22T00:00:00Z'
-              expiresAt: '2026-10-22T00:00:00Z'
-              source: complimentary
-              reason: sample
+              userId: 00000000-0000-4000-8000-000000000001
+              reason: Review required
+              scope: LIBRARY
   /api/v1/admin/entitlements/{id}/revoke:
     post:
       operationId: post_admin_entitlements_id_revoke
       tags:
-      - admin
-      summary: Revoke an access grant
-      description: 'Revoke an access grant. Server resolves the current subject, resource scope and policy before returning
-        data; only the fields in the Entitlement response schema are exposed. Authentication: session; ownership: grant_scope;
-        institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through
-        a more permissive list, filter or export. Resolve inherited action policy and independent additive grants at UTC decision
-        time; changes require scope checks and audit evidence.'
+      - entitlements
+      summary: Revoke one manually issued grant.
+      description: Revoke one manually issued grant. Server checks active policy, scope, ownership and current source state
+        at request time.
       security:
       - cookieAuth: []
       parameters:
       - name: id
         in: path
         required: true
-        description: Stable id identifier.
-        schema: *id003
-      - name: Idempotency-Key
-        in: header
-        required: true
-        description: Opaque 8–128 character key. Same actor, operation, key and body returns the original result; changed
-          body is 409.
-        schema:
-          type: string
-          minLength: 8
-          maxLength: 128
+        schema: *id013
       - name: X-CSRF-Token
         in: header
         required: true
-        description: Bound to the authenticated cookie session.
         schema:
           type: string
           minLength: 16
-          maxLength: 256
-      - name: X-Step-Up-Token
-        in: header
-        required: true
-        description: Recent MFA proof bound to this action and actor.
-        schema:
-          type: string
-          minLength: 16
-          maxLength: 512
       responses:
         '200':
-          description: Entitlement result; only authorized data is returned.
+          description: Revoke one manually issued grant.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/post_admin_entitlements_id_revokeResponse'
               example:
                 data:
-                  id: sample
-                  source: sample
-                  scopeType: publication
-                  scopeId: sample
-                  startsAt: '2026-10-22T00:00:00Z'
-                  expiresAt: '2026-10-22T00:00:00Z'
-                  status: sample
+                  id: 00000000-0000-4000-8000-000000000001
+                  status: PENDING
                 requestId: sample
-        '400':
-          description: Invalid request
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/400
-                title: Invalid request
-                status: 400
-                code: REQUEST_ERROR
-                requestId: sample
-        '401':
-          description: Authentication required
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/401
-                title: Authentication required
-                status: 401
-                code: REQUEST_ERROR
-                requestId: sample
-        '403':
-          description: Access denied
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/403
-                title: Access denied
-                status: 403
-                code: REQUEST_ERROR
-                requestId: sample
-        '404':
-          description: Not found
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/404
-                title: Not found
-                status: 404
-                code: REQUEST_ERROR
-                requestId: sample
-        '409':
-          description: State conflict
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/409
-                title: State conflict
-                status: 409
-                code: REQUEST_ERROR
-                requestId: sample
-        '412':
-          description: Precondition failed
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/412
-                title: Precondition failed
-                status: 412
-                code: REQUEST_ERROR
-                requestId: sample
-        '422':
-          description: Business rule violation
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/422
-                title: Business rule violation
-                status: 422
-                code: REQUEST_ERROR
-                requestId: sample
-        '429':
-          description: Rate limit exceeded
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/429
-                title: Rate limit exceeded
-                status: 429
-                code: REQUEST_ERROR
-                requestId: sample
-        '500':
-          description: Unexpected server error
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/500
-                title: Unexpected server error
-                status: 500
-                code: REQUEST_ERROR
-                requestId: sample
+        '400': *id014
+        '401': *id015
+        '403': *id016
+        '404': *id017
+        '409': *id018
+        '412': *id019
+        '422': *id020
+        '429': *id021
+        '500': *id022
       x-requirement-ids:
-      - INT-001
-      - INT-002
-      - INT-003
-      - INT-005
-      - INT-009
-      - SEC-001
+      - BR-004
       - FR-ENT-001
       - FR-ENT-002
       - FR-ENT-003
       - FR-ENT-004
       - FR-ENT-005
       - FR-ENT-006
+      - FR-ENT-009
       - FR-ENT-015
-      - BR-004
       - FR-OPS-003
+      - INT-001
+      - INT-002
+      - INT-003
+      - INT-005
+      - INT-009
+      - SEC-001
+      x-implemented-requirement-ids:
+      - FR-ENT-006
+      - FR-ENT-009
       x-policy-id: post_admin_entitlements_id_revoke
       x-authorized-roles:
-      - platform_admin
+      - SYSTEM_ADMIN
+      x-required-permission: ENTITLEMENT_REVOKE
       x-entitlement-condition: none
       x-rate-limit:
-        bucket: write
-        limit: 30
-        windowSeconds: 60
-        key: subject-or-source-ip
+        bucket: identity-auth:permission
+        limit: 8
+        windowSeconds: null
+        policySetting: security.loginWindowMinutes
+        key: hashed-admin-account
       x-idempotency:
-        required: true
-        scope: actor+operation+key
-        retention: configured per domain
-      x-audit-event: api.post_admin_entitlements_id_revoke
+        required: false
+        scope: single-use trial, claim or locked state transition
+      x-audit-event: entitlement.post_admin_entitlements_id_revoke
       x-audit-fields:
       - actorId
-      - operationId
-      - resourceType
       - resourceId
-      - outcome
       - requestId
       - occurredAt
-      - reason
-      - stepUpEvidenceId
-      - approvalReference
       x-acceptance-tests:
-      - T-INT-001
-      - T-INT-002
-      - T-INT-003
-      - T-INT-005
-      - T-INT-009
-      - T-SEC-001
+      - T-BR-004
       - T-FR-ENT-001
       - T-FR-ENT-002
       - T-FR-ENT-003
       - T-FR-ENT-004
       - T-FR-ENT-005
       - T-FR-ENT-006
+      - T-FR-ENT-009
       - T-FR-ENT-015
-      - T-BR-004
       - T-FR-OPS-003
+      - T-INT-001
+      - T-INT-002
+      - T-INT-003
+      - T-INT-005
+      - T-INT-009
+      - T-SEC-001
       x-acceptance-scenarios:
-      - valid DTO and authorized state returns the declared success schema
-      - unknown fields or malformed values return a problem response
-      - missing required security or policy evidence is denied without data disclosure
-      - independent approver and recent MFA are required
+      - authorized request returns declared DTO
+      - invalid scope or state is denied
+      - independent approval and current source evidence are enforced where applicable
       x-csrf-protection: true
+      x-mfa-evidence: verified-session
+      x-no-request-body: false
       requestBody:
         required: true
-        description: Validated ReasonInput DTO. Unknown fields are rejected.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReasonInput'
+              $ref: '#/components/schemas/EntitlementReasonInput'
             example:
-              reason: sample
+              reason: Review required
   /api/v1/admin/entitlements/{id}/extend:
     post:
       operationId: post_admin_entitlements_id_extend
       tags:
-      - admin
-      summary: Extend an access grant
-      description: 'Extend an access grant. Server resolves the current subject, resource scope and policy before returning
-        data; only the fields in the Entitlement response schema are exposed. Authentication: session; ownership: grant_scope;
-        institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through
-        a more permissive list, filter or export. Resolve inherited action policy and independent additive grants at UTC decision
-        time; changes require scope checks and audit evidence.'
+      - entitlements
+      summary: Request a new grant extending an existing fixed term.
+      description: Request a new grant extending an existing fixed term. Server checks active policy, scope, ownership and
+        current source state at request time.
       security:
       - cookieAuth: []
       parameters:
       - name: id
         in: path
         required: true
-        description: Stable id identifier.
-        schema: *id003
-      - name: Idempotency-Key
-        in: header
-        required: true
-        description: Opaque 8–128 character key. Same actor, operation, key and body returns the original result; changed
-          body is 409.
-        schema:
-          type: string
-          minLength: 8
-          maxLength: 128
+        schema: *id013
       - name: X-CSRF-Token
         in: header
         required: true
-        description: Bound to the authenticated cookie session.
         schema:
           type: string
           minLength: 16
-          maxLength: 256
-      - name: X-Step-Up-Token
-        in: header
-        required: true
-        description: Recent MFA proof bound to this action and actor.
-        schema:
-          type: string
-          minLength: 16
-          maxLength: 512
       responses:
         '200':
-          description: Entitlement result; only authorized data is returned.
+          description: Request a new grant extending an existing fixed term.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/post_admin_entitlements_id_extendResponse'
               example:
                 data:
-                  id: sample
-                  source: sample
-                  scopeType: publication
-                  scopeId: sample
-                  startsAt: '2026-10-22T00:00:00Z'
-                  expiresAt: '2026-10-22T00:00:00Z'
-                  status: sample
+                  id: 00000000-0000-4000-8000-000000000001
+                  status: PENDING
+                  startsAt: '2026-10-27T00:00:00Z'
+                  endsAt: null
                 requestId: sample
-        '400':
-          description: Invalid request
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/400
-                title: Invalid request
-                status: 400
-                code: REQUEST_ERROR
-                requestId: sample
-        '401':
-          description: Authentication required
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/401
-                title: Authentication required
-                status: 401
-                code: REQUEST_ERROR
-                requestId: sample
-        '403':
-          description: Access denied
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/403
-                title: Access denied
-                status: 403
-                code: REQUEST_ERROR
-                requestId: sample
-        '404':
-          description: Not found
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/404
-                title: Not found
-                status: 404
-                code: REQUEST_ERROR
-                requestId: sample
-        '409':
-          description: State conflict
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/409
-                title: State conflict
-                status: 409
-                code: REQUEST_ERROR
-                requestId: sample
-        '412':
-          description: Precondition failed
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/412
-                title: Precondition failed
-                status: 412
-                code: REQUEST_ERROR
-                requestId: sample
-        '422':
-          description: Business rule violation
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/422
-                title: Business rule violation
-                status: 422
-                code: REQUEST_ERROR
-                requestId: sample
-        '429':
-          description: Rate limit exceeded
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/429
-                title: Rate limit exceeded
-                status: 429
-                code: REQUEST_ERROR
-                requestId: sample
-        '500':
-          description: Unexpected server error
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/500
-                title: Unexpected server error
-                status: 500
-                code: REQUEST_ERROR
-                requestId: sample
+        '400': *id014
+        '401': *id015
+        '403': *id016
+        '404': *id017
+        '409': *id018
+        '412': *id019
+        '422': *id020
+        '429': *id021
+        '500': *id022
       x-requirement-ids:
-      - INT-001
-      - INT-002
-      - INT-003
-      - INT-005
-      - INT-009
-      - SEC-001
+      - BR-004
       - FR-ENT-001
       - FR-ENT-002
       - FR-ENT-003
@@ -14974,40 +14441,38 @@ paths:
       - FR-ENT-005
       - FR-ENT-006
       - FR-ENT-015
-      - BR-004
       - FR-OPS-003
+      - INT-001
+      - INT-002
+      - INT-003
+      - INT-005
+      - INT-009
+      - SEC-001
+      x-implemented-requirement-ids:
+      - FR-ENT-005
+      - FR-ENT-006
       x-policy-id: post_admin_entitlements_id_extend
       x-authorized-roles:
-      - platform_admin
+      - SYSTEM_ADMIN
+      x-required-permission: ENTITLEMENT_GRANT
       x-entitlement-condition: none
       x-rate-limit:
-        bucket: write
-        limit: 30
-        windowSeconds: 60
-        key: subject-or-source-ip
+        bucket: identity-auth:permission
+        limit: 8
+        windowSeconds: null
+        policySetting: security.loginWindowMinutes
+        key: hashed-admin-account
       x-idempotency:
-        required: true
-        scope: actor+operation+key
-        retention: configured per domain
-      x-audit-event: api.post_admin_entitlements_id_extend
+        required: false
+        scope: single-use trial, claim or locked state transition
+      x-audit-event: entitlement.post_admin_entitlements_id_extend
       x-audit-fields:
       - actorId
-      - operationId
-      - resourceType
       - resourceId
-      - outcome
       - requestId
       - occurredAt
-      - reason
-      - stepUpEvidenceId
-      - approvalReference
       x-acceptance-tests:
-      - T-INT-001
-      - T-INT-002
-      - T-INT-003
-      - T-INT-005
-      - T-INT-009
-      - T-SEC-001
+      - T-BR-004
       - T-FR-ENT-001
       - T-FR-ENT-002
       - T-FR-ENT-003
@@ -15015,24 +14480,29 @@ paths:
       - T-FR-ENT-005
       - T-FR-ENT-006
       - T-FR-ENT-015
-      - T-BR-004
       - T-FR-OPS-003
+      - T-INT-001
+      - T-INT-002
+      - T-INT-003
+      - T-INT-005
+      - T-INT-009
+      - T-SEC-001
       x-acceptance-scenarios:
-      - valid DTO and authorized state returns the declared success schema
-      - unknown fields or malformed values return a problem response
-      - missing required security or policy evidence is denied without data disclosure
-      - independent approver and recent MFA are required
+      - authorized request returns declared DTO
+      - invalid scope or state is denied
+      - independent approval and current source evidence are enforced where applicable
       x-csrf-protection: true
+      x-mfa-evidence: verified-session
+      x-no-request-body: false
       requestBody:
         required: true
-        description: Validated GrantExtendInput DTO. Unknown fields are rejected.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GrantExtendInput'
+              $ref: '#/components/schemas/EntitlementExtensionInput'
             example:
-              expiresAt: '2026-10-22T00:00:00Z'
-              reason: sample
+              durationDays: 1
+              reason: Review required
   /api/v1/admin/institutions:
     get:
       operationId: get_admin_institutions
@@ -17104,7 +16574,7 @@ paths:
       - name: from
         in: query
         required: false
-        schema: &id014
+        schema: &id023
           type: string
           minLength: 1
           maxLength: 40
@@ -17113,7 +16583,7 @@ paths:
       - name: to
         in: query
         required: false
-        schema: *id014
+        schema: *id023
       - name: X-Step-Up-Token
         in: header
         required: true
@@ -17335,11 +16805,11 @@ paths:
       - name: from
         in: query
         required: false
-        schema: *id014
+        schema: *id023
       - name: to
         in: query
         required: false
-        schema: *id014
+        schema: *id023
       - name: X-Step-Up-Token
         in: header
         required: true
@@ -17594,11 +17064,11 @@ paths:
       - name: from
         in: query
         required: false
-        schema: *id014
+        schema: *id023
       - name: to
         in: query
         required: false
-        schema: *id014
+        schema: *id023
       - name: X-Step-Up-Token
         in: header
         required: true
@@ -18082,11 +17552,11 @@ paths:
       - name: from
         in: query
         required: false
-        schema: *id014
+        schema: *id023
       - name: to
         in: query
         required: false
-        schema: *id014
+        schema: *id023
       - name: X-Step-Up-Token
         in: header
         required: true
@@ -18815,11 +18285,11 @@ paths:
       - name: from
         in: query
         required: false
-        schema: *id014
+        schema: *id023
       - name: to
         in: query
         required: false
-        schema: *id014
+        schema: *id023
       - name: X-Step-Up-Token
         in: header
         required: true
@@ -25080,221 +24550,103 @@ paths:
     post:
       operationId: post_me_trials
       tags:
-      - subscriptions
-      summary: Create subscription record
-      description: 'Create subscription record. Server resolves the current subject, resource scope and policy before returning
-        data; only the fields in the Subscription response schema are exposed. Authentication: session; ownership: subject_user;
-        institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through
-        a more permissive list, filter or export.'
+      - entitlements
+      summary: Start one eligible verified-account trial.
+      description: Start one eligible verified-account trial. Server checks active policy, scope, ownership and current source
+        state at request time.
       security:
       - cookieAuth: []
       parameters:
-      - name: Idempotency-Key
-        in: header
-        required: true
-        description: Opaque 8–128 character key. Same actor, operation, key and body returns the original result; changed
-          body is 409.
-        schema:
-          type: string
-          minLength: 8
-          maxLength: 128
       - name: X-CSRF-Token
         in: header
         required: true
-        description: Bound to the authenticated cookie session.
         schema:
           type: string
           minLength: 16
-          maxLength: 256
       responses:
-        '201':
-          description: Subscription result; only authorized data is returned.
+        '200':
+          description: Start one eligible verified-account trial.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/post_me_trialsResponse'
               example:
                 data:
-                  id: sample
-                  planId: sample
-                  status: sample
-                  startsAt: '2026-10-22T00:00:00Z'
-                  paidThroughAt: '2026-10-22T00:00:00Z'
+                  id: 00000000-0000-4000-8000-000000000001
+                  startsAt: '2026-10-27T00:00:00Z'
+                  endsAt: '2026-10-27T00:00:00Z'
+                  status: PENDING
                 requestId: sample
-        '400':
-          description: Invalid request
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/400
-                title: Invalid request
-                status: 400
-                code: REQUEST_ERROR
-                requestId: sample
-        '401':
-          description: Authentication required
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/401
-                title: Authentication required
-                status: 401
-                code: REQUEST_ERROR
-                requestId: sample
-        '403':
-          description: Access denied
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/403
-                title: Access denied
-                status: 403
-                code: REQUEST_ERROR
-                requestId: sample
-        '404':
-          description: Not found
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/404
-                title: Not found
-                status: 404
-                code: REQUEST_ERROR
-                requestId: sample
-        '409':
-          description: State conflict
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/409
-                title: State conflict
-                status: 409
-                code: REQUEST_ERROR
-                requestId: sample
-        '412':
-          description: Precondition failed
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/412
-                title: Precondition failed
-                status: 412
-                code: REQUEST_ERROR
-                requestId: sample
-        '422':
-          description: Business rule violation
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/422
-                title: Business rule violation
-                status: 422
-                code: REQUEST_ERROR
-                requestId: sample
-        '429':
-          description: Rate limit exceeded
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/429
-                title: Rate limit exceeded
-                status: 429
-                code: REQUEST_ERROR
-                requestId: sample
-        '500':
-          description: Unexpected server error
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-              example:
-                type: https://api.arata.example/problems/500
-                title: Unexpected server error
-                status: 500
-                code: REQUEST_ERROR
-                requestId: sample
+        '400': *id014
+        '401': *id015
+        '403': *id016
+        '404': *id017
+        '409': *id018
+        '412': *id019
+        '422': *id020
+        '429': *id021
+        '500': *id022
       x-requirement-ids:
+      - BR-007
+      - FR-ENT-002
+      - FR-IAM-007
+      - FR-PAY-009
+      - FR-PAY-010
       - FR-PAY-011
       - FR-PAY-012
-      - BR-007
+      - FR-PAY-013
+      - FR-PAY-016
       - INT-001
       - INT-002
       - INT-003
       - INT-005
       - INT-009
       - SEC-001
-      - FR-PAY-009
-      - FR-PAY-010
-      - FR-PAY-013
-      - FR-PAY-016
-      - FR-IAM-007
+      x-implemented-requirement-ids:
+      - FR-ENT-002
+      - FR-PAY-011
       x-policy-id: post_me_trials
       x-authorized-roles: []
+      x-required-permission: authenticated-account
       x-entitlement-condition: none
       x-rate-limit:
-        bucket: write
-        limit: 30
-        windowSeconds: 60
-        key: subject-or-source-ip
+        bucket: identity-auth
+        limit: 8
+        windowSeconds: null
+        policySetting: security.loginWindowMinutes
+        key: hashed-subject-and-source-ip
       x-idempotency:
-        required: true
-        scope: actor+operation+key
-        retention: configured per domain
-      x-audit-event: api.post_me_trials
+        required: false
+        scope: single-use trial, claim or locked state transition
+      x-audit-event: entitlement.post_me_trials
       x-audit-fields:
       - actorId
-      - operationId
-      - resourceType
       - resourceId
-      - outcome
       - requestId
       - occurredAt
       x-acceptance-tests:
+      - T-BR-007
+      - T-FR-ENT-002
+      - T-FR-IAM-007
+      - T-FR-PAY-009
+      - T-FR-PAY-010
       - T-FR-PAY-011
       - T-FR-PAY-012
-      - T-BR-007
+      - T-FR-PAY-013
+      - T-FR-PAY-016
       - T-INT-001
       - T-INT-002
       - T-INT-003
       - T-INT-005
       - T-INT-009
       - T-SEC-001
-      - T-FR-PAY-009
-      - T-FR-PAY-010
-      - T-FR-PAY-013
-      - T-FR-PAY-016
-      - T-FR-IAM-007
       x-acceptance-scenarios:
-      - valid DTO and authorized state returns the declared success schema
-      - unknown fields or malformed values return a problem response
-      - missing required security or policy evidence is denied without data disclosure
+      - authorized request returns declared DTO
+      - invalid scope or state is denied
+      - independent approval and current source evidence are enforced where applicable
       x-csrf-protection: true
-      requestBody:
-        required: true
-        description: Validated TrialCreateInput DTO. Unknown fields are rejected.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TrialCreateInput'
-            example:
-              planId: sample
-              termsAcceptedVersion: sample
+      x-mfa-evidence: none
+      x-no-request-body: true
   /api/v1/admin/institutions/{id}/domains/{domainId}/approve:
     post:
       operationId: post_admin_domain_approve
@@ -25821,11 +25173,11 @@ paths:
       - name: from
         in: query
         required: false
-        schema: *id014
+        schema: *id023
       - name: to
         in: query
         required: false
-        schema: *id014
+        schema: *id023
       - name: X-Step-Up-Token
         in: header
         required: true
@@ -26073,11 +25425,11 @@ paths:
       - name: from
         in: query
         required: false
-        schema: *id014
+        schema: *id023
       - name: to
         in: query
         required: false
-        schema: *id014
+        schema: *id023
       - name: X-Step-Up-Token
         in: header
         required: true
@@ -26325,11 +25677,11 @@ paths:
       - name: from
         in: query
         required: false
-        schema: *id014
+        schema: *id023
       - name: to
         in: query
         required: false
-        schema: *id014
+        schema: *id023
       - name: X-Step-Up-Token
         in: header
         required: true
@@ -26557,11 +25909,11 @@ paths:
       - name: from
         in: query
         required: false
-        schema: *id014
+        schema: *id023
       - name: to
         in: query
         required: false
-        schema: *id014
+        schema: *id023
       - name: X-Step-Up-Token
         in: header
         required: true
@@ -31969,11 +31321,11 @@ paths:
       - name: from
         in: query
         required: false
-        schema: *id014
+        schema: *id023
       - name: to
         in: query
         required: false
-        schema: *id014
+        schema: *id023
       - name: X-Step-Up-Token
         in: header
         required: true
@@ -39534,6 +38886,1112 @@ paths:
               $ref: '#/components/schemas/BillingDisputeResolveInput'
             example:
               decision: WON
+  /api/v1/me/promotion-redemptions:
+    post:
+      operationId: post_me_promotion_redemptions
+      tags:
+      - entitlements
+      summary: Redeem one approved free promotional code.
+      description: Redeem one approved free promotional code. Server checks active policy, scope, ownership and current source
+        state at request time.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 16
+      responses:
+        '200':
+          description: Redeem one approved free promotional code.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/post_me_promotion_redemptionsResponse'
+              example:
+                data:
+                  id: 00000000-0000-4000-8000-000000000001
+                  status: PENDING
+                  endsAt: '2026-10-27T00:00:00Z'
+                requestId: sample
+        '400': *id014
+        '401': *id015
+        '403': *id016
+        '404': *id017
+        '409': *id018
+        '412': *id019
+        '422': *id020
+        '429': *id021
+        '500': *id022
+      x-requirement-ids:
+      - FR-ENT-002
+      - FR-ENT-017
+      x-implemented-requirement-ids:
+      - FR-ENT-002
+      - FR-ENT-017
+      x-policy-id: post_me_promotion_redemptions
+      x-authorized-roles: []
+      x-required-permission: authenticated-account
+      x-entitlement-condition: none
+      x-rate-limit:
+        bucket: identity-auth
+        limit: 8
+        windowSeconds: null
+        policySetting: security.loginWindowMinutes
+        key: hashed-subject-and-source-ip
+      x-idempotency:
+        required: false
+        scope: single-use trial, claim or locked state transition
+      x-audit-event: entitlement.post_me_promotion_redemptions
+      x-audit-fields:
+      - actorId
+      - resourceId
+      - requestId
+      - occurredAt
+      x-acceptance-tests:
+      - T-FR-ENT-002
+      - T-FR-ENT-017
+      x-acceptance-scenarios:
+      - authorized request returns declared DTO
+      - invalid scope or state is denied
+      - independent approval and current source evidence are enforced where applicable
+      x-csrf-protection: true
+      x-mfa-evidence: none
+      x-no-request-body: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EntitlementRedemptionInput'
+            example:
+              code: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+  /api/v1/admin/entitlement-users:
+    get:
+      operationId: get_admin_entitlement_users
+      tags:
+      - entitlements
+      summary: Search active account recipients by email.
+      description: Search active account recipients by email. Server checks active policy, scope, ownership and current source
+        state at request time.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: q
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 3
+          maxLength: 120
+      responses:
+        '200':
+          description: Search active account recipients by email.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/get_admin_entitlement_usersResponse'
+              example:
+                data: []
+                requestId: sample
+        '400': *id014
+        '401': *id015
+        '403': *id016
+        '404': *id017
+        '409': *id018
+        '412': *id019
+        '422': *id020
+        '429': *id021
+        '500': *id022
+      x-requirement-ids:
+      - FR-ENT-006
+      - FR-ENT-007
+      x-implemented-requirement-ids:
+      - FR-ENT-006
+      - FR-ENT-007
+      x-policy-id: get_admin_entitlement_users
+      x-authorized-roles:
+      - SYSTEM_ADMIN
+      x-required-permission: ENTITLEMENT_READ
+      x-entitlement-condition: none
+      x-rate-limit:
+        bucket: none
+        limit: 0
+        windowSeconds: null
+        policySetting: none
+        key: none
+      x-idempotency:
+        required: false
+        scope: single-use trial, claim or locked state transition
+      x-audit-event: none
+      x-audit-fields: []
+      x-acceptance-tests:
+      - T-FR-ENT-006
+      - T-FR-ENT-007
+      x-acceptance-scenarios:
+      - authorized request returns declared DTO
+      - invalid scope or state is denied
+      - independent approval and current source evidence are enforced where applicable
+      x-csrf-protection: false
+      x-mfa-evidence: verified-session
+      x-no-request-body: false
+  /api/v1/admin/entitlements/upcoming:
+    get:
+      operationId: get_admin_entitlements_upcoming
+      tags:
+      - entitlements
+      summary: List active grants nearing expiry.
+      description: List active grants nearing expiry. Server checks active policy, scope, ownership and current source state
+        at request time.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: days
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 90
+          default: 7
+      responses:
+        '200':
+          description: List active grants nearing expiry.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/get_admin_entitlements_upcomingResponse'
+              example:
+                data: []
+                requestId: sample
+        '400': *id014
+        '401': *id015
+        '403': *id016
+        '404': *id017
+        '409': *id018
+        '412': *id019
+        '422': *id020
+        '429': *id021
+        '500': *id022
+      x-requirement-ids:
+      - FR-ENT-006
+      x-implemented-requirement-ids:
+      - FR-ENT-006
+      x-policy-id: get_admin_entitlements_upcoming
+      x-authorized-roles:
+      - SYSTEM_ADMIN
+      x-required-permission: ENTITLEMENT_READ
+      x-entitlement-condition: none
+      x-rate-limit:
+        bucket: none
+        limit: 0
+        windowSeconds: null
+        policySetting: none
+        key: none
+      x-idempotency:
+        required: false
+        scope: single-use trial, claim or locked state transition
+      x-audit-event: none
+      x-audit-fields: []
+      x-acceptance-tests:
+      - T-FR-ENT-006
+      x-acceptance-scenarios:
+      - authorized request returns declared DTO
+      - invalid scope or state is denied
+      - independent approval and current source evidence are enforced where applicable
+      x-csrf-protection: false
+      x-mfa-evidence: verified-session
+      x-no-request-body: false
+  /api/v1/admin/entitlements/{id}/history:
+    get:
+      operationId: get_admin_entitlements_id_history
+      tags:
+      - entitlements
+      summary: Read immutable events for one grant.
+      description: Read immutable events for one grant. Server checks active policy, scope, ownership and current source state
+        at request time.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: *id013
+      responses:
+        '200':
+          description: Read immutable events for one grant.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/get_admin_entitlements_id_historyResponse'
+              example:
+                data:
+                  grant:
+                    id: 00000000-0000-4000-8000-000000000001
+                    userId: 00000000-0000-4000-8000-000000000001
+                    source: PAID
+                    status: PENDING
+                    scope: LIBRARY
+                    startsAt: '2026-10-27T00:00:00Z'
+                    endsAt: null
+                    reason: null
+                  events: []
+                requestId: sample
+        '400': *id014
+        '401': *id015
+        '403': *id016
+        '404': *id017
+        '409': *id018
+        '412': *id019
+        '422': *id020
+        '429': *id021
+        '500': *id022
+      x-requirement-ids:
+      - FR-ENT-003
+      - FR-ENT-006
+      x-implemented-requirement-ids:
+      - FR-ENT-003
+      - FR-ENT-006
+      x-policy-id: get_admin_entitlements_id_history
+      x-authorized-roles:
+      - SYSTEM_ADMIN
+      x-required-permission: ENTITLEMENT_READ
+      x-entitlement-condition: none
+      x-rate-limit:
+        bucket: none
+        limit: 0
+        windowSeconds: null
+        policySetting: none
+        key: none
+      x-idempotency:
+        required: false
+        scope: single-use trial, claim or locked state transition
+      x-audit-event: none
+      x-audit-fields: []
+      x-acceptance-tests:
+      - T-FR-ENT-003
+      - T-FR-ENT-006
+      x-acceptance-scenarios:
+      - authorized request returns declared DTO
+      - invalid scope or state is denied
+      - independent approval and current source evidence are enforced where applicable
+      x-csrf-protection: false
+      x-mfa-evidence: verified-session
+      x-no-request-body: false
+  /api/v1/admin/entitlements/{id}/approve:
+    post:
+      operationId: post_admin_entitlements_id_approve
+      tags:
+      - entitlements
+      summary: Independently approve a pending grant.
+      description: Independently approve a pending grant. Server checks active policy, scope, ownership and current source
+        state at request time.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: *id013
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 16
+      responses:
+        '200':
+          description: Independently approve a pending grant.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/post_admin_entitlements_id_approveResponse'
+              example:
+                data:
+                  id: 00000000-0000-4000-8000-000000000001
+                  status: PENDING
+                requestId: sample
+        '400': *id014
+        '401': *id015
+        '403': *id016
+        '404': *id017
+        '409': *id018
+        '412': *id019
+        '422': *id020
+        '429': *id021
+        '500': *id022
+      x-requirement-ids:
+      - FR-ENT-003
+      - FR-ENT-006
+      x-implemented-requirement-ids:
+      - FR-ENT-003
+      - FR-ENT-006
+      x-policy-id: post_admin_entitlements_id_approve
+      x-authorized-roles:
+      - SYSTEM_ADMIN
+      x-required-permission: ENTITLEMENT_APPROVE
+      x-entitlement-condition: none
+      x-rate-limit:
+        bucket: identity-auth:permission
+        limit: 8
+        windowSeconds: null
+        policySetting: security.loginWindowMinutes
+        key: hashed-admin-account
+      x-idempotency:
+        required: false
+        scope: single-use trial, claim or locked state transition
+      x-audit-event: entitlement.post_admin_entitlements_id_approve
+      x-audit-fields:
+      - actorId
+      - resourceId
+      - requestId
+      - occurredAt
+      x-acceptance-tests:
+      - T-FR-ENT-003
+      - T-FR-ENT-006
+      x-acceptance-scenarios:
+      - authorized request returns declared DTO
+      - invalid scope or state is denied
+      - independent approval and current source evidence are enforced where applicable
+      x-csrf-protection: true
+      x-mfa-evidence: verified-session
+      x-no-request-body: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EntitlementReasonInput'
+            example:
+              reason: Review required
+  /api/v1/admin/entitlements/{id}/suspend:
+    post:
+      operationId: post_admin_entitlements_id_suspend
+      tags:
+      - entitlements
+      summary: Suspend one manually issued grant.
+      description: Suspend one manually issued grant. Server checks active policy, scope, ownership and current source state
+        at request time.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: *id013
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 16
+      responses:
+        '200':
+          description: Suspend one manually issued grant.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/post_admin_entitlements_id_suspendResponse'
+              example:
+                data:
+                  id: 00000000-0000-4000-8000-000000000001
+                  status: PENDING
+                requestId: sample
+        '400': *id014
+        '401': *id015
+        '403': *id016
+        '404': *id017
+        '409': *id018
+        '412': *id019
+        '422': *id020
+        '429': *id021
+        '500': *id022
+      x-requirement-ids:
+      - FR-ENT-006
+      - FR-ENT-009
+      x-implemented-requirement-ids:
+      - FR-ENT-006
+      - FR-ENT-009
+      x-policy-id: post_admin_entitlements_id_suspend
+      x-authorized-roles:
+      - SYSTEM_ADMIN
+      x-required-permission: ENTITLEMENT_REVOKE
+      x-entitlement-condition: none
+      x-rate-limit:
+        bucket: identity-auth:permission
+        limit: 8
+        windowSeconds: null
+        policySetting: security.loginWindowMinutes
+        key: hashed-admin-account
+      x-idempotency:
+        required: false
+        scope: single-use trial, claim or locked state transition
+      x-audit-event: entitlement.post_admin_entitlements_id_suspend
+      x-audit-fields:
+      - actorId
+      - resourceId
+      - requestId
+      - occurredAt
+      x-acceptance-tests:
+      - T-FR-ENT-006
+      - T-FR-ENT-009
+      x-acceptance-scenarios:
+      - authorized request returns declared DTO
+      - invalid scope or state is denied
+      - independent approval and current source evidence are enforced where applicable
+      x-csrf-protection: true
+      x-mfa-evidence: verified-session
+      x-no-request-body: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EntitlementReasonInput'
+            example:
+              reason: Review required
+  /api/v1/admin/entitlements/{id}/resume:
+    post:
+      operationId: post_admin_entitlements_id_resume
+      tags:
+      - entitlements
+      summary: Resume an eligible suspended grant.
+      description: Resume an eligible suspended grant. Server checks active policy, scope, ownership and current source state
+        at request time.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: *id013
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 16
+      responses:
+        '200':
+          description: Resume an eligible suspended grant.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/post_admin_entitlements_id_resumeResponse'
+              example:
+                data:
+                  id: 00000000-0000-4000-8000-000000000001
+                  status: PENDING
+                requestId: sample
+        '400': *id014
+        '401': *id015
+        '403': *id016
+        '404': *id017
+        '409': *id018
+        '412': *id019
+        '422': *id020
+        '429': *id021
+        '500': *id022
+      x-requirement-ids:
+      - FR-ENT-006
+      - FR-ENT-009
+      x-implemented-requirement-ids:
+      - FR-ENT-006
+      - FR-ENT-009
+      x-policy-id: post_admin_entitlements_id_resume
+      x-authorized-roles:
+      - SYSTEM_ADMIN
+      x-required-permission: ENTITLEMENT_REVOKE
+      x-entitlement-condition: none
+      x-rate-limit:
+        bucket: identity-auth:permission
+        limit: 8
+        windowSeconds: null
+        policySetting: security.loginWindowMinutes
+        key: hashed-admin-account
+      x-idempotency:
+        required: false
+        scope: single-use trial, claim or locked state transition
+      x-audit-event: entitlement.post_admin_entitlements_id_resume
+      x-audit-fields:
+      - actorId
+      - resourceId
+      - requestId
+      - occurredAt
+      x-acceptance-tests:
+      - T-FR-ENT-006
+      - T-FR-ENT-009
+      x-acceptance-scenarios:
+      - authorized request returns declared DTO
+      - invalid scope or state is denied
+      - independent approval and current source evidence are enforced where applicable
+      x-csrf-protection: true
+      x-mfa-evidence: verified-session
+      x-no-request-body: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EntitlementReasonInput'
+            example:
+              reason: Review required
+  /api/v1/admin/grant-campaigns:
+    get:
+      operationId: get_admin_grant_campaigns
+      tags:
+      - entitlements
+      summary: List bulk and promotional campaigns.
+      description: List bulk and promotional campaigns. Server checks active policy, scope, ownership and current source state
+        at request time.
+      security:
+      - cookieAuth: []
+      parameters: []
+      responses:
+        '200':
+          description: List bulk and promotional campaigns.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/get_admin_grant_campaignsResponse'
+              example:
+                data: []
+                requestId: sample
+        '400': *id014
+        '401': *id015
+        '403': *id016
+        '404': *id017
+        '409': *id018
+        '412': *id019
+        '422': *id020
+        '429': *id021
+        '500': *id022
+      x-requirement-ids:
+      - FR-ENT-006
+      - FR-ENT-017
+      x-implemented-requirement-ids:
+      - FR-ENT-006
+      - FR-ENT-017
+      x-policy-id: get_admin_grant_campaigns
+      x-authorized-roles:
+      - SYSTEM_ADMIN
+      x-required-permission: ENTITLEMENT_READ
+      x-entitlement-condition: none
+      x-rate-limit:
+        bucket: none
+        limit: 0
+        windowSeconds: null
+        policySetting: none
+        key: none
+      x-idempotency:
+        required: false
+        scope: single-use trial, claim or locked state transition
+      x-audit-event: none
+      x-audit-fields: []
+      x-acceptance-tests:
+      - T-FR-ENT-006
+      - T-FR-ENT-017
+      x-acceptance-scenarios:
+      - authorized request returns declared DTO
+      - invalid scope or state is denied
+      - independent approval and current source evidence are enforced where applicable
+      x-csrf-protection: false
+      x-mfa-evidence: verified-session
+      x-no-request-body: false
+    post:
+      operationId: post_admin_grant_campaigns
+      tags:
+      - entitlements
+      summary: Create a reviewed bulk or free promotion campaign.
+      description: Create a reviewed bulk or free promotion campaign. Server checks active policy, scope, ownership and current
+        source state at request time.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 16
+      responses:
+        '200':
+          description: Create a reviewed bulk or free promotion campaign.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/post_admin_grant_campaignsResponse'
+              example:
+                data:
+                  id: 00000000-0000-4000-8000-000000000001
+                  status: sample
+                  kind: sample
+                  code: null
+                requestId: sample
+        '400': *id014
+        '401': *id015
+        '403': *id016
+        '404': *id017
+        '409': *id018
+        '412': *id019
+        '422': *id020
+        '429': *id021
+        '500': *id022
+      x-requirement-ids:
+      - FR-ENT-006
+      - FR-ENT-017
+      x-implemented-requirement-ids:
+      - FR-ENT-006
+      - FR-ENT-017
+      x-policy-id: post_admin_grant_campaigns
+      x-authorized-roles:
+      - SYSTEM_ADMIN
+      x-required-permission: ENTITLEMENT_GRANT
+      x-entitlement-condition: none
+      x-rate-limit:
+        bucket: identity-auth:permission
+        limit: 8
+        windowSeconds: null
+        policySetting: security.loginWindowMinutes
+        key: hashed-admin-account
+      x-idempotency:
+        required: false
+        scope: single-use trial, claim or locked state transition
+      x-audit-event: entitlement.post_admin_grant_campaigns
+      x-audit-fields:
+      - actorId
+      - resourceId
+      - requestId
+      - occurredAt
+      x-acceptance-tests:
+      - T-FR-ENT-006
+      - T-FR-ENT-017
+      x-acceptance-scenarios:
+      - authorized request returns declared DTO
+      - invalid scope or state is denied
+      - independent approval and current source evidence are enforced where applicable
+      x-csrf-protection: true
+      x-mfa-evidence: verified-session
+      x-no-request-body: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EntitlementCampaignInput'
+            example:
+              kind: BULK
+              name: sample
+              reason: Review required
+              scope: LIBRARY
+              startsAt: '2026-10-27T00:00:00Z'
+              endsAt: '2026-10-27T00:00:00Z'
+              maxClaims: 1
+  /api/v1/admin/grant-campaigns/{id}/approve:
+    post:
+      operationId: post_admin_grant_campaigns_id_approve
+      tags:
+      - entitlements
+      summary: Independently approve and issue a campaign.
+      description: Independently approve and issue a campaign. Server checks active policy, scope, ownership and current source
+        state at request time.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: *id013
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 16
+      responses:
+        '200':
+          description: Independently approve and issue a campaign.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/post_admin_grant_campaigns_id_approveResponse'
+              example:
+                data:
+                  id: 00000000-0000-4000-8000-000000000001
+                  status: sample
+                  issued: true
+                requestId: sample
+        '400': *id014
+        '401': *id015
+        '403': *id016
+        '404': *id017
+        '409': *id018
+        '412': *id019
+        '422': *id020
+        '429': *id021
+        '500': *id022
+      x-requirement-ids:
+      - FR-ENT-006
+      - FR-ENT-017
+      x-implemented-requirement-ids:
+      - FR-ENT-006
+      - FR-ENT-017
+      x-policy-id: post_admin_grant_campaigns_id_approve
+      x-authorized-roles:
+      - SYSTEM_ADMIN
+      x-required-permission: ENTITLEMENT_APPROVE
+      x-entitlement-condition: none
+      x-rate-limit:
+        bucket: identity-auth:permission
+        limit: 8
+        windowSeconds: null
+        policySetting: security.loginWindowMinutes
+        key: hashed-admin-account
+      x-idempotency:
+        required: false
+        scope: single-use trial, claim or locked state transition
+      x-audit-event: entitlement.post_admin_grant_campaigns_id_approve
+      x-audit-fields:
+      - actorId
+      - resourceId
+      - requestId
+      - occurredAt
+      x-acceptance-tests:
+      - T-FR-ENT-006
+      - T-FR-ENT-017
+      x-acceptance-scenarios:
+      - authorized request returns declared DTO
+      - invalid scope or state is denied
+      - independent approval and current source evidence are enforced where applicable
+      x-csrf-protection: true
+      x-mfa-evidence: verified-session
+      x-no-request-body: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EntitlementReasonInput'
+            example:
+              reason: Review required
+  /api/v1/admin/entitlements/maintenance:
+    post:
+      operationId: post_admin_entitlements_maintenance
+      tags:
+      - entitlements
+      summary: Send bounded expiry notices and purge expired decision logs.
+      description: Send bounded expiry notices and purge expired decision logs. Server checks active policy, scope, ownership
+        and current source state at request time.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 16
+      responses:
+        '200':
+          description: Send bounded expiry notices and purge expired decision logs.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/post_admin_entitlements_maintenanceResponse'
+              example:
+                data:
+                  notified: 1
+                requestId: sample
+        '400': *id014
+        '401': *id015
+        '403': *id016
+        '404': *id017
+        '409': *id018
+        '412': *id019
+        '422': *id020
+        '429': *id021
+        '500': *id022
+      x-requirement-ids:
+      - FR-ENT-006
+      - FR-OPS-001
+      x-implemented-requirement-ids:
+      - FR-ENT-006
+      - FR-OPS-001
+      x-policy-id: post_admin_entitlements_maintenance
+      x-authorized-roles:
+      - SYSTEM_ADMIN
+      x-required-permission: ENTITLEMENT_APPROVE
+      x-entitlement-condition: none
+      x-rate-limit:
+        bucket: identity-auth:permission
+        limit: 8
+        windowSeconds: null
+        policySetting: security.loginWindowMinutes
+        key: hashed-admin-account
+      x-idempotency:
+        required: false
+        scope: single-use trial, claim or locked state transition
+      x-audit-event: entitlement.post_admin_entitlements_maintenance
+      x-audit-fields:
+      - actorId
+      - resourceId
+      - requestId
+      - occurredAt
+      x-acceptance-tests:
+      - T-FR-ENT-006
+      - T-FR-OPS-001
+      x-acceptance-scenarios:
+      - authorized request returns declared DTO
+      - invalid scope or state is denied
+      - independent approval and current source evidence are enforced where applicable
+      x-csrf-protection: true
+      x-mfa-evidence: verified-session
+      x-no-request-body: true
+  /api/v1/admin/institution-agreements:
+    get:
+      operationId: get_admin_institution_agreements
+      tags:
+      - entitlements
+      summary: List proposed and approved institution benefit agreements.
+      description: List proposed and approved institution benefit agreements. Server checks active policy, scope, ownership
+        and current source state at request time.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: institutionId
+        in: query
+        required: false
+        schema: *id013
+      responses:
+        '200':
+          description: List proposed and approved institution benefit agreements.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/get_admin_institution_agreementsResponse'
+              example:
+                data: []
+                requestId: sample
+        '400': *id014
+        '401': *id015
+        '403': *id016
+        '404': *id017
+        '409': *id018
+        '412': *id019
+        '422': *id020
+        '429': *id021
+        '500': *id022
+      x-requirement-ids:
+      - FR-INS-007
+      - FR-INS-008
+      x-implemented-requirement-ids:
+      - FR-INS-007
+      - FR-INS-008
+      x-policy-id: get_admin_institution_agreements
+      x-authorized-roles:
+      - SYSTEM_ADMIN
+      x-required-permission: ENTITLEMENT_READ
+      x-entitlement-condition: none
+      x-rate-limit:
+        bucket: none
+        limit: 0
+        windowSeconds: null
+        policySetting: none
+        key: none
+      x-idempotency:
+        required: false
+        scope: single-use trial, claim or locked state transition
+      x-audit-event: none
+      x-audit-fields: []
+      x-acceptance-tests:
+      - T-FR-INS-007
+      - T-FR-INS-008
+      x-acceptance-scenarios:
+      - authorized request returns declared DTO
+      - invalid scope or state is denied
+      - independent approval and current source evidence are enforced where applicable
+      x-csrf-protection: false
+      x-mfa-evidence: verified-session
+      x-no-request-body: false
+    post:
+      operationId: post_admin_institution_agreements
+      tags:
+      - entitlements
+      summary: Request a scoped institution benefit agreement.
+      description: Request a scoped institution benefit agreement. Server checks active policy, scope, ownership and current
+        source state at request time.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: institutionId
+        in: query
+        required: false
+        schema: *id013
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 16
+      responses:
+        '200':
+          description: Request a scoped institution benefit agreement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/post_admin_institution_agreementsResponse'
+              example:
+                data:
+                  id: 00000000-0000-4000-8000-000000000001
+                  status: sample
+                requestId: sample
+        '400': *id014
+        '401': *id015
+        '403': *id016
+        '404': *id017
+        '409': *id018
+        '412': *id019
+        '422': *id020
+        '429': *id021
+        '500': *id022
+      x-requirement-ids:
+      - FR-INS-007
+      - FR-INS-008
+      x-implemented-requirement-ids:
+      - FR-INS-007
+      - FR-INS-008
+      x-policy-id: post_admin_institution_agreements
+      x-authorized-roles:
+      - SYSTEM_ADMIN
+      x-required-permission: ENTITLEMENT_INSTITUTION
+      x-entitlement-condition: none
+      x-rate-limit:
+        bucket: identity-auth:permission
+        limit: 8
+        windowSeconds: null
+        policySetting: security.loginWindowMinutes
+        key: hashed-admin-account
+      x-idempotency:
+        required: false
+        scope: single-use trial, claim or locked state transition
+      x-audit-event: entitlement.post_admin_institution_agreements
+      x-audit-fields:
+      - actorId
+      - resourceId
+      - requestId
+      - occurredAt
+      x-acceptance-tests:
+      - T-FR-INS-007
+      - T-FR-INS-008
+      x-acceptance-scenarios:
+      - authorized request returns declared DTO
+      - invalid scope or state is denied
+      - independent approval and current source evidence are enforced where applicable
+      x-csrf-protection: true
+      x-mfa-evidence: verified-session
+      x-no-request-body: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstitutionAgreementInput'
+            example:
+              institutionId: 00000000-0000-4000-8000-000000000001
+              reason: Review required
+              scope: LIBRARY
+              memberLimit: 1
+              permittedCategories: []
+              startsAt: '2026-10-27T00:00:00Z'
+              endsAt: '2026-10-27T00:00:00Z'
+  /api/v1/admin/institution-agreements/{id}/approve:
+    post:
+      operationId: post_admin_institution_agreements_id_approve
+      tags:
+      - entitlements
+      summary: Independently approve an institution benefit agreement.
+      description: Independently approve an institution benefit agreement. Server checks active policy, scope, ownership and
+        current source state at request time.
+      security:
+      - cookieAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: *id013
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 16
+      responses:
+        '200':
+          description: Independently approve an institution benefit agreement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/post_admin_institution_agreements_id_approveResponse'
+              example:
+                data:
+                  id: 00000000-0000-4000-8000-000000000001
+                  status: sample
+                requestId: sample
+        '400': *id014
+        '401': *id015
+        '403': *id016
+        '404': *id017
+        '409': *id018
+        '412': *id019
+        '422': *id020
+        '429': *id021
+        '500': *id022
+      x-requirement-ids:
+      - FR-INS-007
+      - FR-INS-008
+      x-implemented-requirement-ids:
+      - FR-INS-007
+      - FR-INS-008
+      x-policy-id: post_admin_institution_agreements_id_approve
+      x-authorized-roles:
+      - SYSTEM_ADMIN
+      x-required-permission: ENTITLEMENT_APPROVE
+      x-entitlement-condition: none
+      x-rate-limit:
+        bucket: identity-auth:permission
+        limit: 8
+        windowSeconds: null
+        policySetting: security.loginWindowMinutes
+        key: hashed-admin-account
+      x-idempotency:
+        required: false
+        scope: single-use trial, claim or locked state transition
+      x-audit-event: entitlement.post_admin_institution_agreements_id_approve
+      x-audit-fields:
+      - actorId
+      - resourceId
+      - requestId
+      - occurredAt
+      x-acceptance-tests:
+      - T-FR-INS-007
+      - T-FR-INS-008
+      x-acceptance-scenarios:
+      - authorized request returns declared DTO
+      - invalid scope or state is denied
+      - independent approval and current source evidence are enforced where applicable
+      x-csrf-protection: true
+      x-mfa-evidence: verified-session
+      x-no-request-body: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EntitlementReasonInput'
+            example:
+              reason: Review required
 components:
   securitySchemes:
     cookieAuth:
@@ -39556,16 +40014,16 @@ components:
       additionalProperties: false
       properties:
         id: *id003
-        email: &id023
+        email: &id032
           type: string
           minLength: 1
           maxLength: 254
           format: email
-        emailVerifiedAt: *id014
+        emailVerifiedAt: *id023
         status: *id002
         roles:
           type: array
-          items: &id022
+          items: &id031
             type: string
             minLength: 1
             maxLength: 500
@@ -39582,7 +40040,7 @@ components:
             - research_admin
             - security_admin
             - platform_admin
-        createdAt: *id014
+        createdAt: *id023
       required:
       - id
       - status
@@ -39591,7 +40049,7 @@ components:
       type: object
       additionalProperties: false
       properties:
-        accepted: &id015
+        accepted: &id024
           type: boolean
         message: *id001
       required:
@@ -39601,23 +40059,23 @@ components:
       type: object
       additionalProperties: false
       properties:
-        authorizationUrl: &id018
+        authorizationUrl: &id027
           type: string
           minLength: 1
           maxLength: 2048
           format: uri
-        stateExpiresAt: *id014
+        stateExpiresAt: *id023
       required: []
     Session:
       type: object
       additionalProperties: false
       properties:
         id: *id003
-        createdAt: *id014
-        lastSeenAt: *id014
-        expiresAt: *id014
+        createdAt: *id023
+        lastSeenAt: *id023
+        expiresAt: *id023
         deviceLabel: *id001
-        current: *id015
+        current: *id024
       required:
       - id
       - createdAt
@@ -39638,26 +40096,26 @@ components:
           minLength: 1
           maxLength: 20
         timezone: *id001
-        updatedAt: *id014
+        updatedAt: *id023
       required: []
     PrivacyPreferences:
       type: object
       additionalProperties: false
       properties:
-        analyticsConsent: *id015
-        researchConsent: *id015
-        personalizationConsent: *id015
-        aiAssistanceConsent: *id015
-        updatedAt: *id014
+        analyticsConsent: *id024
+        researchConsent: *id024
+        personalizationConsent: *id024
+        aiAssistanceConsent: *id024
+        updatedAt: *id023
       required: []
     NotificationPreferences:
       type: object
       additionalProperties: false
       properties:
-        email: *id015
-        inApp: *id015
-        securityMandatory: *id015
-        updatedAt: *id014
+        email: *id024
+        inApp: *id024
+        securityMandatory: *id024
+        updatedAt: *id023
       required: []
     Notification:
       type: object
@@ -39666,12 +40124,12 @@ components:
         id: *id003
         category: *id002
         title: *id001
-        body: &id016
+        body: &id025
           type: string
           minLength: 1
           maxLength: 10000
-        createdAt: *id014
-        readAt: *id014
+        createdAt: *id023
+        readAt: *id023
       required:
       - id
     Collection:
@@ -39681,7 +40139,7 @@ components:
         id: *id003
         slug: *id003
         title: *id001
-        description: *id016
+        description: *id025
       required:
       - id
     Publication:
@@ -39698,7 +40156,7 @@ components:
           - standalone
           - series
         title: *id001
-        description: *id016
+        description: *id025
         authors:
           type: array
           items: *id001
@@ -39726,11 +40184,11 @@ components:
       properties:
         id: *id003
         publicationId: *id003
-        ordinal: &id017
+        ordinal: &id026
           type: integer
           minimum: 0
         title: *id001
-        description: *id016
+        description: *id025
       required:
       - id
       - publicationId
@@ -39744,7 +40202,7 @@ components:
         publicationId: *id003
         volumeId: *id003
         label: *id001
-        ordinal: *id017
+        ordinal: *id026
         isbn:
           type: string
           minLength: 1
@@ -39763,17 +40221,17 @@ components:
       properties:
         id: *id003
         editionId: *id003
-        version: *id017
+        version: *id026
         status: *id002
         contentHash:
           type: string
           minLength: 1
           maxLength: 128
-        submittedAt: *id014
-        approvedAt: *id014
-        publishedAt: *id014
-        scheduledAt: *id014
-        withdrawnAt: *id014
+        submittedAt: *id023
+        approvedAt: *id023
+        publishedAt: *id023
+        scheduledAt: *id023
+        withdrawnAt: *id023
       required:
       - id
       - editionId
@@ -39786,9 +40244,9 @@ components:
       properties:
         id: *id003
         revisionId: *id003
-        ordinal: *id017
+        ordinal: *id026
         title: *id001
-        summary: *id016
+        summary: *id025
         lessonIds:
           type: array
           items: *id003
@@ -39803,9 +40261,9 @@ components:
       properties:
         id: *id003
         chapterId: *id003
-        ordinal: *id017
+        ordinal: *id026
         title: *id001
-        bodyHtml: *id016
+        bodyHtml: *id025
         learningOutcomes:
           type: array
           items: *id001
@@ -39826,10 +40284,10 @@ components:
         title: *id001
         mediaType: *id001
         accessClass: *id002
-        byteSize: *id017
+        byteSize: *id026
         license: *id001
-        attribution: *id016
-        downloadAllowed: *id015
+        attribution: *id025
+        downloadAllowed: *id024
         status: *id002
       required:
       - id
@@ -39841,8 +40299,8 @@ components:
       type: object
       additionalProperties: false
       properties:
-        url: *id018
-        expiresAt: *id014
+        url: *id027
+        expiresAt: *id023
         assetId: *id003
         disposition: *id002
       required:
@@ -39854,8 +40312,8 @@ components:
       additionalProperties: false
       properties:
         resourceId: *id003
-        viewerUrl: *id018
-        expiresAt: *id014
+        viewerUrl: *id027
+        expiresAt: *id023
         permission:
           $ref: '#/components/schemas/PermissionDecision'
       required:
@@ -39869,9 +40327,9 @@ components:
       properties:
         id: *id003
         status: *id002
-        uploadUrl: *id018
-        expiresAt: *id014
-        maxBytes: *id017
+        uploadUrl: *id027
+        expiresAt: *id023
+        maxBytes: *id026
         assetId: *id003
         scanStatus: *id002
       required:
@@ -39883,7 +40341,7 @@ components:
         id: *id003
         uploadId: *id003
         mediaType: *id001
-        byteSize: *id017
+        byteSize: *id026
         sha256:
           type: string
           minLength: 64
@@ -39898,7 +40356,7 @@ components:
       additionalProperties: false
       properties:
         id: *id003
-        scopeType: &id019
+        scopeType: &id028
           type: string
           minLength: 1
           maxLength: 500
@@ -39914,11 +40372,11 @@ components:
           - plan
           - institution
         scopeId: *id003
-        read: *id015
-        copy: *id015
-        print: *id015
-        download: *id015
-        offline: *id015
+        read: *id024
+        copy: *id024
+        print: *id024
+        download: *id024
+        offline: *id024
         screenshotMode:
           type: string
           minLength: 1
@@ -39928,7 +40386,7 @@ components:
           - watermark
           - restrict_ui
         watermarkMode: *id002
-        version: *id017
+        version: *id026
       required:
       - id
       - scopeType
@@ -39944,12 +40402,12 @@ components:
       type: object
       additionalProperties: false
       properties:
-        allowed: *id015
+        allowed: *id024
         reasonCode: *id002
         effectivePolicy:
           $ref: '#/components/schemas/ContentPolicy'
         entitlementId: *id003
-        evaluatedAt: *id014
+        evaluatedAt: *id023
       required:
       - allowed
       - reasonCode
@@ -39960,10 +40418,10 @@ components:
       properties:
         id: *id003
         source: *id002
-        scopeType: *id019
+        scopeType: *id028
         scopeId: *id003
-        startsAt: *id014
-        expiresAt: *id014
+        startsAt: *id023
+        expiresAt: *id023
         status: *id002
         recipientUserId: *id003
         institutionId: *id003
@@ -39985,7 +40443,7 @@ components:
         lessonId: *id003
         anchor: *id001
         label: *id001
-        createdAt: *id014
+        createdAt: *id023
       required:
       - id
     Annotation:
@@ -39997,14 +40455,14 @@ components:
         revisionId: *id003
         lessonId: *id003
         anchor: *id001
-        body: *id016
+        body: *id025
         visibility:
           type: string
           minLength: 1
           maxLength: 500
           enum:
           - private
-        updatedAt: *id014
+        updatedAt: *id023
       required:
       - id
     Progress:
@@ -40018,7 +40476,7 @@ components:
           type: number
           minimum: 0
           maximum: 100
-        updatedAt: *id014
+        updatedAt: *id023
       required: []
     ReaderManifest:
       type: object
@@ -40048,7 +40506,7 @@ components:
             additionalProperties: false
             properties:
               id: *id003
-              ordinal: *id017
+              ordinal: *id026
               title: *id001
               lessonTitles:
                 type: array
@@ -40070,7 +40528,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Entitlement'
-        unreadNotificationCount: *id017
+        unreadNotificationCount: *id026
       required: []
     ReaderSettings:
       type: object
@@ -40094,8 +40552,8 @@ components:
           - light
           - dark
           - sepia
-        reducedMotion: *id015
-        lowBandwidth: *id015
+        reducedMotion: *id024
+        lowBandwidth: *id024
       required: []
     LearningGoal:
       type: object
@@ -40103,7 +40561,7 @@ components:
       properties:
         id: *id003
         editionId: *id003
-        targetAt: *id014
+        targetAt: *id023
         status: *id002
         progressPercent:
           type: number
@@ -40122,7 +40580,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/QuizQuestion'
-        maxAttempts: *id017
+        maxAttempts: *id026
       required:
       - id
     QuizQuestion:
@@ -40138,7 +40596,7 @@ components:
           - single_choice
           - multi_select
           - short_text
-        prompt: *id016
+        prompt: *id025
         options:
           type: array
           items:
@@ -40163,7 +40621,7 @@ components:
           type: number
           minimum: 0
           maximum: 100
-        submittedAt: *id014
+        submittedAt: *id023
         feedback:
           type: array
           items: *id001
@@ -40176,7 +40634,7 @@ components:
         id: *id003
         lessonId: *id003
         title: *id001
-        brief: *id016
+        brief: *id025
         rubric:
           type: array
           items: *id001
@@ -40190,8 +40648,8 @@ components:
         id: *id003
         projectId: *id003
         status: *id002
-        submittedAt: *id014
-        feedback: *id016
+        submittedAt: *id023
+        feedback: *id025
       required:
       - id
     Certificate:
@@ -40201,7 +40659,7 @@ components:
         id: *id003
         userId: *id003
         editionId: *id003
-        issuedAt: *id014
+        issuedAt: *id023
         verificationCode: *id001
         status: *id002
       required:
@@ -40214,9 +40672,9 @@ components:
         lessonId: *id003
         authorAlias: *id001
         title: *id001
-        body: *id016
+        body: *id025
         status: *id002
-        createdAt: *id014
+        createdAt: *id023
       required:
       - id
     DiscussionPost:
@@ -40226,9 +40684,9 @@ components:
         id: *id003
         threadId: *id003
         authorAlias: *id001
-        body: *id016
+        body: *id025
         status: *id002
-        createdAt: *id014
+        createdAt: *id023
       required:
       - id
     SupportTicket:
@@ -40239,8 +40697,8 @@ components:
         category: *id002
         subject: *id001
         status: *id002
-        createdAt: *id014
-        resolvedAt: *id014
+        createdAt: *id023
+        resolvedAt: *id023
       required:
       - id
     CodeLab:
@@ -40250,8 +40708,8 @@ components:
         id: *id003
         lessonId: *id003
         language: *id001
-        starterCode: *id016
-        instructions: *id016
+        starterCode: *id025
+        instructions: *id025
         executionMode:
           type: string
           minLength: 1
@@ -40269,11 +40727,11 @@ components:
         id: *id003
         labId: *id003
         status: *id002
-        stdout: *id016
-        stderr: *id016
+        stdout: *id025
+        stderr: *id025
         exitCode:
           type: integer
-        finishedAt: *id014
+        finishedAt: *id023
       required:
       - id
     Plan:
@@ -40283,17 +40741,17 @@ components:
         id: *id003
         code: *id003
         name: *id001
-        priceMinor: &id020
+        priceMinor: &id029
           type: integer
           minimum: 0
           description: Minor currency units; no floating point amount.
-        currency: &id021
+        currency: &id030
           type: string
           minLength: 3
           maxLength: 3
           pattern: ^[A-Z]{3}$
         billingPeriod: *id002
-        scopeType: *id019
+        scopeType: *id028
         scopeId: *id003
         status: *id002
       required:
@@ -40310,11 +40768,11 @@ components:
         id: *id003
         merchantReference: *id001
         planId: *id003
-        amountMinor: *id020
-        currency: *id021
+        amountMinor: *id029
+        currency: *id030
         status: *id002
-        checkoutUrl: *id018
-        createdAt: *id014
+        checkoutUrl: *id027
+        createdAt: *id023
       required:
       - id
       - merchantReference
@@ -40330,9 +40788,9 @@ components:
         orderId: *id003
         provider: *id001
         status: *id002
-        amountMinor: *id020
-        currency: *id021
-        verifiedAt: *id014
+        amountMinor: *id029
+        currency: *id030
+        verifiedAt: *id023
       required:
       - id
       - orderId
@@ -40346,12 +40804,12 @@ components:
       properties:
         id: *id003
         paymentId: *id003
-        amountMinor: *id020
-        currency: *id021
-        reason: *id016
+        amountMinor: *id029
+        currency: *id030
+        reason: *id025
         status: *id002
         approvedBy: *id003
-        createdAt: *id014
+        createdAt: *id023
       required:
       - id
       - paymentId
@@ -40366,10 +40824,10 @@ components:
         id: *id003
         orderId: *id003
         number: *id001
-        currency: *id021
-        totalMinor: *id020
-        issuedAt: *id014
-        downloadUrl: *id018
+        currency: *id030
+        totalMinor: *id029
+        issuedAt: *id023
+        downloadUrl: *id027
       required:
       - id
     Subscription:
@@ -40379,10 +40837,10 @@ components:
         id: *id003
         planId: *id003
         status: *id002
-        startsAt: *id014
-        paidThroughAt: *id014
-        renewsAt: *id014
-        cancelAtPeriodEnd: *id015
+        startsAt: *id023
+        paidThroughAt: *id023
+        renewsAt: *id023
+        cancelAtPeriodEnd: *id024
       required:
       - id
       - planId
@@ -40397,7 +40855,7 @@ components:
         name: *id001
         legalName: *id001
         status: *id002
-        createdAt: *id014
+        createdAt: *id023
       required:
       - id
     InstitutionImpactReport:
@@ -40405,11 +40863,11 @@ components:
       additionalProperties: false
       properties:
         institutionId: *id003
-        periodStart: *id014
-        periodEnd: *id014
-        activeMembers: *id017
-        engagedReaders: *id017
-        suppressed: *id015
+        periodStart: *id023
+        periodEnd: *id023
+        activeMembers: *id026
+        engagedReaders: *id026
+        suppressed: *id024
       required: []
     VerifiedDomain:
       type: object
@@ -40422,7 +40880,7 @@ components:
           minLength: 1
           maxLength: 253
         status: *id002
-        verifiedAt: *id014
+        verifiedAt: *id023
       required:
       - id
     Membership:
@@ -40441,19 +40899,19 @@ components:
           - academic_staff
           - organization_member
         status: *id002
-        verifiedAt: *id014
-        expiresAt: *id014
+        verifiedAt: *id023
+        expiresAt: *id023
       required:
       - id
     Eligibility:
       type: object
       additionalProperties: false
       properties:
-        eligible: *id015
+        eligible: *id024
         reasonCode: *id002
         institutionId: *id003
         category: *id002
-        validUntil: *id014
+        validUntil: *id023
       required: []
     Cohort:
       type: object
@@ -40463,7 +40921,7 @@ components:
         institutionId: *id003
         name: *id001
         status: *id002
-        memberCount: *id017
+        memberCount: *id026
       required:
       - id
     OfflineLicense:
@@ -40474,11 +40932,11 @@ components:
         editionId: *id003
         revisionId: *id003
         deviceId: *id003
-        issuedAt: *id014
-        expiresAt: *id014
-        maxOfflineAt: *id014
+        issuedAt: *id023
+        expiresAt: *id023
+        maxOfflineAt: *id023
         status: *id002
-        manifestUrl: *id018
+        manifestUrl: *id027
       required:
       - id
     SyncResult:
@@ -40499,7 +40957,7 @@ components:
             required:
             - id
             - reasonCode
-        serverTime: *id014
+        serverTime: *id023
         cursor: *id001
       required:
       - accepted
@@ -40514,8 +40972,8 @@ components:
         action: *id002
         objectType: *id002
         objectId: *id003
-        occurredAt: *id014
-        reason: *id016
+        occurredAt: *id023
+        reason: *id025
         requestId: *id001
       required:
       - id
@@ -40534,7 +40992,7 @@ components:
           - medium
           - high
           - critical
-        openedAt: *id014
+        openedAt: *id023
         status: *id002
       required:
       - id
@@ -40550,7 +41008,7 @@ components:
           - ok
           - degraded
           - unavailable
-        checkedAt: *id014
+        checkedAt: *id023
         components:
           type: array
           items:
@@ -40572,9 +41030,9 @@ components:
         metric: *id001
         value:
           type: number
-        periodStart: *id014
-        periodEnd: *id014
-        suppressed: *id015
+        periodStart: *id023
+        periodEnd: *id023
+        suppressed: *id024
       required:
       - metric
       - value
@@ -40594,7 +41052,7 @@ components:
           - accepted
           - duplicate
           - rejected
-        receivedAt: *id014
+        receivedAt: *id023
       required:
       - eventId
       - status
@@ -40605,8 +41063,8 @@ components:
       properties:
         eventId: *id003
         eventType: *id001
-        occurredAt: *id014
-        receivedAt: *id014
+        occurredAt: *id023
+        receivedAt: *id023
         qualityStatus: *id002
       required: []
     ResearchSession:
@@ -40614,9 +41072,9 @@ components:
       additionalProperties: false
       properties:
         id: *id003
-        startedAt: *id014
-        endedAt: *id014
-        eventCount: *id017
+        startedAt: *id023
+        endedAt: *id023
+        eventCount: *id026
         qualityStatus: *id002
       required:
       - id
@@ -40624,24 +41082,24 @@ components:
       type: object
       additionalProperties: false
       properties:
-        periodStart: *id014
-        periodEnd: *id014
-        accepted: *id017
-        duplicates: *id017
-        rejected: *id017
-        late: *id017
+        periodStart: *id023
+        periodEnd: *id023
+        accepted: *id026
+        duplicates: *id026
+        rejected: *id026
+        late: *id026
       required: []
     ResearchDashboard:
       type: object
       additionalProperties: false
       properties:
-        periodStart: *id014
-        periodEnd: *id014
+        periodStart: *id023
+        periodEnd: *id023
         metrics:
           type: array
           items:
             $ref: '#/components/schemas/ResearchMetric'
-        lastComputedAt: *id014
+        lastComputedAt: *id023
       required:
       - periodStart
       - periodEnd
@@ -40653,10 +41111,10 @@ components:
       properties:
         id: *id003
         title: *id001
-        purpose: *id016
+        purpose: *id025
         status: *id002
         legalBasis: *id001
-        retentionUntil: *id014
+        retentionUntil: *id023
       required:
       - id
     ResearchReport:
@@ -40667,7 +41125,7 @@ components:
         studyId: *id003
         title: *id001
         status: *id002
-        generatedAt: *id014
+        generatedAt: *id023
         metrics:
           type: array
           items:
@@ -40681,8 +41139,8 @@ components:
         id: *id003
         studyId: *id003
         status: *id002
-        expiresAt: *id014
-        downloadUrl: *id018
+        expiresAt: *id023
+        downloadUrl: *id027
         approvedBy: *id003
       required:
       - id
@@ -40695,7 +41153,7 @@ components:
         status: *id002
         snapshotHash: *id001
         disclosureAssessmentId: *id003
-        releasedAt: *id014
+        releasedAt: *id023
         metrics:
           type: array
           items:
@@ -40712,12 +41170,12 @@ components:
       properties:
         id: *id003
         title: *id001
-        releasedAt: *id014
+        releasedAt: *id023
         metrics:
           type: array
           items:
             $ref: '#/components/schemas/ResearchMetric'
-        methodology: *id016
+        methodology: *id025
       required:
       - id
       - title
@@ -40733,7 +41191,7 @@ components:
         revisionId: *id003
         lessonId: *id003
         title: *id001
-        snippet: *id016
+        snippet: *id025
         score:
           type: number
           minimum: 0
@@ -40759,7 +41217,7 @@ components:
                 - removed
                 - changed
               path: *id001
-              summary: *id016
+              summary: *id025
             required:
             - kind
             - path
@@ -40780,8 +41238,8 @@ components:
           - restrict
           - export
         status: *id002
-        createdAt: *id014
-        resolvedAt: *id014
+        createdAt: *id023
+        resolvedAt: *id023
       required:
       - id
     RoleAssignment:
@@ -40790,10 +41248,10 @@ components:
       properties:
         id: *id003
         userId: *id003
-        role: *id022
-        scopeType: *id019
+        role: *id031
+        scopeType: *id028
         scopeId: *id003
-        expiresAt: *id014
+        expiresAt: *id023
         status: *id002
       required:
       - id
@@ -40801,11 +41259,11 @@ components:
       type: object
       additionalProperties: false
       properties:
-        code: *id022
-        description: *id016
+        code: *id031
+        description: *id025
         scopeTypes:
           type: array
-          items: *id019
+          items: *id028
       required: []
     ReconciliationRun:
       type: object
@@ -40814,24 +41272,24 @@ components:
         id: *id003
         provider: *id001
         status: *id002
-        startedAt: *id014
-        completedAt: *id014
-        matched: *id017
-        exceptions: *id017
+        startedAt: *id023
+        completedAt: *id023
+        matched: *id026
+        exceptions: *id026
       required:
       - id
     FinanceReport:
       type: object
       additionalProperties: false
       properties:
-        periodStart: *id014
-        periodEnd: *id014
-        currency: *id021
-        grossMinor: *id020
-        refundMinor: *id020
+        periodStart: *id023
+        periodEnd: *id023
+        currency: *id030
+        grossMinor: *id029
+        refundMinor: *id029
         netMinor:
           type: integer
-        paidOrders: *id017
+        paidOrders: *id026
       required: []
     FeatureFlag:
       type: object
@@ -40839,10 +41297,10 @@ components:
       properties:
         id: *id003
         key: *id001
-        enabled: *id015
-        scopeType: *id019
+        enabled: *id024
+        scopeType: *id028
         scopeId: *id003
-        updatedAt: *id014
+        updatedAt: *id023
       required:
       - id
     ConsentRecord:
@@ -40851,9 +41309,9 @@ components:
       properties:
         id: *id003
         purpose: *id002
-        granted: *id015
+        granted: *id024
         policyVersion: *id001
-        recordedAt: *id014
+        recordedAt: *id023
       required:
       - id
     RetentionRun:
@@ -40863,9 +41321,9 @@ components:
         id: *id003
         scope: *id002
         status: *id002
-        startedAt: *id014
-        completedAt: *id014
-        deletedCount: *id017
+        startedAt: *id023
+        completedAt: *id023
+        deletedCount: *id026
       required:
       - id
     ImportJob:
@@ -40875,8 +41333,8 @@ components:
         id: *id003
         kind: *id002
         status: *id002
-        acceptedCount: *id017
-        rejectedCount: *id017
+        acceptedCount: *id026
+        rejectedCount: *id026
         reportAssetId: *id003
       required:
       - id
@@ -40886,11 +41344,11 @@ components:
       properties:
         id: *id003
         status: *id002
-        scopeType: *id019
+        scopeType: *id028
         scopeId: *id003
-        maxRedemptions: *id017
-        redeemedCount: *id017
-        expiresAt: *id014
+        maxRedemptions: *id026
+        redeemedCount: *id026
+        expiresAt: *id023
       required:
       - id
     GiftCodeIssue:
@@ -40902,8 +41360,8 @@ components:
           type: string
           minLength: 16
           maxLength: 128
-        expiresAt: *id014
-        maxRedemptions: *id017
+        expiresAt: *id023
+        maxRedemptions: *id026
         status: *id002
       required:
       - id
@@ -40914,15 +41372,15 @@ components:
         id: *id003
         kind: *id002
         status: *id002
-        expiresAt: *id014
-        downloadUrl: *id018
+        expiresAt: *id023
+        downloadUrl: *id027
       required:
       - id
     AiAnswer:
       type: object
       additionalProperties: false
       properties:
-        answer: *id016
+        answer: *id025
         citations:
           type: array
           items:
@@ -40938,7 +41396,7 @@ components:
             - editionId
             - revisionId
             - chapterId
-        limitations: *id016
+        limitations: *id025
         modelPolicyVersion: *id001
       required: []
     EligibilityPolicy:
@@ -40949,32 +41407,32 @@ components:
         categories:
           type: array
           items: *id002
-        requiresRoster: *id015
-        requiresSso: *id015
-        membershipDays: *id017
-        capacity: *id017
-        updatedAt: *id014
+        requiresRoster: *id024
+        requiresSso: *id024
+        membershipDays: *id026
+        capacity: *id026
+        updatedAt: *id023
       required: []
     AccessDecision:
       type: object
       additionalProperties: false
       properties:
-        allowed: *id015
+        allowed: *id024
         reasonCode: *id002
         policyId: *id001
-        evaluatedAt: *id014
+        evaluatedAt: *id023
       required: []
     Problem:
       type: object
       additionalProperties: false
       properties:
-        type: *id018
+        type: *id027
         title: *id001
         status:
           type: integer
           minimum: 400
           maximum: 599
-        detail: *id016
+        detail: *id025
         instance: *id001
         code: *id001
         requestId: *id001
@@ -41006,7 +41464,7 @@ components:
           type: integer
           minimum: 1
           maximum: 100
-        hasMore: *id015
+        hasMore: *id024
       required:
       - limit
       - hasMore
@@ -41014,7 +41472,7 @@ components:
       type: object
       additionalProperties: false
       properties:
-        email: *id023
+        email: *id032
         password:
           type: string
           minLength: 12
@@ -41031,7 +41489,7 @@ components:
       type: object
       additionalProperties: false
       properties:
-        email: *id023
+        email: *id032
         password:
           type: string
           minLength: 1
@@ -41057,7 +41515,7 @@ components:
       type: object
       additionalProperties: false
       properties:
-        email: *id023
+        email: *id032
       required:
       - email
     ResetPasswordInput:
@@ -41122,8 +41580,8 @@ components:
       type: object
       additionalProperties: false
       properties:
-        email: *id015
-        inApp: *id015
+        email: *id024
+        inApp: *id024
       required:
       - email
       - inApp
@@ -41131,10 +41589,10 @@ components:
       type: object
       additionalProperties: false
       properties:
-        analyticsConsent: *id015
-        researchConsent: *id015
-        personalizationConsent: *id015
-        aiAssistanceConsent: *id015
+        analyticsConsent: *id024
+        researchConsent: *id024
+        personalizationConsent: *id024
+        aiAssistanceConsent: *id024
         policyVersion: *id001
       required:
       - analyticsConsent
@@ -41164,7 +41622,7 @@ components:
         revisionId: *id003
         lessonId: *id003
         anchor: *id001
-        body: *id016
+        body: *id025
       required:
       - editionId
       - revisionId
@@ -41182,7 +41640,7 @@ components:
           type: number
           minimum: 0
           maximum: 100
-        clientUpdatedAt: *id014
+        clientUpdatedAt: *id023
       required:
       - editionId
       - revisionId
@@ -41224,7 +41682,7 @@ components:
                 - bookmark
                 - annotation
                 - research_event
-              clientUpdatedAt: *id014
+              clientUpdatedAt: *id023
               entityId: *id003
               operation:
                 type: string
@@ -41233,7 +41691,7 @@ components:
                 enum:
                 - upsert
                 - delete
-              content: *id016
+              content: *id025
               percent:
                 type: number
                 minimum: 0
@@ -41267,7 +41725,7 @@ components:
               selectedOptionIds:
                 type: array
                 items: *id003
-              shortText: *id016
+              shortText: *id025
             required:
             - questionId
       required:
@@ -41278,7 +41736,7 @@ components:
       properties:
         lessonId: *id003
         title: *id001
-        brief: *id016
+        brief: *id025
         rubric:
           type: array
           items: *id001
@@ -41292,8 +41750,8 @@ components:
       additionalProperties: false
       properties:
         planId: *id003
-        returnUrl: *id018
-        cancelUrl: *id018
+        returnUrl: *id027
+        cancelUrl: *id027
         paymentMethod: *id001
       required:
       - planId
@@ -41345,7 +41803,7 @@ components:
           - standalone
           - series
         title: *id001
-        description: *id016
+        description: *id025
         authors:
           type: array
           items: *id001
@@ -41353,7 +41811,7 @@ components:
           type: string
           minLength: 1
           maxLength: 35
-        rightsAttestation: *id015
+        rightsAttestation: *id024
       required:
       - slug
       - kind
@@ -41366,7 +41824,7 @@ components:
       additionalProperties: false
       properties:
         title: *id001
-        description: *id016
+        description: *id025
         authors:
           type: array
           items: *id001
@@ -41381,8 +41839,8 @@ components:
       additionalProperties: false
       properties:
         title: *id001
-        ordinal: *id017
-        description: *id016
+        ordinal: *id026
+        description: *id025
       required:
       - title
       - ordinal
@@ -41391,7 +41849,7 @@ components:
       additionalProperties: false
       properties:
         label: *id001
-        ordinal: *id017
+        ordinal: *id026
         isbn:
           type: string
           minLength: 1
@@ -41409,15 +41867,15 @@ components:
       additionalProperties: false
       properties:
         sourceRevisionId: *id003
-        changeSummary: *id016
+        changeSummary: *id025
       required:
       - changeSummary
     RevisionPatchInput:
       type: object
       additionalProperties: false
       properties:
-        changeSummary: *id016
-        scheduledAt: *id014
+        changeSummary: *id025
+        scheduledAt: *id023
       required: []
       minProperties: 1
     RevisionSubmitInput:
@@ -41428,7 +41886,7 @@ components:
           type: string
           minLength: 64
           maxLength: 128
-        reviewerNote: *id016
+        reviewerNote: *id025
       required:
       - expectedContentHash
     RevisionPublishInput:
@@ -41439,8 +41897,8 @@ components:
           type: string
           minLength: 64
           maxLength: 128
-        effectiveAt: *id014
-        reason: *id016
+        effectiveAt: *id023
+        reason: *id025
       required:
       - expectedContentHash
       - reason
@@ -41449,8 +41907,8 @@ components:
       additionalProperties: false
       properties:
         title: *id001
-        ordinal: *id017
-        summary: *id016
+        ordinal: *id026
+        summary: *id025
         learningOutcomes:
           type: array
           items: *id001
@@ -41462,8 +41920,8 @@ components:
       additionalProperties: false
       properties:
         title: *id001
-        ordinal: *id017
-        bodyHtml: *id016
+        ordinal: *id026
+        bodyHtml: *id025
         learningOutcomes:
           type: array
           items: *id001
@@ -41479,7 +41937,7 @@ components:
       additionalProperties: false
       properties:
         title: *id001
-        bodyHtml: *id016
+        bodyHtml: *id025
         learningOutcomes:
           type: array
           items: *id001
@@ -41498,14 +41956,14 @@ components:
       properties:
         fileName: *id001
         declaredMediaType: *id001
-        byteSize: *id017
+        byteSize: *id026
         sha256:
           type: string
           minLength: 64
           maxLength: 64
-        scopeType: *id019
+        scopeType: *id028
         scopeId: *id003
-        rightsAttestation: *id015
+        rightsAttestation: *id024
       required:
       - fileName
       - declaredMediaType
@@ -41526,7 +41984,7 @@ components:
             type: object
             additionalProperties: false
             properties:
-              number: *id017
+              number: *id026
               etag: *id001
             required:
             - number
@@ -41538,7 +41996,7 @@ components:
       additionalProperties: false
       properties:
         assetId: *id003
-        scopeType: *id019
+        scopeType: *id028
         scopeId: *id003
         title: *id001
         accessClass:
@@ -41550,7 +42008,7 @@ components:
           - registered_free
           - entitled
         license: *id001
-        attribution: *id016
+        attribution: *id025
       required:
       - assetId
       - scopeType
@@ -41562,13 +42020,13 @@ components:
       type: object
       additionalProperties: false
       properties:
-        scopeType: *id019
+        scopeType: *id028
         scopeId: *id003
-        read: *id015
-        copy: *id015
-        print: *id015
-        download: *id015
-        offline: *id015
+        read: *id024
+        copy: *id024
+        print: *id024
+        download: *id024
+        offline: *id024
         screenshotMode:
           type: string
           minLength: 1
@@ -41578,7 +42036,7 @@ components:
           - watermark
           - restrict_ui
         watermarkMode: *id002
-        reason: *id016
+        reason: *id025
       required:
       - scopeType
       - scopeId
@@ -41593,10 +42051,10 @@ components:
       type: object
       additionalProperties: false
       properties:
-        copy: *id015
-        print: *id015
-        download: *id015
-        offline: *id015
+        copy: *id024
+        print: *id024
+        download: *id024
+        offline: *id024
         screenshotMode:
           type: string
           minLength: 1
@@ -41606,8 +42064,8 @@ components:
           - watermark
           - restrict_ui
         watermarkMode: *id002
-        reason: *id016
-        expectedVersion: *id017
+        reason: *id025
+        expectedVersion: *id026
       required:
       - reason
       - expectedVersion
@@ -41616,10 +42074,10 @@ components:
       additionalProperties: false
       properties:
         recipientUserId: *id003
-        scopeType: *id019
+        scopeType: *id028
         scopeId: *id003
-        startsAt: *id014
-        expiresAt: *id014
+        startsAt: *id023
+        expiresAt: *id023
         source:
           type: string
           minLength: 1
@@ -41628,7 +42086,7 @@ components:
           - complimentary
           - institutional
           - support_adjustment
-        reason: *id016
+        reason: *id025
         approvalReference: *id003
       required:
       - recipientUserId
@@ -41642,8 +42100,8 @@ components:
       type: object
       additionalProperties: false
       properties:
-        expiresAt: *id014
-        reason: *id016
+        expiresAt: *id023
+        reason: *id025
       required:
       - expiresAt
       - reason
@@ -41653,7 +42111,7 @@ components:
       properties:
         name: *id001
         legalName: *id001
-        contactEmail: *id023
+        contactEmail: *id032
         benefitPolicyId: *id003
       required:
       - name
@@ -41690,8 +42148,8 @@ components:
           - approve
           - reject
           - suspend
-        reason: *id016
-        expiresAt: *id014
+        reason: *id025
+        expiresAt: *id023
       required:
       - decision
       - reason
@@ -41701,7 +42159,7 @@ components:
       properties:
         institutionId: *id003
         name: *id001
-        description: *id016
+        description: *id025
       required:
       - institutionId
       - name
@@ -41711,8 +42169,8 @@ components:
       properties:
         code: *id003
         name: *id001
-        priceMinor: *id020
-        currency: *id021
+        priceMinor: *id029
+        currency: *id030
         billingPeriod:
           type: string
           minLength: 1
@@ -41721,7 +42179,7 @@ components:
           - one_time
           - monthly
           - annual
-        scopeType: *id019
+        scopeType: *id028
         scopeId: *id003
         termsVersion: *id001
       required:
@@ -41738,9 +42196,9 @@ components:
       additionalProperties: false
       properties:
         provider: *id001
-        from: *id014
-        to: *id014
-        reason: *id016
+        from: *id023
+        to: *id023
+        reason: *id025
       required:
       - provider
       - from
@@ -41777,7 +42235,7 @@ components:
           - reader
           - learning
           - offline_sync
-        occurredAt: *id014
+        occurredAt: *id023
         editionId: *id003
         revisionId: *id003
         durationSeconds:
@@ -41798,10 +42256,10 @@ components:
       additionalProperties: false
       properties:
         title: *id001
-        purpose: *id016
+        purpose: *id025
         legalBasis: *id001
-        retentionUntil: *id014
-        populationDefinition: *id016
+        retentionUntil: *id023
+        populationDefinition: *id025
       required:
       - title
       - purpose
@@ -41813,8 +42271,8 @@ components:
       properties:
         studyId: *id003
         title: *id001
-        periodStart: *id014
-        periodEnd: *id014
+        periodStart: *id023
+        periodEnd: *id023
         metricCodes:
           type: array
           items: *id001
@@ -41829,11 +42287,11 @@ components:
       additionalProperties: false
       properties:
         studyId: *id003
-        purpose: *id016
+        purpose: *id025
         fields:
           type: array
           items: *id001
-        reason: *id016
+        reason: *id025
         approvalReference: *id003
       required:
       - studyId
@@ -41846,7 +42304,7 @@ components:
       properties:
         reportId: *id003
         title: *id001
-        summary: *id016
+        summary: *id025
         metricCodes:
           type: array
           items: *id001
@@ -41872,7 +42330,7 @@ components:
           minLength: 64
           maxLength: 128
         disclosureAssessmentId: *id003
-        reason: *id016
+        reason: *id025
       required:
       - decision
       - expectedSnapshotHash
@@ -41887,7 +42345,7 @@ components:
           minLength: 64
           maxLength: 128
         disclosureAssessmentId: *id003
-        reason: *id016
+        reason: *id025
       required:
       - expectedSnapshotHash
       - disclosureAssessmentId
@@ -41901,7 +42359,7 @@ components:
           minLength: 64
           maxLength: 128
         approvedReviewId: *id003
-        reason: *id016
+        reason: *id025
       required:
       - expectedSnapshotHash
       - approvedReviewId
@@ -41918,7 +42376,7 @@ components:
           - approve
           - changes_requested
           - reject
-        reason: *id016
+        reason: *id025
         expectedContentHash:
           type: string
           minLength: 1
@@ -41930,7 +42388,7 @@ components:
       type: object
       additionalProperties: false
       properties:
-        reason: *id016
+        reason: *id025
       required:
       - reason
     StatusChangeInput:
@@ -41945,7 +42403,7 @@ components:
           - active
           - suspended
           - closed
-        reason: *id016
+        reason: *id025
       required:
       - status
       - reason
@@ -41954,11 +42412,11 @@ components:
       additionalProperties: false
       properties:
         userId: *id003
-        role: *id022
-        scopeType: *id019
+        role: *id031
+        scopeType: *id028
         scopeId: *id003
-        expiresAt: *id014
-        reason: *id016
+        expiresAt: *id023
+        reason: *id025
         approvalReference: *id003
       required:
       - userId
@@ -41969,9 +42427,9 @@ components:
       additionalProperties: false
       properties:
         paymentId: *id003
-        amountMinor: *id020
-        currency: *id021
-        reason: *id016
+        amountMinor: *id029
+        currency: *id030
+        reason: *id025
       required:
       - paymentId
       - amountMinor
@@ -41999,7 +42457,7 @@ components:
           - erase
           - restrict
           - export
-        details: *id016
+        details: *id025
       required:
       - kind
     PrivacyRequestResolveInput:
@@ -42014,7 +42472,7 @@ components:
           - fulfilled
           - rejected
           - deferred
-        reason: *id016
+        reason: *id025
         evidenceReference: *id003
       required:
       - decision
@@ -42027,7 +42485,7 @@ components:
         minimumCellSize:
           type: integer
           minimum: 2
-        reviewNotes: *id016
+        reviewNotes: *id025
         assessmentResult:
           type: string
           minLength: 1
@@ -42047,7 +42505,7 @@ components:
         assetIds:
           type: array
           items: *id003
-        statement: *id016
+        statement: *id025
         clientSubmissionId: *id003
       required:
       - assetIds
@@ -42082,7 +42540,7 @@ components:
           - privacy
           - other
         subject: *id001
-        description: *id016
+        description: *id025
         relatedObjectId: *id003
       required:
       - category
@@ -42092,10 +42550,10 @@ components:
       type: object
       additionalProperties: false
       properties:
-        enabled: *id015
-        scopeType: *id019
+        enabled: *id024
+        scopeType: *id028
         scopeId: *id003
-        reason: *id016
+        reason: *id025
       required:
       - enabled
       - reason
@@ -42112,7 +42570,7 @@ components:
           - research
           - personalization
           - ai_assistance
-        granted: *id015
+        granted: *id024
         policyVersion: *id001
       required:
       - purpose
@@ -42131,8 +42589,8 @@ components:
           - sessions
           - exports
           - aggregate_staging
-        cutoffAt: *id014
-        reason: *id016
+        cutoffAt: *id023
+        reason: *id025
       required:
       - scope
       - cutoffAt
@@ -42151,14 +42609,14 @@ components:
             - student
             - academic_staff
             - organization_member
-        requiresRoster: *id015
-        requiresSso: *id015
+        requiresRoster: *id024
+        requiresSso: *id024
         membershipDays:
           type: integer
           minimum: 1
           maximum: 3650
-        capacity: *id017
-        reason: *id016
+        capacity: *id026
+        reason: *id025
       required:
       - categories
       - requiresRoster
@@ -42191,8 +42649,8 @@ components:
           maxLength: 500
           enum:
           - publication_package
-        dryRun: *id015
-        reason: *id016
+        dryRun: *id024
+        reason: *id025
       required:
       - assetId
       - kind
@@ -42207,8 +42665,8 @@ components:
           type: integer
           minimum: 1
           maximum: 1000
-        expiresAt: *id014
-        reason: *id016
+        expiresAt: *id023
+        reason: *id025
       required:
       - planId
       - maxRedemptions
@@ -42246,8 +42704,8 @@ components:
           - light
           - dark
           - sepia
-        reducedMotion: *id015
-        lowBandwidth: *id015
+        reducedMotion: *id024
+        lowBandwidth: *id024
       required:
       - fontFamily
       - fontScale
@@ -42260,7 +42718,7 @@ components:
       additionalProperties: false
       properties:
         editionId: *id003
-        targetAt: *id014
+        targetAt: *id023
       required:
       - editionId
       - targetAt
@@ -42269,7 +42727,7 @@ components:
       additionalProperties: false
       properties:
         title: *id001
-        body: *id016
+        body: *id025
       required:
       - title
       - body
@@ -42277,7 +42735,7 @@ components:
       type: object
       additionalProperties: false
       properties:
-        body: *id016
+        body: *id025
       required:
       - body
     RosterImportCreateInput:
@@ -42285,7 +42743,7 @@ components:
       additionalProperties: false
       properties:
         assetId: *id003
-        dryRun: *id015
+        dryRun: *id024
         category:
           type: string
           minLength: 1
@@ -42294,7 +42752,7 @@ components:
           - student
           - academic_staff
           - organization_member
-        reason: *id016
+        reason: *id025
       required:
       - assetId
       - dryRun
@@ -42333,13 +42791,13 @@ components:
           type: object
           additionalProperties: false
           properties:
-            from: *id014
-            to: *id014
+            from: *id023
+            to: *id023
             status: *id002
             institutionId: *id003
           required: []
-        purpose: *id016
-        reason: *id016
+        purpose: *id025
+        reason: *id025
       required:
       - kind
       - filters
@@ -42572,13 +43030,11 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/Entitlement'
-        page:
-          $ref: '#/components/schemas/PageInfo'
-        requestId: *id001
+            $ref: '#/components/schemas/EntitlementMine'
+        requestId: &id033
+          type: string
       required:
       - data
-      - page
       - requestId
     get_me_bookmarksResponse:
       type: object
@@ -42806,8 +43262,7 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/BillingPlans'
-        requestId: &id024
-          type: string
+        requestId: *id033
       required:
       - data
       - requestId
@@ -42817,7 +43272,7 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/BillingOrder'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -42827,7 +43282,7 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/BillingPaymentStatus'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -42841,7 +43296,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/BillingSubscription'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -42851,7 +43306,7 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/BillingCancellation'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -42863,7 +43318,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/BillingInvoiceSummary'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -43109,21 +43564,18 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/Entitlement'
-        page:
-          $ref: '#/components/schemas/PageInfo'
-        requestId: *id001
+            $ref: '#/components/schemas/EntitlementAdminRecord'
+        requestId: *id033
       required:
       - data
-      - page
       - requestId
     post_admin_entitlementsResponse:
       type: object
       additionalProperties: false
       properties:
         data:
-          $ref: '#/components/schemas/Entitlement'
-        requestId: *id001
+          $ref: '#/components/schemas/EntitlementGrantRequested'
+        requestId: *id033
       required:
       - data
       - requestId
@@ -43132,8 +43584,8 @@ components:
       additionalProperties: false
       properties:
         data:
-          $ref: '#/components/schemas/Entitlement'
-        requestId: *id001
+          $ref: '#/components/schemas/EntitlementState'
+        requestId: *id033
       required:
       - data
       - requestId
@@ -43142,8 +43594,8 @@ components:
       additionalProperties: false
       properties:
         data:
-          $ref: '#/components/schemas/Entitlement'
-        requestId: *id001
+          $ref: '#/components/schemas/EntitlementGrantRequested'
+        requestId: *id033
       required:
       - data
       - requestId
@@ -43223,7 +43675,7 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/BillingPlans'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -43233,7 +43685,7 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/BillingPlanVersionCreated'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -43245,7 +43697,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/BillingOrderRecord'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -43255,7 +43707,7 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/BillingReconciliation'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -43692,7 +44144,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/BillingPaymentRecord'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -43702,7 +44154,7 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/BillingRefundAction'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -43712,7 +44164,7 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/BillingRefundAction'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -43724,7 +44176,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/BillingRefundRecord'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -43734,7 +44186,7 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/BillingReconciliationRunDetail'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -43743,8 +44195,8 @@ components:
       additionalProperties: false
       properties:
         data:
-          $ref: '#/components/schemas/Subscription'
-        requestId: *id001
+          $ref: '#/components/schemas/EntitlementTrial'
+        requestId: *id033
       required:
       - data
       - requestId
@@ -44079,7 +44531,7 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/BillingFinanceReport'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -44483,26 +44935,26 @@ components:
       additionalProperties: false
       properties:
         id: *id013
-        code: *id024
-        name: *id024
-        version: &id025
+        code: *id033
+        name: *id033
+        version: &id034
           type: integer
           minimum: 0
         planVersionId: *id013
-        currencyCode: *id024
-        amountMinor: *id025
-        periodMonths: *id025
-        scopeKind: *id024
+        currencyCode: *id033
+        amountMinor: *id034
+        periodMonths: *id034
+        scopeKind: *id033
         scopeId:
           anyOf:
           - *id013
           - type: 'null'
-        scopeTitle: *id024
-        automaticRenewal: &id027
+        scopeTitle: *id033
+        automaticRenewal: &id036
           type: boolean
-        cancellation: *id024
-        refundWindowDays: *id025
-        trialDays: *id025
+        cancellation: *id033
+        refundWindowDays: *id034
+        trialDays: *id034
       required:
       - id
       - code
@@ -44527,10 +44979,10 @@ components:
           type: object
           additionalProperties: false
           properties:
-            name: *id024
-            priceMinor: *id025
-            currency: *id024
-            description: *id024
+            name: *id033
+            priceMinor: *id034
+            currency: *id033
+            description: *id033
           required:
           - name
           - priceMinor
@@ -44540,7 +44992,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/BillingPlan'
-        policyVersion: *id025
+        policyVersion: *id034
       required:
       - free
       - paid
@@ -44550,11 +45002,11 @@ components:
       additionalProperties: false
       properties:
         id: *id013
-        status: *id024
-        paymentStatus: *id024
+        status: *id033
+        paymentStatus: *id033
         planVersionId: *id013
-        amountMinor: *id025
-        currency: *id024
+        amountMinor: *id034
+        currency: *id033
         checkoutUrl:
           anyOf:
           - type: string
@@ -44578,16 +45030,16 @@ components:
       additionalProperties: false
       properties:
         id: *id013
-        status: *id024
+        status: *id033
         verifiedAt:
           anyOf:
-          - &id026
+          - &id035
             type: string
             format: date-time
           - type: 'null'
-        createdAt: *id026
+        createdAt: *id035
         orderId: *id013
-        orderStatus: *id024
+        orderStatus: *id033
       required:
       - id
       - status
@@ -44600,25 +45052,25 @@ components:
       additionalProperties: false
       properties:
         id: *id013
-        status: *id024
+        status: *id033
         currentPeriodStart:
           anyOf:
-          - *id026
+          - *id035
           - type: 'null'
         currentPeriodEnd:
           anyOf:
-          - *id026
+          - *id035
           - type: 'null'
-        cancelAtPeriodEnd: *id027
-        name: *id024
-        scopeKind: *id024
+        cancelAtPeriodEnd: *id036
+        name: *id033
+        scopeKind: *id033
         scopeId:
           anyOf:
           - *id013
           - type: 'null'
         periodMonths:
           anyOf:
-          - *id025
+          - *id034
           - type: 'null'
       required:
       - id
@@ -44635,10 +45087,10 @@ components:
       additionalProperties: false
       properties:
         id: *id013
-        invoiceNumber: *id024
-        currencyCode: *id024
-        totalMinor: *id025
-        issuedAt: *id026
+        invoiceNumber: *id033
+        currencyCode: *id033
+        totalMinor: *id034
+        issuedAt: *id035
         orderId: *id013
       required:
       - id
@@ -44652,23 +45104,23 @@ components:
       additionalProperties: false
       properties:
         id: *id013
-        invoiceNumber: *id024
-        currencyCode: *id024
-        totalMinor: *id025
-        issuedAt: *id026
+        invoiceNumber: *id033
+        currencyCode: *id033
+        totalMinor: *id034
+        issuedAt: *id035
         orderId: *id013
-        paidAt: *id026
-        planName: *id024
+        paidAt: *id035
+        planName: *id033
         periodMonths:
           anyOf:
-          - *id025
+          - *id034
           - type: 'null'
-        scopeKind: *id024
+        scopeKind: *id033
         scopeId:
           anyOf:
           - *id013
           - type: 'null'
-        tax: *id024
+        tax: *id033
       required:
       - id
       - invoiceNumber
@@ -44687,12 +45139,12 @@ components:
       additionalProperties: false
       properties:
         id: *id013
-        kind: *id024
-        status: *id024
-        createdAt: *id026
+        kind: *id033
+        status: *id033
+        createdAt: *id035
         sentAt:
           anyOf:
-          - *id026
+          - *id035
           - type: 'null'
       required:
       - id
@@ -44704,16 +45156,16 @@ components:
       type: object
       additionalProperties: false
       properties:
-        paidOrders: *id025
+        paidOrders: *id034
         grossMinor:
           type: string
           pattern: ^[0-9]+$
         settledRefundMinor:
           type: string
           pattern: ^[0-9]+$
-        pendingOrders: *id025
-        openDisputes: *id025
-        currency: *id024
+        pendingOrders: *id034
+        openDisputes: *id034
+        currency: *id033
       required:
       - paidOrders
       - grossMinor
@@ -44726,8 +45178,8 @@ components:
       additionalProperties: false
       properties:
         id: *id013
-        code: *id024
-        version: *id025
+        code: *id033
+        version: *id034
       required:
       - id
       - code
@@ -44737,8 +45189,8 @@ components:
       additionalProperties: false
       properties:
         id: *id013
-        cancelAtPeriodEnd: *id027
-        paidThrough: *id026
+        cancelAtPeriodEnd: *id036
+        paidThrough: *id035
       required:
       - id
       - cancelAtPeriodEnd
@@ -44748,7 +45200,7 @@ components:
       additionalProperties: false
       properties:
         id: *id013
-        status: *id024
+        status: *id033
       required:
       - id
       - status
@@ -44757,7 +45209,7 @@ components:
       additionalProperties: false
       properties:
         id: *id013
-        status: *id024
+        status: *id033
       required:
       - id
       - status
@@ -44766,10 +45218,10 @@ components:
       additionalProperties: false
       properties:
         id: *id013
-        examined: *id025
-        refundsExamined: *id025
-        batchLimited: *id027
-        exceptions: *id025
+        examined: *id034
+        refundsExamined: *id034
+        batchLimited: *id036
+        exceptions: *id034
       required:
       - id
       - examined
@@ -44781,16 +45233,16 @@ components:
       additionalProperties: false
       properties:
         id: *id013
-        provider: *id024
-        periodFrom: *id026
-        periodTo: *id026
-        startedAt: *id026
+        provider: *id033
+        periodFrom: *id035
+        periodTo: *id035
+        startedAt: *id035
         endedAt:
           anyOf:
-          - *id026
+          - *id035
           - type: 'null'
-        examined: *id025
-        exceptions: *id025
+        examined: *id034
+        exceptions: *id034
       required:
       - id
       - provider
@@ -44809,14 +45261,14 @@ components:
           anyOf:
           - *id013
           - type: 'null'
-        providerRef: *id024
-        outcome: *id024
+        providerRef: *id033
+        outcome: *id033
         detail:
           anyOf:
           - type: object
             additionalProperties: false
             properties:
-              code: *id024
+              code: *id033
             required:
             - code
           - type: 'null'
@@ -44831,13 +45283,13 @@ components:
       additionalProperties: false
       properties:
         id: *id013
-        provider: *id024
-        periodFrom: *id026
-        periodTo: *id026
-        startedAt: *id026
+        provider: *id033
+        periodFrom: *id035
+        periodTo: *id035
+        startedAt: *id035
         endedAt:
           anyOf:
-          - *id026
+          - *id035
           - type: 'null'
         items:
           type: array
@@ -44855,7 +45307,7 @@ components:
       type: object
       additionalProperties: false
       properties:
-        received: *id027
+        received: *id036
       required:
       - received
     BillingStatementText:
@@ -44866,16 +45318,16 @@ components:
       properties:
         id: *id013
         userId: *id013
-        merchantRef: *id024
-        currencyCode: *id024
+        merchantRef: *id033
+        currencyCode: *id033
         totalMinor:
           type: string
           pattern: ^[0-9]+$
-        status: *id024
-        createdAt: *id026
+        status: *id033
+        createdAt: *id035
         paidAt:
           anyOf:
-          - *id026
+          - *id035
           - type: 'null'
       required:
       - id
@@ -44892,17 +45344,17 @@ components:
       properties:
         id: *id013
         orderId: *id013
-        provider: *id024
+        provider: *id033
         providerRef:
           anyOf:
-          - *id024
+          - *id033
           - type: 'null'
-        status: *id024
+        status: *id033
         verifiedAt:
           anyOf:
-          - *id026
+          - *id035
           - type: 'null'
-        createdAt: *id026
+        createdAt: *id035
       required:
       - id
       - orderId
@@ -44920,10 +45372,10 @@ components:
         amountMinor:
           type: string
           pattern: ^[0-9]+$
-        status: *id024
+        status: *id033
         reason:
           anyOf:
-          - *id024
+          - *id033
           - type: 'null'
         requestedById:
           anyOf:
@@ -44933,14 +45385,14 @@ components:
           anyOf:
           - *id013
           - type: 'null'
-        requestedAt: *id026
+        requestedAt: *id035
         approvedAt:
           anyOf:
-          - *id026
+          - *id035
           - type: 'null'
         settledAt:
           anyOf:
-          - *id026
+          - *id035
           - type: 'null'
       required:
       - id
@@ -44959,12 +45411,12 @@ components:
       properties:
         id: *id013
         paymentAttemptId: *id013
-        status: *id024
-        reason: *id024
-        openedAt: *id026
+        status: *id033
+        reason: *id033
+        openedAt: *id035
         resolvedAt:
           anyOf:
-          - *id026
+          - *id035
           - type: 'null'
       required:
       - id
@@ -44978,15 +45430,15 @@ components:
       additionalProperties: false
       properties:
         id: *id013
-        invoiceNumber: *id024
+        invoiceNumber: *id033
         orderId: *id013
-        currencyCode: *id024
+        currencyCode: *id033
         totalMinor:
           type: string
           pattern: ^[0-9]+$
-        issuedAt: *id026
+        issuedAt: *id035
         userId: *id013
-        status: *id024
+        status: *id033
       required:
       - id
       - invoiceNumber
@@ -45083,8 +45535,8 @@ components:
       type: object
       additionalProperties: false
       properties:
-        from: *id026
-        to: *id026
+        from: *id035
+        to: *id035
       required:
       - from
       - to
@@ -45096,7 +45548,7 @@ components:
           type: object
           additionalProperties: false
           properties:
-            tx_ref: *id024
+            tx_ref: *id033
           required:
           - tx_ref
       required:
@@ -45107,7 +45559,7 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/BillingOrder'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -45117,7 +45569,7 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/BillingOrder'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -45127,7 +45579,7 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/BillingOrder'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -45137,7 +45589,7 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/BillingInvoice'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -45147,7 +45599,7 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/BillingStatementText'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -45159,7 +45611,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/BillingNotification'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -45171,7 +45623,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/BillingDisputeRecord'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -45183,7 +45635,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/BillingInvoiceRecord'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -45195,7 +45647,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/BillingReconciliationRunSummary'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -45205,7 +45657,7 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/BillingDisputeAction'
-        requestId: *id024
+        requestId: *id033
       required:
       - data
       - requestId
@@ -45215,7 +45667,710 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/BillingDisputeAction'
-        requestId: *id024
+        requestId: *id033
+      required:
+      - data
+      - requestId
+    EntitlementMine:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id013
+        source: &id037
+          type: string
+          enum:
+          - PAID
+          - TRIAL
+          - INSTITUTION
+          - COMPLIMENTARY
+          - SPONSORED
+          - PROMOTION
+        status: &id038
+          type: string
+          enum:
+          - PENDING
+          - ACTIVE
+          - SUSPENDED
+          - REVOKED
+        scope: &id039
+          type: string
+          enum:
+          - LIBRARY
+          - COLLECTION
+          - PUBLICATION
+          - VOLUME
+          - EDITION
+        collectionId:
+          anyOf:
+          - *id013
+          - type: 'null'
+        publicationId:
+          anyOf:
+          - *id013
+          - type: 'null'
+        volumeId:
+          anyOf:
+          - *id013
+          - type: 'null'
+        editionId:
+          anyOf:
+          - *id013
+          - type: 'null'
+        resourceId:
+          anyOf:
+          - *id013
+          - type: 'null'
+        startsAt: *id035
+        endsAt:
+          anyOf:
+          - *id035
+          - type: 'null'
+        revokedAt:
+          anyOf:
+          - *id035
+          - type: 'null'
+        createdAt: *id035
+        effectiveStatus: *id033
+      required:
+      - id
+      - source
+      - status
+      - scope
+      - collectionId
+      - publicationId
+      - volumeId
+      - editionId
+      - resourceId
+      - startsAt
+      - endsAt
+      - revokedAt
+      - createdAt
+      - effectiveStatus
+    EntitlementUser:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id013
+        email: *id033
+        status: *id033
+        emailVerifiedAt:
+          anyOf:
+          - *id035
+          - type: 'null'
+        activeGrants: *id034
+      required:
+      - id
+      - email
+      - status
+      - emailVerifiedAt
+      - activeGrants
+    EntitlementAdminRecord:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id013
+        userId: *id013
+        source: *id037
+        status: *id038
+        scope: *id039
+        collectionId:
+          anyOf:
+          - *id013
+          - type: 'null'
+        publicationId:
+          anyOf:
+          - *id013
+          - type: 'null'
+        volumeId:
+          anyOf:
+          - *id013
+          - type: 'null'
+        editionId:
+          anyOf:
+          - *id013
+          - type: 'null'
+        resourceId:
+          anyOf:
+          - *id013
+          - type: 'null'
+        grantedById:
+          anyOf:
+          - *id013
+          - type: 'null'
+        startsAt: *id035
+        endsAt:
+          anyOf:
+          - *id035
+          - type: 'null'
+        revokedAt:
+          anyOf:
+          - *id035
+          - type: 'null'
+        reason:
+          anyOf:
+          - *id033
+          - type: 'null'
+        createdAt: *id035
+        approvalStatus:
+          anyOf:
+          - *id033
+          - type: 'null'
+      required:
+      - id
+      - userId
+      - source
+      - status
+      - scope
+      - collectionId
+      - publicationId
+      - volumeId
+      - editionId
+      - resourceId
+      - grantedById
+      - startsAt
+      - endsAt
+      - revokedAt
+      - reason
+      - createdAt
+      - approvalStatus
+    EntitlementExpiring:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id013
+        userId: *id013
+        source: *id037
+        scope: *id039
+        endsAt: *id035
+      required:
+      - id
+      - userId
+      - source
+      - scope
+      - endsAt
+    EntitlementHistoryGrant:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id013
+        userId: *id013
+        source: *id037
+        status: *id038
+        scope: *id039
+        startsAt: *id035
+        endsAt:
+          anyOf:
+          - *id035
+          - type: 'null'
+        reason:
+          anyOf:
+          - *id033
+          - type: 'null'
+      required:
+      - id
+      - userId
+      - source
+      - status
+      - scope
+      - startsAt
+      - endsAt
+      - reason
+    EntitlementHistoryEvent:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id013
+        action: *id033
+        reason:
+          anyOf:
+          - *id033
+          - type: 'null'
+        actorId:
+          anyOf:
+          - *id013
+          - type: 'null'
+        occurredAt: *id035
+      required:
+      - id
+      - action
+      - reason
+      - actorId
+      - occurredAt
+    EntitlementHistory:
+      type: object
+      additionalProperties: false
+      properties:
+        grant:
+          $ref: '#/components/schemas/EntitlementHistoryGrant'
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/EntitlementHistoryEvent'
+      required:
+      - grant
+      - events
+    EntitlementGrantRequested:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id013
+        status: *id038
+        startsAt: *id035
+        endsAt:
+          anyOf:
+          - *id035
+          - type: 'null'
+      required:
+      - id
+      - status
+      - startsAt
+      - endsAt
+    EntitlementState:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id013
+        status: *id038
+      required:
+      - id
+      - status
+    EntitlementTrial:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id013
+        startsAt: *id035
+        endsAt: *id035
+        status: *id038
+      required:
+      - id
+      - startsAt
+      - endsAt
+      - status
+    EntitlementRedeemed:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id013
+        status: *id038
+        endsAt: *id035
+      required:
+      - id
+      - status
+      - endsAt
+    EntitlementCampaign:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id013
+        kind: *id033
+        status: *id033
+        name: *id033
+        scope: *id039
+        collectionId:
+          anyOf:
+          - *id013
+          - type: 'null'
+        publicationId:
+          anyOf:
+          - *id013
+          - type: 'null'
+        volumeId:
+          anyOf:
+          - *id013
+          - type: 'null'
+        editionId:
+          anyOf:
+          - *id013
+          - type: 'null'
+        startsAt: *id035
+        endsAt: *id035
+        maxClaims: *id034
+        createdAt: *id035
+        claimCount: *id034
+      required:
+      - id
+      - kind
+      - status
+      - name
+      - scope
+      - collectionId
+      - publicationId
+      - volumeId
+      - editionId
+      - startsAt
+      - endsAt
+      - maxClaims
+      - createdAt
+      - claimCount
+    EntitlementCampaignRequested:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id013
+        status: *id033
+        kind: *id033
+        code:
+          anyOf:
+          - *id033
+          - type: 'null'
+      required:
+      - id
+      - status
+      - kind
+      - code
+    EntitlementCampaignApproved:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id013
+        status: *id033
+        issued:
+          type: boolean
+      required:
+      - id
+      - status
+      - issued
+    InstitutionAgreement:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id013
+        institutionId: *id013
+        status: *id033
+        scope: *id039
+        publicationId:
+          anyOf:
+          - *id013
+          - type: 'null'
+        volumeId:
+          anyOf:
+          - *id013
+          - type: 'null'
+        memberLimit: *id034
+        permittedCategories:
+          type: array
+          items: *id033
+        startsAt: *id035
+        endsAt: *id035
+        createdById:
+          anyOf:
+          - *id013
+          - type: 'null'
+        approvedById:
+          anyOf:
+          - *id013
+          - type: 'null'
+        approvedAt:
+          anyOf:
+          - *id035
+          - type: 'null'
+      required:
+      - id
+      - institutionId
+      - status
+      - scope
+      - publicationId
+      - volumeId
+      - memberLimit
+      - permittedCategories
+      - startsAt
+      - endsAt
+      - createdById
+      - approvedById
+      - approvedAt
+    InstitutionAgreementState:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id013
+        status: *id033
+      required:
+      - id
+      - status
+    EntitlementMaintenance:
+      type: object
+      additionalProperties: false
+      properties:
+        notified: *id034
+      required:
+      - notified
+    EntitlementGrantInput:
+      type: object
+      additionalProperties: false
+      properties:
+        userId: *id013
+        reason: &id040
+          type: string
+          minLength: 10
+          maxLength: 1000
+        scope: *id039
+        scopeId: *id013
+        startsAt: *id035
+        durationDays:
+          type: integer
+          minimum: 1
+          maximum: 3650
+        endsAt: *id035
+        permanent:
+          type: boolean
+        source:
+          type: string
+          enum:
+          - COMPLIMENTARY
+          - INSTITUTION
+          - SPONSORED
+        membershipId: *id013
+        cohortId: *id013
+      required:
+      - userId
+      - reason
+      - scope
+    EntitlementReasonInput:
+      type: object
+      additionalProperties: false
+      properties:
+        reason: *id040
+      required:
+      - reason
+    EntitlementExtensionInput:
+      type: object
+      additionalProperties: false
+      properties:
+        durationDays:
+          type: integer
+          minimum: 1
+          maximum: 3650
+        reason: *id040
+      required:
+      - durationDays
+      - reason
+    EntitlementRedemptionInput:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+          minLength: 40
+          maxLength: 80
+          pattern: ^[a-zA-Z0-9_-]+$
+      required:
+      - code
+    EntitlementCampaignInput:
+      type: object
+      additionalProperties: false
+      properties:
+        kind:
+          type: string
+          enum:
+          - BULK
+          - PROMOTION
+        name:
+          type: string
+          minLength: 3
+          maxLength: 160
+        reason: *id040
+        scope: *id039
+        scopeId: *id013
+        startsAt: *id035
+        endsAt: *id035
+        maxClaims:
+          type: integer
+          minimum: 1
+          maximum: 1000
+        userIds:
+          type: array
+          items: *id013
+      required:
+      - kind
+      - name
+      - reason
+      - scope
+      - startsAt
+      - endsAt
+      - maxClaims
+    InstitutionAgreementInput:
+      type: object
+      additionalProperties: false
+      properties:
+        institutionId: *id013
+        reason: *id040
+        scope:
+          type: string
+          enum:
+          - LIBRARY
+          - PUBLICATION
+          - VOLUME
+        scopeId: *id013
+        memberLimit:
+          type: integer
+          minimum: 1
+          maximum: 100000
+        permittedCategories:
+          type: array
+          items:
+            type: string
+            enum:
+            - STUDENT
+            - ACADEMIC_STAFF
+            - ORGANIZATION_MEMBER
+            - SCHOLARSHIP
+            - SPONSORED_COHORT
+        startsAt: *id035
+        endsAt: *id035
+      required:
+      - institutionId
+      - reason
+      - scope
+      - memberLimit
+      - permittedCategories
+      - startsAt
+      - endsAt
+    post_me_promotion_redemptionsResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          $ref: '#/components/schemas/EntitlementRedeemed'
+        requestId: *id033
+      required:
+      - data
+      - requestId
+    get_admin_entitlement_usersResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/EntitlementUser'
+        requestId: *id033
+      required:
+      - data
+      - requestId
+    get_admin_entitlements_upcomingResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/EntitlementExpiring'
+        requestId: *id033
+      required:
+      - data
+      - requestId
+    get_admin_entitlements_id_historyResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          $ref: '#/components/schemas/EntitlementHistory'
+        requestId: *id033
+      required:
+      - data
+      - requestId
+    post_admin_entitlements_id_approveResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          $ref: '#/components/schemas/EntitlementState'
+        requestId: *id033
+      required:
+      - data
+      - requestId
+    post_admin_entitlements_id_suspendResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          $ref: '#/components/schemas/EntitlementState'
+        requestId: *id033
+      required:
+      - data
+      - requestId
+    post_admin_entitlements_id_resumeResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          $ref: '#/components/schemas/EntitlementState'
+        requestId: *id033
+      required:
+      - data
+      - requestId
+    get_admin_grant_campaignsResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/EntitlementCampaign'
+        requestId: *id033
+      required:
+      - data
+      - requestId
+    post_admin_grant_campaignsResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          $ref: '#/components/schemas/EntitlementCampaignRequested'
+        requestId: *id033
+      required:
+      - data
+      - requestId
+    post_admin_grant_campaigns_id_approveResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          $ref: '#/components/schemas/EntitlementCampaignApproved'
+        requestId: *id033
+      required:
+      - data
+      - requestId
+    post_admin_entitlements_maintenanceResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          $ref: '#/components/schemas/EntitlementMaintenance'
+        requestId: *id033
+      required:
+      - data
+      - requestId
+    get_admin_institution_agreementsResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/InstitutionAgreement'
+        requestId: *id033
+      required:
+      - data
+      - requestId
+    post_admin_institution_agreementsResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          $ref: '#/components/schemas/InstitutionAgreementState'
+        requestId: *id033
+      required:
+      - data
+      - requestId
+    post_admin_institution_agreements_id_approveResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          $ref: '#/components/schemas/InstitutionAgreementState'
+        requestId: *id033
       required:
       - data
       - requestId

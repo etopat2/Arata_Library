@@ -10,3 +10,4 @@ export function mayAccess(principal: Principal, action: Action): boolean {
 }
 
 export * from './content-policy.js';
+export * from './entitlements.js';

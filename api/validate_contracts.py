@@ -62,7 +62,7 @@ def validate_all():
                 errors.append(f"Missing CSRF header: {key}")
             if not op.get("x-rate-limit") or "x-audit-event" not in op or "x-audit-fields" not in op or not op.get("x-acceptance-scenarios"):
                 errors.append(f"Missing operational control or acceptance scenario: {key}")
-            if method.upper() in {"POST", "PUT", "PATCH"} and "requestBody" not in op and key not in {
+            if method.upper() in {"POST", "PUT", "PATCH"} and "requestBody" not in op and not op.get("x-no-request-body") and key not in {
                 "POST /api/v1/auth/logout", "POST /api/v1/resources/{id}/download",
                 "POST /api/v1/me/subscriptions/{id}/cancel", "POST /api/v1/me/notifications/{id}/read",
                 "POST /api/v1/orders/{id}/verify", "POST /api/v1/orders/{id}/retry",

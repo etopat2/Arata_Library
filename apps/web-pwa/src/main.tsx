@@ -11,6 +11,7 @@ import { Reader } from './Reader.js';
 import { ContentPolicyAdmin } from './ContentPolicyAdmin.js';
 import { PlatformPolicyAdmin } from './PlatformPolicyAdmin.js';
 import { BillingScreens } from './BillingScreens.js';
+import { EntitlementScreens } from './EntitlementScreens.js';
 import './style.css';
 
 const accountScreens = new Set([
@@ -53,6 +54,12 @@ function App() {
     'disputes',
     'plans-admin',
   ]).has(new URLSearchParams(location.search).get('screen') ?? '');
+  const entitlementScreen = new Set([
+    'entitlements',
+    'access-grants',
+    'trial-admin',
+    'institution-access',
+  ]).has(new URLSearchParams(location.search).get('screen') ?? '');
 
   useEffect(() => {
     void getTheme().then(chooseTheme);
@@ -80,6 +87,7 @@ function App() {
   if (policyAdmin) return <ContentPolicyAdmin />;
   if (platformSettings) return <PlatformPolicyAdmin />;
   if (billingScreen) return <BillingScreens />;
+  if (entitlementScreen) return <EntitlementScreens />;
   if (!account)
     return (
       <PublicPortal
