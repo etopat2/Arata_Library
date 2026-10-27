@@ -145,6 +145,7 @@ enum EntitlementSource {
   INSTITUTION
   COMPLIMENTARY
   SPONSORED
+  PROMOTION
 
   @@schema("app")
 }
@@ -152,6 +153,7 @@ enum EntitlementSource {
 enum EntitlementStatus {
   PENDING
   ACTIVE
+  SUSPENDED
   REVOKED
 
   @@schema("app")
@@ -253,6 +255,7 @@ enum SubjectRequestStatus {
 
 enum EntitlementScope {
   LIBRARY
+  COLLECTION
   PUBLICATION
   VOLUME
   EDITION
@@ -334,6 +337,13 @@ model User {
   disputesResolved         PaymentDispute[]        @relation("DisputeResolver")
   requestedGrants          GrantApproval[]         @relation("GrantRequester")
   approvedGrants           GrantApproval[]         @relation("GrantApprover")
+  issuedEntitlements       Entitlement[]           @relation("EntitlementIssuer")
+  grantCampaignsCreated    GrantCampaign[]         @relation("CampaignCreator")
+  grantCampaignsApproved   GrantCampaign[]         @relation("CampaignApprover")
+  campaignClaims           GrantCampaignClaim[]
+  accessDecisions          AccessDecisionLog[]
+  agreementsApproved       InstitutionAgreement[]  @relation("AgreementApprover")
+  agreementsCreated        InstitutionAgreement[]  @relation("AgreementCreator")
   eligibilityReviews       EligibilityReview[]
   approvalsRequested       ApprovalRequest[]       @relation("ApprovalRequester")
   approvalsDecided         ApprovalRequest[]       @relation("ApprovalDecider")
@@ -545,6 +555,7 @@ model Collection {
   createdAt    DateTime                @default(now()) @db.Timestamptz(6)
   library      Library                 @relation(fields: [libraryId], references: [id], onDelete: Restrict)
   publications PublicationCollection[]
+  entitlements Entitlement[]
 
   @@schema("app")
 }
@@ -1301,38 +1312,48 @@ model ReconciliationItem {
 }
 
 model Entitlement {
-  id             String             @id @default(uuid()) @db.Uuid
-  userId         String             @db.Uuid
+  id             String              @id @default(uuid()) @db.Uuid
+  userId         String              @db.Uuid
   source         EntitlementSource
-  status         EntitlementStatus  @default(PENDING)
+  status         EntitlementStatus   @default(PENDING)
   scope          EntitlementScope
-  publicationId  String?            @db.Uuid
-  volumeId       String?            @db.Uuid
-  editionId      String?            @db.Uuid
-  resourceId     String?            @db.Uuid
-  orderId        String?            @db.Uuid
-  subscriptionId String?            @db.Uuid
-  trialUsageId   String?            @db.Uuid
-  membershipId   String?            @db.Uuid
-  startsAt       DateTime           @db.Timestamptz(6)
-  endsAt         DateTime?          @db.Timestamptz(6)
-  revokedAt      DateTime?          @db.Timestamptz(6)
+  collectionId   String?             @db.Uuid
+  publicationId  String?             @db.Uuid
+  volumeId       String?             @db.Uuid
+  editionId      String?             @db.Uuid
+  resourceId     String?             @db.Uuid
+  orderId        String?             @db.Uuid
+  subscriptionId String?             @db.Uuid
+  trialUsageId   String?             @db.Uuid
+  membershipId   String?             @db.Uuid
+  cohortId       String?             @db.Uuid
+  campaignId     String?             @db.Uuid
+  grantedById    String?             @db.Uuid
+  startsAt       DateTime            @db.Timestamptz(6)
+  endsAt         DateTime?           @db.Timestamptz(6)
+  revokedAt      DateTime?           @db.Timestamptz(6)
   reason         String?
-  createdAt      DateTime           @default(now()) @db.Timestamptz(6)
-  user           User               @relation(fields: [userId], references: [id], onDelete: Restrict)
-  publication    Publication?       @relation(fields: [publicationId], references: [id], onDelete: Restrict)
-  volume         Volume?            @relation(fields: [volumeId], references: [id], onDelete: Restrict)
-  edition        Edition?           @relation(fields: [editionId], references: [id], onDelete: Restrict)
-  resource       Resource?          @relation(fields: [resourceId], references: [id], onDelete: Restrict)
-  order          Order?             @relation(fields: [orderId], references: [id], onDelete: Restrict)
-  subscription   Subscription?      @relation(fields: [subscriptionId], references: [id], onDelete: Restrict)
-  trialUsage     TrialUsage?        @relation(fields: [trialUsageId], references: [id], onDelete: Restrict)
-  membership     Membership?        @relation(fields: [membershipId], references: [id], onDelete: Restrict)
+  createdAt      DateTime            @default(now()) @db.Timestamptz(6)
+  user           User                @relation(fields: [userId], references: [id], onDelete: Restrict)
+  grantedBy      User?               @relation("EntitlementIssuer", fields: [grantedById], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  collection     Collection?         @relation(fields: [collectionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  publication    Publication?        @relation(fields: [publicationId], references: [id], onDelete: Restrict)
+  volume         Volume?             @relation(fields: [volumeId], references: [id], onDelete: Restrict)
+  edition        Edition?            @relation(fields: [editionId], references: [id], onDelete: Restrict)
+  resource       Resource?           @relation(fields: [resourceId], references: [id], onDelete: Restrict)
+  order          Order?              @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  subscription   Subscription?       @relation(fields: [subscriptionId], references: [id], onDelete: Restrict)
+  trialUsage     TrialUsage?         @relation(fields: [trialUsageId], references: [id], onDelete: Restrict)
+  membership     Membership?         @relation(fields: [membershipId], references: [id], onDelete: Restrict)
+  cohort         Cohort?             @relation(fields: [cohortId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  campaign       GrantCampaign?      @relation(fields: [campaignId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  campaignClaim  GrantCampaignClaim?
   events         EntitlementEvent[]
   approvals      GrantApproval[]
 
   @@index([userId, scope, status, startsAt, endsAt])
   @@index([membershipId])
+  @@index([userId, status, endsAt], map: "entitlement_user_expiry")
   @@schema("app")
 }
 
@@ -1366,17 +1387,100 @@ model GrantApproval {
   @@schema("app")
 }
 
+model GrantCampaign {
+  id            String               @id @default(uuid()) @db.Uuid
+  kind          String               @db.VarChar(24)
+  status        String               @default("PENDING") @db.VarChar(24)
+  name          String               @db.VarChar(160)
+  reason        String               @db.VarChar(1000)
+  scope         EntitlementScope
+  collectionId  String?              @db.Uuid
+  publicationId String?              @db.Uuid
+  volumeId      String?              @db.Uuid
+  editionId     String?              @db.Uuid
+  startsAt      DateTime             @db.Timestamptz(6)
+  endsAt        DateTime             @db.Timestamptz(6)
+  maxClaims     Int
+  codeHash      String?              @unique @db.VarChar(64)
+  createdById   String               @db.Uuid
+  approvedById  String?              @db.Uuid
+  createdAt     DateTime             @default(now()) @db.Timestamptz(6)
+  approvedAt    DateTime?            @db.Timestamptz(6)
+  createdBy     User                 @relation("CampaignCreator", fields: [createdById], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  approvedBy    User?                @relation("CampaignApprover", fields: [approvedById], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  entitlements  Entitlement[]
+  claims        GrantCampaignClaim[]
+
+  @@index([status, endsAt])
+  @@schema("app")
+}
+
+model GrantCampaignClaim {
+  campaignId    String        @db.Uuid
+  userId        String        @db.Uuid
+  entitlementId String?       @unique @db.Uuid
+  createdAt     DateTime      @default(now()) @db.Timestamptz(6)
+  claimedAt     DateTime?     @db.Timestamptz(6)
+  campaign      GrantCampaign @relation(fields: [campaignId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  entitlement   Entitlement?  @relation(fields: [entitlementId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+
+  @@id([campaignId, userId])
+  @@schema("app")
+}
+
+model InstitutionAgreement {
+  id                  String           @id @default(uuid()) @db.Uuid
+  institutionId       String           @db.Uuid
+  createdById         String?          @db.Uuid
+  status              String           @default("PENDING") @db.VarChar(24)
+  scope               EntitlementScope
+  publicationId       String?          @db.Uuid
+  volumeId            String?          @db.Uuid
+  memberLimit         Int
+  permittedCategories String[]         @default([])
+  startsAt            DateTime         @db.Timestamptz(6)
+  endsAt              DateTime         @db.Timestamptz(6)
+  approvedById        String?          @db.Uuid
+  approvedAt          DateTime?        @db.Timestamptz(6)
+  institution         Institution      @relation(fields: [institutionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  createdBy           User?            @relation("AgreementCreator", fields: [createdById], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  approvedBy          User?            @relation("AgreementApprover", fields: [approvedById], references: [id], onDelete: Restrict, onUpdate: NoAction)
+
+  @@index([institutionId, status, endsAt])
+  @@schema("app")
+}
+
+model AccessDecisionLog {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String?  @db.Uuid
+  action        String   @db.VarChar(32)
+  targetKind    String   @db.VarChar(32)
+  targetId      String   @db.Uuid
+  decision      String   @db.VarChar(12)
+  reasonCode    String   @db.VarChar(48)
+  entitlementId String?  @db.Uuid
+  requestId     String?  @db.VarChar(80)
+  occurredAt    DateTime @default(now()) @db.Timestamptz(6)
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+
+  @@index([userId, occurredAt(sort: Desc)])
+  @@index([occurredAt])
+  @@schema("app")
+}
+
 model Institution {
-  id               String              @id @default(uuid()) @db.Uuid
-  legalName        String              @db.VarChar(400)
-  status           InstitutionStatus   @default(PENDING)
-  verificationMode String              @db.VarChar(80)
-  approvedAt       DateTime?           @db.Timestamptz(6)
-  createdAt        DateTime            @default(now()) @db.Timestamptz(6)
+  id               String                 @id @default(uuid()) @db.Uuid
+  legalName        String                 @db.VarChar(400)
+  status           InstitutionStatus      @default(PENDING)
+  verificationMode String                 @db.VarChar(80)
+  approvedAt       DateTime?              @db.Timestamptz(6)
+  createdAt        DateTime               @default(now()) @db.Timestamptz(6)
   domains          InstitutionDomain[]
   memberships      Membership[]
   policies         EligibilityPolicy[]
   cohorts          Cohort[]
+  agreements       InstitutionAgreement[]
 
   @@schema("app")
 }
@@ -1404,6 +1508,7 @@ model Membership {
   userId             String              @db.Uuid
   status             MembershipStatus    @default(PENDING)
   verificationMethod String              @db.VarChar(80)
+  category           String              @default("ORGANIZATION_MEMBER") @db.VarChar(32)
   evidenceRef        String?
   verifiedAt         DateTime?           @db.Timestamptz(6)
   expiresAt          DateTime?           @db.Timestamptz(6)
@@ -1454,6 +1559,7 @@ model Cohort {
   createdAt     DateTime       @default(now()) @db.Timestamptz(6)
   institution   Institution    @relation(fields: [institutionId], references: [id], onDelete: Restrict)
   members       CohortMember[]
+  entitlements  Entitlement[]
 
   @@unique([institutionId, name])
   @@schema("app")

@@ -262,6 +262,7 @@ policies:
     effect: allow
     authentication: session
     rolesAny: []
+    permission: authenticated-account
     ownership: subject_user
     institutionBoundary: none
     entitlement: none
@@ -270,7 +271,7 @@ policies:
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: Deny by default; server verifies scope, current policy and source evidence.
   get_me_bookmarks:
     effect: allow
     authentication: session
@@ -952,58 +953,62 @@ policies:
     effect: allow
     authentication: session
     rolesAny:
-    - platform_admin
-    ownership: grant_scope
+    - SYSTEM_ADMIN
+    permission: ENTITLEMENT_READ
+    ownership: none
     institutionBoundary: none
     entitlement: none
     contentPermission: none
-    mfa: false
+    mfa: true
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: Deny by default; server verifies scope, current policy and source evidence.
   post_admin_entitlements:
     effect: allow
     authentication: session
     rolesAny:
-    - platform_admin
-    ownership: grant_scope
+    - SYSTEM_ADMIN
+    permission: ENTITLEMENT_GRANT
+    ownership: none
     institutionBoundary: none
     entitlement: none
     contentPermission: none
     mfa: true
     reasonRequired: true
-    distinctApprover: true
+    distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: Deny by default; server verifies scope, current policy and source evidence.
   post_admin_entitlements_id_revoke:
     effect: allow
     authentication: session
     rolesAny:
-    - platform_admin
-    ownership: grant_scope
+    - SYSTEM_ADMIN
+    permission: ENTITLEMENT_REVOKE
+    ownership: none
     institutionBoundary: none
     entitlement: none
     contentPermission: none
     mfa: true
     reasonRequired: true
-    distinctApprover: true
+    distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: Deny by default; server verifies scope, current policy and source evidence.
   post_admin_entitlements_id_extend:
     effect: allow
     authentication: session
     rolesAny:
-    - platform_admin
-    ownership: grant_scope
+    - SYSTEM_ADMIN
+    permission: ENTITLEMENT_GRANT
+    ownership: none
     institutionBoundary: none
     entitlement: none
     contentPermission: none
     mfa: true
     reasonRequired: true
-    distinctApprover: true
+    distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: Deny by default; server verifies scope, current policy and source evidence.
   get_admin_institutions:
     effect: allow
     authentication: session
@@ -1736,6 +1741,7 @@ policies:
     effect: allow
     authentication: session
     rolesAny: []
+    permission: authenticated-account
     ownership: subject_user
     institutionBoundary: none
     entitlement: none
@@ -1744,7 +1750,7 @@ policies:
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: Deny by default; server verifies scope, current policy and source evidence.
   post_admin_domain_approve:
     effect: allow
     authentication: session
@@ -2815,3 +2821,212 @@ policies:
     distinctApprover: true
     purposeRequired: false
     note: 'Runtime billing: deny by default; resolve role, permission, ownership and current state on server.'
+  post_me_promotion_redemptions:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    permission: authenticated-account
+    ownership: subject_user
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server verifies scope, current policy and source evidence.
+  get_admin_entitlement_users:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    permission: ENTITLEMENT_READ
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server verifies scope, current policy and source evidence.
+  get_admin_entitlements_upcoming:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    permission: ENTITLEMENT_READ
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server verifies scope, current policy and source evidence.
+  get_admin_entitlements_id_history:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    permission: ENTITLEMENT_READ
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server verifies scope, current policy and source evidence.
+  post_admin_entitlements_id_approve:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    permission: ENTITLEMENT_APPROVE
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: true
+    purposeRequired: false
+    note: Deny by default; server verifies scope, current policy and source evidence.
+  post_admin_entitlements_id_suspend:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    permission: ENTITLEMENT_REVOKE
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server verifies scope, current policy and source evidence.
+  post_admin_entitlements_id_resume:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    permission: ENTITLEMENT_REVOKE
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server verifies scope, current policy and source evidence.
+  get_admin_grant_campaigns:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    permission: ENTITLEMENT_READ
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server verifies scope, current policy and source evidence.
+  post_admin_grant_campaigns:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    permission: ENTITLEMENT_GRANT
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server verifies scope, current policy and source evidence.
+  post_admin_grant_campaigns_id_approve:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    permission: ENTITLEMENT_APPROVE
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: true
+    purposeRequired: false
+    note: Deny by default; server verifies scope, current policy and source evidence.
+  post_admin_entitlements_maintenance:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    permission: ENTITLEMENT_APPROVE
+    ownership: none
+    institutionBoundary: none
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server verifies scope, current policy and source evidence.
+  get_admin_institution_agreements:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    permission: ENTITLEMENT_READ
+    ownership: none
+    institutionBoundary: verified-agreement-and-membership
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server verifies scope, current policy and source evidence.
+  post_admin_institution_agreements:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    permission: ENTITLEMENT_INSTITUTION
+    ownership: none
+    institutionBoundary: verified-agreement-and-membership
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; server verifies scope, current policy and source evidence.
+  post_admin_institution_agreements_id_approve:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    permission: ENTITLEMENT_APPROVE
+    ownership: none
+    institutionBoundary: verified-agreement-and-membership
+    entitlement: none
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: true
+    purposeRequired: false
+    note: Deny by default; server verifies scope, current policy and source evidence.

@@ -1,8 +1,16 @@
 # Implementation progress
 
+## Unified access entitlement engine — 2026-10-27
+
+Status: **current grant/decision module implemented and locally verified; production launch gates remain open**. Requirements: `FR-ENT-001`–`006`, `FR-ENT-009/015`, `FR-PAY-011`, partial `FR-INS-005`–`011`, `BR-001`–`006`. SRS `FR-ENT-017` paid gift codes remain open; a free promotional code subfeature is implemented. Screens: `entitlements`, `access-grants`, `trial-admin`, `my-subscription`, `eligibility`, `eligibility-status`, `institution-roster`, `institution-policies`; supplemental `institution-access` administrator screen requires design review.
+
+Paths: `packages/access-policy/src/entitlements.ts`, `apps/api/src/entitlements/`, `apps/api/src/reader/reader.service.ts`, `apps/api/ENTITLEMENTS.md`, `apps/web-pwa/src/EntitlementScreens.tsx`, `prisma/schema.prisma`, migrations `202610270006`–`008`, `database/erd/`, `api/entitlement_runtime.py`, `api/openapi.v1.yaml`, `api/policies.v1.yaml`, `api/generated/v1.ts`, `tests/unit/entitlements.test.ts`, `tests/integration/entitlements-http.test.ts`, `database/tests/entitlements.test.ts`, `tests/e2e/entitlements.spec.ts`.
+
+The live service unions independent sources, enforces UTC validity and scope, uses independent approval for manual and campaign grants, verifies institution agreement and membership evidence, rate limits free code redemption and single-use trials, and logs protected decisions with minimal fields. Paid entitlements remain owned by the verified billing path. Local PostgreSQL development and test databases have 31 forward migrations with no reset. The release remains gated by GAP-030/033–038; full institutional onboarding, paid gifts and live payment provider conformance are separate work. Validation details are in `TEST_RESULTS.md`.
+
 ## Subscriptions, billing and payments — 2026-10-27
 
-Status: **partial live implementation; public paid launch closed**. Requirements: `FR-PAY-001`–`018`, `BR-007/008`, `FR-ENT-001/004`, `SEC-011`; `FR-PAY-011` trial issuance and the tax-specific part of `FR-PAY-018` remain open. Screens: `pricing`, `checkout`, `payment-result`, `my-subscription`, `invoices`, `plans-admin`, `finance-dashboard`, `transactions`, `refunds`; supplemental `disputes` awaits wireframe review.
+Status: **partial live implementation; public paid launch closed**. Requirements: `FR-PAY-001`–`018`, `BR-007/008`, `FR-ENT-001/004`, `SEC-011`; `FR-PAY-011` trial issuance is now implemented behind the disabled-by-default trial policy, while complete trial/upgrade acceptance and the tax-specific part of `FR-PAY-018` remain open. Screens: `pricing`, `checkout`, `payment-result`, `my-subscription`, `invoices`, `plans-admin`, `finance-dashboard`, `transactions`, `refunds`; supplemental `disputes` awaits wireframe review.
 
 Paths: `apps/api/src/billing/`, `apps/api/BILLING.md`, `apps/web-pwa/src/BillingScreens.tsx`, `packages/api-client/src/index.ts`, `packages/validation/src/index.ts`, `prisma/schema.prisma`, `prisma/migrations/202610270001_billing_workflow/`–`202610270005_refund_chronology/`, `api/billing_runtime.py`, `api/openapi.v1.yaml`, `api/policies.v1.yaml`, `api/generated/v1.ts`, `database/erd/`, `tests/integration/billing*.test.ts`, `tests/unit/billing-gateway.test.ts`, `database/tests/billing.test.ts`, `tests/e2e/billing.spec.ts`.
 

@@ -20,6 +20,7 @@ import type { AuthContext } from '../identity/identity.service.js';
 import type { ApiConfig } from '../app.js';
 import { seal, unseal } from '../identity/security.js';
 import { PlatformPolicyService } from '../platform-policy/platform-policy.service.js';
+import { EntitlementService } from '../entitlements/entitlement.service.js';
 
 type Lesson = {
   id: string;
@@ -54,6 +55,7 @@ export class ReaderService {
     @Inject('DB_POOL') private readonly pool: Pool,
     @Inject('APP_CONFIG') private readonly config: ApiConfig,
     @Inject(PlatformPolicyService) private readonly platformPolicy: PlatformPolicyService,
+    @Inject(EntitlementService) private readonly entitlements: EntitlementService,
   ) {}
 
   async settings(context: AuthContext) {
@@ -242,28 +244,36 @@ export class ReaderService {
   }
 
   private async entitled(context: AuthContext | null, path: PolicyPath): Promise<boolean> {
-    if (!context) return false;
-    const result = await this.pool.query(
-      `SELECT 1 FROM app."EffectiveEntitlement" x WHERE x."userId"=$1 AND (
-        x.scope='LIBRARY' OR (x.scope='PUBLICATION' AND x."publicationId"=$2)
-        OR (x.scope='VOLUME' AND x."volumeId"=$3)
-        OR (x.scope='EDITION' AND x."editionId"=$4)
-        OR (x.scope='RESOURCE' AND x."resourceId"=$5)) LIMIT 1`,
-      [
-        context.user.id,
-        path.publicationId ?? null,
-        path.volumeId ?? null,
-        path.editionId ?? null,
-        path.resourceId ?? null,
-      ],
-    );
-    return !!result.rowCount;
+    return (await this.entitlements.effective(context?.user.id ?? null, path)).allowed;
   }
 
-  async authorize(path: PolicyPath, context: AuthContext | null, action: ReaderAction) {
+  async authorize(
+    path: PolicyPath,
+    context: AuthContext | null,
+    action: Extract<ReaderAction, 'read' | 'preview' | 'download'>,
+  ) {
     const policy = await this.policy(path);
-    const entitled = await this.entitled(context, path);
-    if (!mayUseContent(policy, action, { authenticated: !!context, entitled })) {
+    const decision = await this.entitlements.effective(context?.user.id ?? null, path);
+    const permitted = mayUseContent(policy, action, {
+      authenticated: !!context,
+      entitled: decision.allowed,
+    });
+    const log = async (allowed: boolean, reasonCode: string) => {
+      if (!context || policy.accessClass === 'PUBLIC_FREE') return;
+      const targetId = path.resourceId ?? path.lessonId ?? path.editionId;
+      if (targetId)
+        await this.entitlements.logDecision({
+          userId: context.user.id,
+          action: action === 'download' ? 'DOWNLOAD' : action === 'preview' ? 'PREVIEW' : 'READ',
+          targetKind: path.resourceId ? 'RESOURCE' : path.lessonId ? 'LESSON' : 'EDITION',
+          targetId,
+          decision: allowed ? 'ALLOW' : 'DENY',
+          reasonCode,
+          ...(decision.matched[0] ? { entitlementId: decision.matched[0].id } : {}),
+        });
+    };
+    if (!permitted) {
+      await log(false, 'POLICY_DENIED');
       const signInMayHelp =
         !context &&
         (policy.accessClass === 'REGISTERED_FREE' || policy.accessClass === 'PREMIUM') &&
@@ -273,8 +283,20 @@ export class ReaderService {
         signInMayHelp ? 401 : 403,
       );
     }
-    if (context && action !== 'preview' && policy.accessClass !== 'PUBLIC_FREE')
-      await this.reserveReaderLeases(context, policy);
+    if (context && action !== 'preview' && policy.accessClass !== 'PUBLIC_FREE') {
+      try {
+        await this.reserveReaderLeases(context, policy);
+      } catch (error) {
+        await log(
+          false,
+          error instanceof HttpException && error.message === 'Licensed session limit reached'
+            ? 'SESSION_LIMIT'
+            : 'SESSION_DENIED',
+        );
+        throw error;
+      }
+    }
+    await log(true, decision.allowed ? 'ENTITLEMENT_MATCH' : 'FREE_POLICY');
     return policy;
   }
 
@@ -421,7 +443,11 @@ export class ReaderService {
     };
   }
 
-  private async resourceAccess(id: string, context: AuthContext | null, action: ReaderAction) {
+  private async resourceAccess(
+    id: string,
+    context: AuthContext | null,
+    action: Extract<ReaderAction, 'read' | 'preview' | 'download'>,
+  ) {
     const result = await this.pool.query<{
       id: string;
       title: string;

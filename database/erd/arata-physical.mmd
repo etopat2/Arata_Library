@@ -1,4 +1,16 @@
 erDiagram
+  app_AccessDecisionLog {
+    uuid id PK
+    uuid userId FK
+    character_varying_32_ action
+    character_varying_32_ targetKind
+    uuid targetId
+    character_varying_12_ decision
+    character_varying_48_ reasonCode
+    uuid entitlementId
+    character_varying_80_ requestId
+    timestamp_6__with_time_zone occurredAt
+  }
   app_Annotation {
     uuid id PK
     uuid userId FK
@@ -241,6 +253,10 @@ erDiagram
     timestamp_6__with_time_zone revokedAt
     text reason
     timestamp_6__with_time_zone createdAt
+    uuid campaignId FK
+    uuid cohortId FK
+    uuid collectionId FK
+    uuid grantedById FK
   }
   app_EntitlementEvent {
     uuid id PK
@@ -271,6 +287,33 @@ erDiagram
     timestamp_6__with_time_zone requestedAt
     timestamp_6__with_time_zone decidedAt
   }
+  app_GrantCampaign {
+    uuid id PK
+    character_varying_24_ kind
+    character_varying_24_ status
+    character_varying_160_ name
+    character_varying_1000_ reason
+    app__EntitlementScope_ scope
+    uuid collectionId
+    uuid publicationId
+    uuid volumeId
+    uuid editionId
+    timestamp_6__with_time_zone startsAt
+    timestamp_6__with_time_zone endsAt
+    integer maxClaims
+    character_varying_64_ codeHash
+    uuid createdById FK
+    uuid approvedById FK
+    timestamp_6__with_time_zone createdAt
+    timestamp_6__with_time_zone approvedAt
+  }
+  app_GrantCampaignClaim {
+    uuid campaignId PK,FK
+    uuid userId PK,FK
+    uuid entitlementId FK
+    timestamp_6__with_time_zone createdAt
+    timestamp_6__with_time_zone claimedAt
+  }
   app_ImportJob {
     uuid id PK
     uuid assetId FK
@@ -295,6 +338,21 @@ erDiagram
     character_varying_80_ verificationMode
     timestamp_6__with_time_zone approvedAt
     timestamp_6__with_time_zone createdAt
+  }
+  app_InstitutionAgreement {
+    uuid id PK
+    uuid institutionId FK
+    character_varying_24_ status
+    app__EntitlementScope_ scope
+    uuid publicationId
+    uuid volumeId
+    integer memberLimit
+    text__ permittedCategories
+    timestamp_6__with_time_zone startsAt
+    timestamp_6__with_time_zone endsAt
+    uuid approvedById FK
+    timestamp_6__with_time_zone approvedAt
+    uuid createdById FK
   }
   app_InstitutionDomain {
     uuid id PK
@@ -342,6 +400,7 @@ erDiagram
     timestamp_6__with_time_zone verifiedAt
     timestamp_6__with_time_zone expiresAt
     timestamp_6__with_time_zone createdAt
+    character_varying_32_ category
   }
   app_Notification {
     uuid id PK
@@ -938,6 +997,7 @@ erDiagram
     timestamp_6__with_time_zone createdAt
     timestamp_6__with_time_zone rotatedAt
   }
+  app_User o|--o{ app_AccessDecisionLog : "AccessDecisionLog_userId_fkey"
   app_Edition ||--o{ app_Annotation : "Annotation_editionId_fkey"
   app_Revision ||--o{ app_Annotation : "Annotation_revisionId_editionId_fkey"
   app_User ||--o{ app_Annotation : "Annotation_userId_fkey"
@@ -978,7 +1038,11 @@ erDiagram
   app_Institution ||--o{ app_EligibilityPolicy : "EligibilityPolicy_institutionId_fkey"
   app_Membership ||--o{ app_EligibilityReview : "EligibilityReview_membershipId_fkey"
   app_User ||--o{ app_EligibilityReview : "EligibilityReview_reviewerId_fkey"
+  app_GrantCampaign o|--o{ app_Entitlement : "Entitlement_campaignId_fkey"
+  app_Cohort o|--o{ app_Entitlement : "Entitlement_cohortId_fkey"
+  app_Collection o|--o{ app_Entitlement : "Entitlement_collectionId_fkey"
   app_Edition o|--o{ app_Entitlement : "Entitlement_editionId_fkey"
+  app_User o|--o{ app_Entitlement : "Entitlement_grantedById_fkey"
   app_Membership o|--o{ app_Entitlement : "Entitlement_membershipId_fkey"
   app_Order o|--o{ app_Entitlement : "Entitlement_orderId_fkey"
   app_Publication o|--o{ app_Entitlement : "Entitlement_publicationId_fkey"
@@ -992,10 +1056,18 @@ erDiagram
   app_User o|--o{ app_GrantApproval : "GrantApproval_approvedById_fkey"
   app_Entitlement ||--o{ app_GrantApproval : "GrantApproval_entitlementId_fkey"
   app_User ||--o{ app_GrantApproval : "GrantApproval_requestedById_fkey"
+  app_User o|--o{ app_GrantCampaign : "GrantCampaign_approvedById_fkey"
+  app_User ||--o{ app_GrantCampaign : "GrantCampaign_createdById_fkey"
+  app_GrantCampaign ||--o{ app_GrantCampaignClaim : "GrantCampaignClaim_campaignId_fkey"
+  app_Entitlement o|--o{ app_GrantCampaignClaim : "GrantCampaignClaim_entitlementId_fkey"
+  app_User ||--o{ app_GrantCampaignClaim : "GrantCampaignClaim_userId_fkey"
   app_User ||--o{ app_ImportJob : "ImportJob_actorId_fkey"
   app_Asset ||--o{ app_ImportJob : "ImportJob_assetId_fkey"
   app_Edition ||--o{ app_ImportJob : "ImportJob_editionId_fkey"
   app_Revision o|--o{ app_ImportJob : "ImportJob_revisionId_fkey"
+  app_User o|--o{ app_InstitutionAgreement : "InstitutionAgreement_approvedById_fkey"
+  app_User o|--o{ app_InstitutionAgreement : "InstitutionAgreement_createdById_fkey"
+  app_Institution ||--o{ app_InstitutionAgreement : "InstitutionAgreement_institutionId_fkey"
   app_User o|--o{ app_InstitutionDomain : "InstitutionDomain_approvedById_fkey"
   app_Institution ||--o{ app_InstitutionDomain : "InstitutionDomain_institutionId_fkey"
   app_Order ||--o{ app_Invoice : "Invoice_orderId_fkey"

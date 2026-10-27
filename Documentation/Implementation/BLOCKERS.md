@@ -1,5 +1,13 @@
 # Open gaps and blockers
 
+## Unified entitlement follow-up — 2026-10-27
+
+| ID | Area | Current evidence and gap | Required next action |
+|---|---|---|---|
+| GAP-036 | Institutional onboarding | Effective entitlement calculation and independently approved agreements now enforce exact verified domain, latest approved membership review, capacity, category and cohort state. The separate institution/domain ownership, enrollment, evidence review, roster and delegated manager workflows are not complete; the default policy keeps institutional benefits off. | Deliver S13 enrollment and evidence-review services and UI with tenant isolation and revalidation tests before enabling institutional benefits. |
+| GAP-037 | Paid gift codes | A free one-use promotional campaign is implemented. SRS `FR-ENT-017` specifies paid gifts, but no gift purchase, chargeback, refund, abuse or tax contract has been approved or verified in a provider sandbox. | Reconcile a paid gift product and provider-backed issuance/refund workflow with finance and legal owners; implement and test before marking `FR-ENT-017` complete. |
+| GAP-038 | Entitlement release validation | Local SQL, HTTP, policy and browser checks cover the current module, but sustained concurrent redemption, institutional enrollment end-to-end and production traffic/load evidence are not present. | Add bounded concurrency/load and full S13 eligibility tests in staging, then complete release security and accessibility review. |
+
 ## Billing launch gates — 2026-10-27
 
 | ID | Area | Current evidence and gap | Required next action |
@@ -14,7 +22,7 @@
 | ID | Area | Current evidence and gap | Required next action |
 |---|---|---|---|
 | GAP-030 | Commercial and legal approval | Versioned configuration proposes periods, refund window and operational thresholds; prices are null and plans/trials disabled. Eleven editable documents are explicitly pending review. SRS DEC-01–DEC-12 and formal stakeholder sign-off remain open. | Obtain accountable pricing, tax, provider, legal, privacy, institutional and recovery decisions before any public commercial/research/legal release. Publish only reviewed legal versions. |
-| GAP-031 | Domain consumers | Identity session/rate/recovery, Studio upload, reader defaults and the new paid billing service consume active settings. Complimentary grant issuance, trial eligibility, institution enrollment, offline licensing, research collection/publication, retention jobs and backup schedules have no complete live consumer yet. | Implement each remaining domain service with server authorization and tests against a single effective version; do not describe configured values alone as a working domain feature. |
+| GAP-031 | Domain consumers | Identity session/rate/recovery, Studio upload, reader defaults, paid billing, complimentary grant issuance and trial eligibility consume active settings. Institution grant checks consume approved agreements and policy, while full enrollment remains GAP-036. Offline licensing, research collection/publication and backup schedules have no complete live consumer yet. | Implement each remaining domain service with server authorization and tests against a single effective version; do not describe configured values alone as a working domain feature. |
 | GAP-032 | Policy operations and contracts | Effective dates require explicit activation after the date; no scheduled activator. Live policy endpoints and DTOs are not in the design-stage OpenAPI/generated client. UI is a supplemental screen outside the source 90-screen wireframe inventory. | Add bounded scheduled activation with audit/notification, reconcile OpenAPI and generated client, add browser accessibility acceptance, and seek UI design review. |
 
 
