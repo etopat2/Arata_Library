@@ -13,7 +13,12 @@ import { PlatformPolicyAdmin } from './PlatformPolicyAdmin.js';
 import { BillingScreens } from './BillingScreens.js';
 import { EntitlementScreens } from './EntitlementScreens.js';
 import { InstitutionScreens } from './InstitutionScreens.js';
+import { migratePendingChanges } from './offline-store.js';
 import './style.css';
+
+void migratePendingChanges().catch(() => {
+  window.dispatchEvent(new Event('arata-offline-migration-failed'));
+});
 
 const accountScreens = new Set([
   'register',
@@ -92,7 +97,7 @@ function App() {
     void setTheme(next);
   }
   if (studio) return <PublishingStudio />;
-  if (reader) return <Reader />;
+  if (reader) return <Reader updateReady={updateReady} onUpdate={() => void updateSW(true)} />;
   if (policyAdmin) return <ContentPolicyAdmin />;
   if (platformSettings) return <PlatformPolicyAdmin />;
   if (billingScreen) return <BillingScreens />;

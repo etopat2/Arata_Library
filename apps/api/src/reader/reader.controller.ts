@@ -37,6 +37,35 @@ const readerSettings = z.strictObject({
   lineSpacing: z.union([z.literal(1.5), z.literal(1.75), z.literal(2)]),
   reducedMotion: z.boolean(),
 });
+const offlineLicence = z.strictObject({
+  editionId: uuid,
+  deviceId: z.string().uuid(),
+});
+const syncBatch = z.strictObject({
+  licenseId: uuid,
+  deviceId: z.string().uuid(),
+  changes: z
+    .array(
+      z.strictObject({
+        id: z.string().uuid(),
+        kind: z.enum(['progress', 'bookmark', 'annotation']),
+        clientUpdatedAt: z.iso.datetime(),
+        entityId: uuid,
+        operation: z.enum(['upsert', 'delete']),
+        content: z
+          .strictObject({
+            position: z.record(z.string(), z.unknown()).optional(),
+            anchor: z.string().max(500).optional(),
+            kind: z.enum(['NOTE', 'HIGHLIGHT']).optional(),
+            note: z.string().max(160).optional(),
+            quote: z.string().max(100).optional(),
+          })
+          .optional(),
+        percent: z.number().min(0).max(100).optional(),
+      }),
+    )
+    .max(100),
+});
 function parse<T>(schema: z.ZodType<T>, value: unknown): T {
   const result = schema.safeParse(value);
   if (!result.success) throw new HttpException('Invalid reader request', 400);
@@ -220,5 +249,69 @@ export class ReaderController {
   async deleteAnnotation(@Req() request: Request, @Param('id') id: string) {
     const context = await this.member(request);
     return wrap(request, await this.reader.deleteAnnotation(parse(uuid, id), context));
+  }
+
+  @Post('offline-licenses')
+  async createOfflineLicence(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+    @Body() body: unknown,
+  ) {
+    response.status(201);
+    response.setHeader('Cache-Control', 'private, no-store');
+    const context = await this.member(request);
+    const key = request.header('Idempotency-Key') ?? '';
+    if (!/^[A-Za-z0-9_-]{8,128}$/.test(key))
+      throw new HttpException('Valid Idempotency-Key required', 400);
+    const input = parse(offlineLicence, body);
+    return wrap(
+      request,
+      await this.reader.createOfflineLicence(context, input.editionId, input.deviceId, key),
+    );
+  }
+
+  @Get('offline-licenses')
+  async offlineLicences(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+    @Query('deviceId') deviceId: string,
+  ) {
+    response.setHeader('Cache-Control', 'private, no-store');
+    const context = await this.identity.context(request.headers.cookie);
+    return wrap(
+      request,
+      await this.reader.offlineLicences(context, parse(z.string().uuid(), deviceId)),
+    );
+  }
+
+  @Delete('offline-licenses/:id')
+  async revokeOfflineLicence(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+    @Param('id') id: string,
+  ) {
+    response.setHeader('Cache-Control', 'private, no-store');
+    const context = await this.member(request);
+    return wrap(request, await this.reader.revokeOfflineLicence(context, parse(uuid, id)));
+  }
+
+  @Post('sync')
+  async syncOffline(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+    @Body() body: unknown,
+  ) {
+    response.setHeader('Cache-Control', 'private, no-store');
+    const context = await this.member(request);
+    const input = parse(syncBatch, body);
+    const license = (await this.reader.offlineLicences(context, input.deviceId)).find(
+      (item) => item.id === input.licenseId,
+    );
+    if (!license || license.revokedAt || new Date(license.expiresAt) <= new Date())
+      throw new HttpException('Offline licence expired, revoked, or not found', 403);
+    return wrap(
+      request,
+      await this.reader.syncOfflineChanges(context, input.deviceId, input.licenseId, input.changes),
+    );
   }
 }

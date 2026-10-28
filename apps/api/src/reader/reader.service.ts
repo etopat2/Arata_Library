@@ -1,4 +1,11 @@
-import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
+import {
+  createHash,
+  createHmac,
+  generateKeyPairSync,
+  randomUUID,
+  sign as signBytes,
+  timingSafeEqual,
+} from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { access } from 'node:fs/promises';
 import { resolve, sep } from 'node:path';
@@ -47,6 +54,17 @@ type Lesson = {
   publicationStatus: string;
   libraryId: string | null;
   libraryCount: number;
+};
+
+const offlineSigningKeys = generateKeyPairSync('ed25519');
+type OfflineChange = {
+  id: string;
+  kind: 'progress' | 'bookmark' | 'annotation';
+  clientUpdatedAt: string;
+  entityId: string;
+  operation: 'upsert' | 'delete';
+  content?: Record<string, unknown> | undefined;
+  percent?: number | undefined;
 };
 
 @Injectable()
@@ -250,7 +268,7 @@ export class ReaderService {
   async authorize(
     path: PolicyPath,
     context: AuthContext | null,
-    action: Extract<ReaderAction, 'read' | 'preview' | 'download'>,
+    action: Extract<ReaderAction, 'read' | 'preview' | 'download' | 'offline'>,
   ) {
     const policy = await this.policy(path);
     const decision = await this.entitlements.effective(context?.user.id ?? null, path);
@@ -298,6 +316,380 @@ export class ReaderService {
     }
     await log(true, decision.allowed ? 'ENTITLEMENT_MATCH' : 'FREE_POLICY');
     return policy;
+  }
+
+  private deviceHash(userId: string, deviceId: string) {
+    return createHmac('sha256', Buffer.from(this.config.AUTH_SESSION_SECRET, 'hex'))
+      .update(`offline-device:${userId}:${deviceId}`)
+      .digest('hex');
+  }
+
+  async createOfflineLicence(
+    context: AuthContext,
+    editionId: string,
+    deviceId: string,
+    idempotencyKey: string,
+  ) {
+    const edition = await this.pool.query<{ id: string; revisionId: string | null }>(
+      `SELECT e.id,e."currentRevisionId" AS "revisionId" FROM app."Edition" e
+       JOIN app."Publication" p ON p.id=e."publicationId" WHERE e.id=$1 AND p.status='PUBLISHED'`,
+      [editionId],
+    );
+    const current = edition.rows[0];
+    if (!current?.revisionId) throw new HttpException('Edition not found', 404);
+    const toc = await this.manifest(editionId, context);
+    const eligible: { id: string }[] = [];
+    let expiryBound: Date | null = null;
+    for (const item of toc.lessons) {
+      if (!item.available) continue;
+      const row = await this.lesson(item.id);
+      const path = this.path(row);
+      const entitlement = await this.entitlements.effective(context.user.id, path);
+      const accessPolicy = await this.policy(path);
+      if (
+        !mayUseContent(accessPolicy, 'offline', {
+          authenticated: true,
+          entitled: entitlement.allowed,
+        })
+      )
+        continue;
+      const policy = await this.authorize(path, context, 'offline');
+      if (!policy.allowOffline) continue;
+      const grants = entitlement;
+      const matchingEnds = grants.matched.map((grant) => grant.endsAt?.getTime() ?? null);
+      const itemBound =
+        grants.allowed && matchingEnds.length && matchingEnds.every(Boolean)
+          ? new Date(Math.max(...matchingEnds.map((value) => value!)))
+          : null;
+      if (itemBound && (!expiryBound || itemBound < expiryBound)) expiryBound = itemBound;
+      eligible.push({ id: item.id });
+    }
+    if (!eligible.length) throw new HttpException('Offline reading is not permitted', 403);
+    const settings = (await this.platformPolicy.current()).settings.reader;
+    const deviceHash = this.deviceHash(context.user.id, deviceId);
+    const dayBound = new Date(Date.now() + settings.offlineLicenceDays * 86_400_000);
+    const expiresAt = expiryBound && expiryBound < dayBound ? expiryBound : dayBound;
+    const manifestHash = createHash('sha256')
+      .update(JSON.stringify({ editionId, revisionId: current.revisionId, lessons: eligible }))
+      .digest('hex');
+    const requestHash = createHash('sha256')
+      .update(JSON.stringify({ editionId, deviceHash }))
+      .digest('hex');
+    const prior = await this.pool.query<{
+      id: string;
+      editionId: string;
+      revisionId: string;
+      manifestHash: string;
+      issuedAt: Date;
+      expiresAt: Date;
+      revokedAt: Date | null;
+      requestHash: string | null;
+    }>(
+      `SELECT id,"editionId","revisionId","manifestHash","issuedAt","expiresAt","revokedAt","requestHash"
+       FROM app."OfflineLicence" WHERE "userId"=$1 AND "idempotencyKey"=$2`,
+      [context.user.id, idempotencyKey],
+    );
+    if (prior.rows[0]) {
+      if (prior.rows[0].requestHash !== requestHash)
+        throw new HttpException('Idempotency key reused with a different request', 409);
+      return this.signedLicence(
+        prior.rows[0],
+        eligible.map((item) => item.id),
+      );
+    }
+    const client = await this.pool.connect();
+    let licence: {
+      id: string;
+      editionId: string;
+      revisionId: string;
+      manifestHash: string;
+      issuedAt: Date;
+      expiresAt: Date;
+      revokedAt: Date | null;
+    };
+    try {
+      await client.query('BEGIN');
+      await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [
+        `offline-device:${context.user.id}`,
+      ]);
+      const active = await client.query<{ count: string }>(
+        `SELECT count(DISTINCT "deviceHash")::text AS count FROM app."OfflineLicence"
+         WHERE "userId"=$1 AND "expiresAt">now() AND "revokedAt" IS NULL`,
+        [context.user.id],
+      );
+      const existingDevice = await client.query(
+        `SELECT 1 FROM app."OfflineLicence" WHERE "userId"=$1 AND "deviceHash"=$2
+         AND "expiresAt">now() AND "revokedAt" IS NULL LIMIT 1`,
+        [context.user.id, deviceHash],
+      );
+      if (
+        !existingDevice.rowCount &&
+        Number(active.rows[0]?.count ?? 0) >= settings.maxLicensedDevices
+      )
+        throw new HttpException('Offline device limit reached', 403);
+      const result = await client.query<NonNullable<typeof licence>>(
+        `INSERT INTO app."OfflineLicence"
+         (id,"userId","editionId","revisionId","deviceHash","manifestHash","idempotencyKey","requestHash","expiresAt")
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id,"editionId","revisionId","manifestHash","issuedAt","expiresAt","revokedAt"`,
+        [
+          randomUUID(),
+          context.user.id,
+          editionId,
+          current.revisionId,
+          deviceHash,
+          manifestHash,
+          idempotencyKey,
+          requestHash,
+          expiresAt,
+        ],
+      );
+      licence = result.rows[0]!;
+      await client.query(
+        `INSERT INTO app."AuditEvent" (id,"actorId",action,"objectType","objectId","correlationId")
+         VALUES ($1,$2,'reader.offline.issue','OfflineLicence',$3,$4)`,
+        [randomUUID(), context.user.id, licence.id, context.session.id],
+      );
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => undefined);
+      if (error instanceof HttpException) throw error;
+      const retry = await this.pool.query<{
+        id: string;
+        editionId: string;
+        revisionId: string;
+        manifestHash: string;
+        issuedAt: Date;
+        expiresAt: Date;
+        revokedAt: Date | null;
+        requestHash: string | null;
+      }>(
+        `SELECT id,"editionId","revisionId","manifestHash","issuedAt","expiresAt","revokedAt","requestHash"
+         FROM app."OfflineLicence" WHERE "userId"=$1 AND "idempotencyKey"=$2`,
+        [context.user.id, idempotencyKey],
+      );
+      if (retry.rows[0]?.requestHash === requestHash)
+        return this.signedLicence(
+          retry.rows[0],
+          eligible.map((item) => item.id),
+        );
+      throw error;
+    } finally {
+      client.release();
+    }
+    return this.signedLicence(
+      licence,
+      eligible.map((item) => item.id),
+    );
+  }
+
+  private signedLicence(
+    row: {
+      id: string;
+      editionId: string;
+      revisionId: string;
+      manifestHash: string;
+      issuedAt: Date;
+      expiresAt: Date;
+      revokedAt: Date | null;
+    },
+    lessonIds: string[],
+  ) {
+    const license = {
+      id: row.id,
+      editionId: row.editionId,
+      revisionId: row.revisionId,
+      manifestHash: row.manifestHash,
+      lessonIds,
+      issuedAt: row.issuedAt.toISOString(),
+      expiresAt: row.expiresAt.toISOString(),
+      revokedAt: row.revokedAt?.toISOString() ?? null,
+      serverTime: new Date().toISOString(),
+      formatVersion: 1,
+    };
+    const payload = Buffer.from(JSON.stringify(license));
+    const signature = signBytes(null, payload, offlineSigningKeys.privateKey).toString('base64url');
+    const publicKey = offlineSigningKeys.publicKey
+      .export({ type: 'spki', format: 'der' })
+      .toString('base64url');
+    return { ...license, signature, publicKey };
+  }
+
+  async offlineLicences(context: AuthContext, deviceId: string) {
+    const deviceHash = this.deviceHash(context.user.id, deviceId);
+    const result = await this.pool.query(
+      `SELECT id,"editionId","revisionId","manifestHash","issuedAt","expiresAt","revokedAt"
+       FROM app."OfflineLicence" WHERE "userId"=$1 AND "deviceHash"=$2 ORDER BY "issuedAt" DESC LIMIT 50`,
+      [context.user.id, deviceHash],
+    );
+    return result.rows;
+  }
+
+  async revokeOfflineLicence(context: AuthContext, id: string) {
+    const result = await this.pool.query<{ id: string }>(
+      `UPDATE app."OfflineLicence" SET "revokedAt"=COALESCE("revokedAt",now())
+       WHERE id=$1 AND "userId"=$2 RETURNING id`,
+      [id, context.user.id],
+    );
+    if (!result.rowCount) throw new HttpException('Offline licence not found', 404);
+    await this.pool.query(
+      `INSERT INTO app."AuditEvent" (id,"actorId",action,"objectType","objectId","correlationId")
+       VALUES ($1,$2,'reader.offline.revoke','OfflineLicence',$3,$4)`,
+      [randomUUID(), context.user.id, id, context.session.id],
+    );
+    return { revoked: true };
+  }
+
+  async syncOfflineChanges(
+    context: AuthContext,
+    deviceId: string,
+    licenceId: string,
+    changes: OfflineChange[],
+  ) {
+    const deviceHash = this.deviceHash(context.user.id, deviceId);
+    const outcomes = [];
+    for (const change of changes) {
+      if (Date.parse(change.clientUpdatedAt) > Date.now() + 5 * 60_000)
+        throw new HttpException('Client change timestamp is in the future', 400);
+      const payloadHash = createHash('sha256').update(JSON.stringify(change)).digest('hex');
+      const client = await this.pool.connect();
+      try {
+        await client.query('BEGIN');
+        await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [
+          `reader-sync:${context.user.id}:${change.id}`,
+        ]);
+        const prior = await client.query<{ payloadHash: string; result: unknown }>(
+          `SELECT "payloadHash",result FROM app."SyncOperation" WHERE "userId"=$1 AND "clientOperationId"=$2`,
+          [context.user.id, change.id],
+        );
+        if (prior.rows[0]) {
+          if (prior.rows[0].payloadHash !== payloadHash)
+            throw new HttpException('Sync operation ID reused with different content', 409);
+          await client.query('COMMIT');
+          outcomes.push(prior.rows[0].result);
+          continue;
+        }
+        let result: unknown = { accepted: true, id: change.id };
+        const lesson = await this.lesson(change.entityId ?? '');
+        const path = this.path(lesson);
+        const policy = await this.authorize(path, context, 'read');
+        const activeLicence = await client.query(
+          `SELECT 1 FROM app."OfflineLicence" WHERE id=$1 AND "userId"=$2 AND "deviceHash"=$3
+           AND "editionId"=$4 AND "revisionId"=$5 AND "revokedAt" IS NULL AND "expiresAt">now()
+           LIMIT 1`,
+          [licenceId, context.user.id, deviceHash, lesson.editionId, lesson.revisionId],
+        );
+        if (!activeLicence.rowCount || !policy.allowOffline)
+          throw new HttpException('Offline licence expired, revoked, or out of scope', 403);
+        if (change.operation === 'delete') {
+          if (change.kind === 'bookmark' && change.entityId)
+            await client.query(`DELETE FROM app."Bookmark" WHERE id=$1 AND "userId"=$2`, [
+              change.entityId,
+              context.user.id,
+            ]);
+          if (change.kind === 'annotation' && change.entityId)
+            await client.query(`DELETE FROM app."Annotation" WHERE id=$1 AND "userId"=$2`, [
+              change.entityId,
+              context.user.id,
+            ]);
+        } else if (change.kind === 'progress') {
+          const position =
+            change.content?.position && typeof change.content.position === 'object'
+              ? change.content.position
+              : {};
+          const serverRow = await client.query<{
+            updatedAt: Date;
+            position: unknown;
+            completedAt: Date | null;
+          }>(
+            `SELECT "updatedAt",position,"completedAt" FROM app."ReadingProgress" WHERE "userId"=$1 AND "lessonId"=$2`,
+            [context.user.id, lesson.id],
+          );
+          const clientAt = Date.parse(change.clientUpdatedAt);
+          if (serverRow.rows[0] && serverRow.rows[0].updatedAt.getTime() > clientAt) {
+            result = {
+              accepted: false,
+              conflict: true,
+              operationId: change.id,
+              serverUpdatedAt: serverRow.rows[0].updatedAt.toISOString(),
+              serverPosition: serverRow.rows[0].position,
+              serverCompletedAt: serverRow.rows[0].completedAt?.toISOString() ?? null,
+            };
+          } else {
+            await client.query(
+              `INSERT INTO app."ReadingProgress" (id,"userId","editionId","lessonId",position,"completedAt","updatedAt")
+             VALUES ($1,$2,$3,$4,$5::jsonb,$6,now()) ON CONFLICT ("userId","lessonId") DO UPDATE
+             SET position=EXCLUDED.position,"completedAt"=CASE WHEN EXCLUDED."completedAt" IS NOT NULL THEN EXCLUDED."completedAt" ELSE app."ReadingProgress"."completedAt" END,"updatedAt"=now()`,
+              [
+                randomUUID(),
+                context.user.id,
+                lesson.editionId,
+                lesson.id,
+                JSON.stringify(position),
+                change.percent === 100 ? new Date() : null,
+              ],
+            );
+          }
+        } else if (change.kind === 'bookmark') {
+          const anchor =
+            typeof change.content?.anchor === 'string' ? change.content.anchor.slice(0, 450) : '';
+          if (!anchor) throw new HttpException('Sync bookmark anchor required', 400);
+          await client.query(
+            `INSERT INTO app."Bookmark" (id,"userId","editionId","revisionId",anchor) VALUES ($1,$2,$3,$4,$5) ON CONFLICT ("userId","revisionId",anchor) DO NOTHING`,
+            [
+              randomUUID(),
+              context.user.id,
+              lesson.editionId,
+              lesson.revisionId,
+              `${lesson.id}:${anchor}`,
+            ],
+          );
+        } else if (change.kind === 'annotation') {
+          const content = change.content ?? {};
+          const anchor = typeof content.anchor === 'string' ? content.anchor.slice(0, 300) : '';
+          const kind = content.kind === 'HIGHLIGHT' ? 'HIGHLIGHT' : 'NOTE';
+          const note = typeof content.note === 'string' ? content.note.slice(0, 160) : '';
+          const quote = typeof content.quote === 'string' ? content.quote.slice(0, 100) : '';
+          if (!anchor) throw new HttpException('Sync annotation anchor required', 400);
+          const encryptedBodyRef = seal(
+            JSON.stringify({ kind, note, quote }),
+            this.config.AUTH_DATA_KEY,
+          );
+          const inserted = await client.query<{ id: string }>(
+            `INSERT INTO app."Annotation" (id,"userId","editionId","revisionId",anchor,"encryptedBodyRef","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,now()) RETURNING id`,
+            [
+              randomUUID(),
+              context.user.id,
+              lesson.editionId,
+              lesson.revisionId,
+              `${lesson.id}:${anchor}`,
+              encryptedBodyRef,
+            ],
+          );
+          result = { accepted: true, id: change.id, entityId: inserted.rows[0]?.id };
+        }
+        await client.query(
+          `INSERT INTO app."SyncOperation" (id,"userId","deviceHash","clientOperationId","operationType","payloadHash",result)
+         VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb) ON CONFLICT ("userId","clientOperationId") DO NOTHING`,
+          [
+            randomUUID(),
+            context.user.id,
+            deviceHash,
+            change.id,
+            `${change.kind}.${change.operation}`,
+            payloadHash,
+            JSON.stringify(result),
+          ],
+        );
+        await client.query('COMMIT');
+        outcomes.push(result);
+      } catch (error) {
+        await client.query('ROLLBACK').catch(() => undefined);
+        throw error;
+      } finally {
+        client.release();
+      }
+    }
+    return { outcomes, serverTime: new Date().toISOString() };
   }
 
   private async reserveReaderLeases(context: AuthContext, policy: EffectiveContentPolicy) {

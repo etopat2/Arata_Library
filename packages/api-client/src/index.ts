@@ -349,6 +349,62 @@ export function createApiClient(baseUrl = '') {
         }>('/me/invoices'),
     },
     reader: {
+      createOfflineLicence: (editionId: string, deviceId: string, idempotencyKey: string) =>
+        request<
+          ApiData<{
+            id: string;
+            editionId: string;
+            revisionId: string;
+            manifestHash: string;
+            lessonIds: string[];
+            issuedAt: string;
+            expiresAt: string;
+            revokedAt: string | null;
+            serverTime: string;
+            formatVersion: number;
+            signature: string;
+            publicKey: string;
+          }>
+        >('/reader/offline-licenses', 'POST', { editionId, deviceId }, undefined, {
+          'Idempotency-Key': idempotencyKey,
+        }),
+      offlineLicences: (deviceId: string) =>
+        request<
+          ApiData<
+            {
+              id: string;
+              editionId: string;
+              revisionId: string;
+              manifestHash: string;
+              issuedAt: string;
+              expiresAt: string;
+              revokedAt: string | null;
+            }[]
+          >
+        >(`/reader/offline-licenses?deviceId=${encodeURIComponent(deviceId)}`),
+      revokeOfflineLicence: (id: string) =>
+        request<ApiData<{ revoked: boolean }>>(
+          `/reader/offline-licenses/${encodeURIComponent(id)}`,
+          'DELETE',
+        ),
+      syncOffline: (value: {
+        licenseId: string;
+        deviceId: string;
+        changes: {
+          id: string;
+          kind: 'progress' | 'bookmark' | 'annotation';
+          clientUpdatedAt: string;
+          entityId: string;
+          operation: 'upsert' | 'delete';
+          content?: Record<string, unknown>;
+          percent?: number;
+        }[];
+      }) =>
+        request<ApiData<{ outcomes: unknown[]; serverTime: string }>>(
+          '/reader/sync',
+          'POST',
+          value,
+        ),
       settings: (signal?: AbortSignal) =>
         request<ApiData<ReaderSettings | null>>('/reader/settings', 'GET', undefined, signal),
       saveSettings: (value: ReaderSettings) =>

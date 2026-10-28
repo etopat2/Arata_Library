@@ -1798,19 +1798,22 @@ model ProjectSubmission {
 }
 
 model OfflineLicence {
-  id           String    @id @default(uuid()) @db.Uuid
-  userId       String    @db.Uuid
-  editionId    String    @db.Uuid
-  revisionId   String    @db.Uuid
-  deviceHash   String    @db.VarChar(128)
-  manifestHash String    @db.VarChar(128)
-  issuedAt     DateTime  @default(now()) @db.Timestamptz(6)
-  expiresAt    DateTime  @db.Timestamptz(6)
-  revokedAt    DateTime? @db.Timestamptz(6)
-  user         User      @relation(fields: [userId], references: [id], onDelete: Restrict)
-  edition      Edition   @relation(fields: [editionId], references: [id], onDelete: Restrict)
-  revision     Revision  @relation(fields: [revisionId, editionId], references: [id, editionId], onDelete: Restrict)
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String    @db.Uuid
+  editionId      String    @db.Uuid
+  revisionId     String    @db.Uuid
+  deviceHash     String    @db.VarChar(128)
+  manifestHash   String    @db.VarChar(128)
+  idempotencyKey String?   @db.VarChar(160)
+  requestHash    String?   @db.VarChar(128)
+  issuedAt       DateTime  @default(now()) @db.Timestamptz(6)
+  expiresAt      DateTime  @db.Timestamptz(6)
+  revokedAt      DateTime? @db.Timestamptz(6)
+  user           User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  edition        Edition   @relation(fields: [editionId], references: [id], onDelete: Restrict)
+  revision       Revision  @relation(fields: [revisionId, editionId], references: [id, editionId], onDelete: Restrict)
 
+  @@unique([userId, idempotencyKey])
   @@index([userId, deviceHash, expiresAt])
   @@schema("app")
 }

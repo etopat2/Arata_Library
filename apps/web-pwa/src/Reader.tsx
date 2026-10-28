@@ -8,6 +8,23 @@ import {
   type ReaderSettings,
 } from '@arata/api-client';
 import { ReaderBlocks, ReaderContent } from './ReaderContent.js';
+import {
+  getDeviceId,
+  listOfflinePackages,
+  listPendingChanges,
+  offlinePackageValidity,
+  queueOfflineChange,
+  readOfflineLesson,
+  readOfflineAsset,
+  readOfflineReaderState,
+  removeOfflinePackage,
+  removePendingChanges,
+  saveOfflinePackage,
+  storeOfflineReaderState,
+  type OfflinePackage,
+  type PendingChange,
+} from './offline-store.js';
+import { downloadEdition } from './offline-download.js';
 
 const api = createApiClient().reader;
 const catalogue = createApiClient().catalogue;
@@ -23,7 +40,13 @@ const fontFamilies = {
 } as const;
 type FontFamily = keyof typeof fontFamilies;
 
-export function Reader() {
+export function Reader({
+  updateReady = false,
+  onUpdate,
+}: {
+  updateReady?: boolean;
+  onUpdate?: () => void;
+}) {
   const [manifest, setManifest] = useState<ReaderManifest | null>(null);
   const [lesson, setLesson] = useState<ReaderLesson | null>(null);
   const [busy, setBusy] = useState(true);
@@ -62,6 +85,19 @@ export function Reader() {
       : stored === 'true';
   });
   const [accountSync, setAccountSync] = useState(false);
+  const [online, setOnline] = useState(navigator.onLine);
+  const [offlinePackage, setOfflinePackage] = useState<OfflinePackage | null>(null);
+  const [offlinePackages, setOfflinePackages] = useState<OfflinePackage[]>([]);
+  const [pendingRemoval, setPendingRemoval] = useState<{ id: string; count: number } | null>(null);
+  const [downloadProgress, setDownloadProgress] = useState('');
+  const [offlineActionBusy, setOfflineActionBusy] = useState(false);
+  const [syncConflicts, setSyncConflicts] = useState<
+    {
+      change: PendingChange;
+      serverUpdatedAt: string;
+      serverCompletedAt: string | null;
+    }[]
+  >([]);
   const settingsQueue = useRef<Promise<void>>(Promise.resolve());
   const currentSettings: ReaderSettings = {
     theme,
@@ -103,6 +139,14 @@ export function Reader() {
 
   useEffect(() => {
     const abort = new AbortController();
+    const onlineChanged = () => setOnline(navigator.onLine);
+    const migrationFailed = () =>
+      setStatus(
+        'Older offline changes could not be encrypted on this device. Free device storage and reconnect before using offline notes or progress.',
+      );
+    window.addEventListener('online', onlineChanged);
+    window.addEventListener('offline', onlineChanged);
+    window.addEventListener('arata-offline-migration-failed', migrationFailed);
     async function load() {
       try {
         if (!initialEdition) throw new Error('Choose an edition from the catalogue.');
@@ -145,9 +189,104 @@ export function Reader() {
           } catch {
             /* anonymous reading */
           }
+          const cached = (await listOfflinePackages()).find(
+            (item) => item.editionId === initialEdition && item.status === 'ready',
+          );
+          if (cached) {
+            setOfflinePackage(cached);
+            const state = await readOfflineReaderState<{
+              completed: string[];
+              bookmarks: { id: string; anchor: string }[];
+              annotations: {
+                id: string;
+                anchor: string;
+                kind: string;
+                quote: string;
+                note: string;
+              }[];
+            }>(cached.id);
+            if (state) {
+              setCompleted(state.completed);
+              setBookmarks(state.bookmarks);
+              setAnnotations(state.annotations);
+            }
+            await storeOfflineReaderState(cached.id, {
+              completed: [],
+              bookmarks: [],
+              annotations: [],
+              ...(state ?? {}),
+            });
+          }
         }
       } catch (reason) {
         if (abort.signal.aborted) return;
+        const cached =
+          reason instanceof ApiError
+            ? undefined
+            : (await listOfflinePackages()).find(
+                (item) => item.editionId === initialEdition && item.status === 'ready',
+              );
+        if (cached) {
+          const validity = await offlinePackageValidity(cached);
+          if (!validity.valid) {
+            if (validity.reason.includes('expired')) {
+              cached.status = 'expired';
+              await saveOfflinePackage(cached);
+            }
+            setStatus(validity.reason);
+          } else {
+            const target =
+              initialLesson && cached.licence.lessonIds.includes(initialLesson)
+                ? initialLesson
+                : cached.licence.lessonIds[0];
+            const opened = target ? await readOfflineLesson(cached.id, target) : undefined;
+            if (opened) {
+              const saved = await readOfflineReaderState<{
+                completed: string[];
+                bookmarks: { id: string; anchor: string }[];
+                annotations: {
+                  id: string;
+                  anchor: string;
+                  kind: string;
+                  quote: string;
+                  note: string;
+                }[];
+              }>(cached.id);
+              setOfflinePackage(cached);
+              setLesson(opened);
+              setManifest({
+                editionId: cached.editionId,
+                lessons: (
+                  await Promise.all(
+                    cached.licence.lessonIds.map(async (id: string) => {
+                      const item = await readOfflineLesson(cached.id, id);
+                      return item
+                        ? {
+                            id,
+                            title: item.title,
+                            chapterId: item.chapterId,
+                            chapterTitle: item.chapterTitle,
+                            chapterOrdinal: item.chapterOrdinal,
+                            ordinal: item.ordinal,
+                            available: true,
+                            preview: false,
+                          }
+                        : null;
+                    }),
+                  )
+                ).filter((item): item is NonNullable<typeof item> => item !== null),
+              });
+              setCompleted(saved?.completed ?? []);
+              setBookmarks(saved?.bookmarks ?? []);
+              setAnnotations(saved?.annotations ?? []);
+              setStatus(
+                'Offline reading is active. Its expiry is checked on this device; changes will sync when you reconnect.',
+              );
+              setError('');
+              return;
+            }
+          }
+        }
         setError(
           reason instanceof ApiError
             ? reason.status === 401
@@ -166,8 +305,173 @@ export function Reader() {
       }
     }
     void load();
-    return () => abort.abort();
+    return () => {
+      abort.abort();
+      window.removeEventListener('online', onlineChanged);
+      window.removeEventListener('offline', onlineChanged);
+      window.removeEventListener('arata-offline-migration-failed', migrationFailed);
+    };
   }, []);
+
+  useEffect(() => {
+    void listOfflinePackages().then(setOfflinePackages);
+  }, [offlinePackage, downloadProgress]);
+
+  useEffect(() => {
+    if (offlinePackage)
+      void storeOfflineReaderState(offlinePackage.id, { completed, bookmarks, annotations });
+  }, [offlinePackage, completed, bookmarks, annotations]);
+
+  useEffect(() => {
+    if (!online || !offlinePackage) return;
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        const deviceId = await getDeviceId();
+        const changes = await listPendingChanges(deviceId, offlinePackage.id);
+        if (!changes.length || cancelled) return;
+        try {
+          const result = (
+            await api.syncOffline({ licenseId: offlinePackage.id, deviceId, changes })
+          ).data;
+          const accepted = result.outcomes.flatMap((item, index) =>
+            item && typeof item === 'object' && 'accepted' in item && item.accepted === false
+              ? []
+              : [changes[index]?.id].filter((id): id is string => !!id),
+          );
+          if (accepted.length) await removePendingChanges(accepted);
+          const conflicts = result.outcomes.flatMap((item, index) => {
+            if (
+              !item ||
+              typeof item !== 'object' ||
+              !('conflict' in item) ||
+              item.conflict !== true
+            )
+              return [];
+            const change = changes[index];
+            if (!change) return [];
+            return [
+              {
+                change,
+                serverUpdatedAt: String('serverUpdatedAt' in item ? item.serverUpdatedAt : ''),
+                serverCompletedAt:
+                  'serverCompletedAt' in item && typeof item.serverCompletedAt === 'string'
+                    ? item.serverCompletedAt
+                    : null,
+              },
+            ];
+          });
+          setSyncConflicts(conflicts);
+          if (conflicts.length)
+            setStatus('Reading progress changed on another device. Choose which version to keep.');
+          else if (accepted.length) setStatus('Offline reading changes synced.');
+        } catch {
+          // The durable queue retries on the next connection or reader visit.
+        }
+      })();
+    }, 400);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [online, offlinePackage]);
+
+  async function downloadOffline() {
+    setOfflineActionBusy(true);
+    setDownloadProgress('Preparing secure offline package…');
+    try {
+      const item = await downloadEdition(api, initialEdition, (done, total) =>
+        setDownloadProgress(`Downloading lessons ${done} of ${total}…`),
+      );
+      setOfflinePackage(item);
+      setOfflinePackages(await listOfflinePackages());
+      setStatus('Offline package is ready. Licence expiry is checked whenever it is opened.');
+      setDownloadProgress('');
+    } catch (cause) {
+      setDownloadProgress(cause instanceof Error ? cause.message : 'Package download failed.');
+    } finally {
+      setOfflineActionBusy(false);
+    }
+  }
+
+  async function removeOffline(id: string, discardPending = false) {
+    const pending = await listPendingChanges(await getDeviceId(), id);
+    if (pending.length && !discardPending) {
+      setPendingRemoval({ id, count: pending.length });
+      setStatus('This package has unsynced reader changes. Sync them or confirm discarding them.');
+      return;
+    }
+    if (pending.length) await removePendingChanges(pending.map((item) => item.id));
+    if (navigator.onLine) await api.revokeOfflineLicence(id).catch(() => undefined);
+    await removeOfflinePackage(id);
+    setOfflinePackages(await listOfflinePackages());
+    setPendingRemoval(null);
+    if (offlinePackage?.id === id) setOfflinePackage(null);
+    setStatus(
+      pending.length && discardPending
+        ? 'Offline package and unsynced reader changes removed from this device.'
+        : 'Offline package removed from this device.',
+    );
+  }
+
+  async function saveOfflineAsset(
+    packageId: string,
+    file: NonNullable<OfflinePackage['files']>[number],
+  ) {
+    const content = await readOfflineAsset(packageId, file);
+    if (!content) {
+      setStatus('That offline file is no longer available.');
+      return;
+    }
+    const url = URL.createObjectURL(content);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = file.fileName;
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+  }
+
+  async function queueChange(value: {
+    kind: 'progress' | 'bookmark' | 'annotation';
+    entityId: string;
+    content?: Record<string, unknown>;
+    percent?: number;
+  }) {
+    if (!offlinePackage) return false;
+    await queueOfflineChange({
+      id: crypto.randomUUID(),
+      deviceId: await getDeviceId(),
+      licenseId: offlinePackage.id,
+      clientUpdatedAt: new Date().toISOString(),
+      operation: 'upsert',
+      ...value,
+    });
+    setStatus('Saved on this device. It will sync when you reconnect.');
+    return true;
+  }
+
+  async function resolveSyncConflict(operationId: string, keepDeviceVersion: boolean) {
+    const conflict = syncConflicts.find((item) => item.change.id === operationId);
+    if (!conflict) return;
+    await removePendingChanges([operationId]);
+    if (keepDeviceVersion) {
+      await queueOfflineChange({
+        ...conflict.change,
+        id: crypto.randomUUID(),
+        clientUpdatedAt: new Date().toISOString(),
+      });
+    } else {
+      setCompleted((current) =>
+        conflict.serverCompletedAt
+          ? [...new Set([...current, conflict.change.entityId ?? ''])].filter(Boolean)
+          : current.filter((id) => id !== conflict.change.entityId),
+      );
+    }
+    setSyncConflicts((items) => items.filter((item) => item.change.id !== operationId));
+    setStatus(
+      keepDeviceVersion ? 'Your device version will be retried.' : 'The server version was kept.',
+    );
+  }
 
   async function find(event: FormEvent) {
     event.preventDefault();
@@ -175,7 +479,27 @@ export function Reader() {
       setMatches((await api.search(initialEdition, search)).data);
       setStatus('Search results include content you can currently read.');
     } catch {
-      setStatus('Search is unavailable. Try again.');
+      if (!offlinePackage) {
+        setStatus('Search is unavailable. Try again.');
+      } else {
+        const term = search.trim().toLocaleLowerCase();
+        const local = await Promise.all(
+          offlinePackage.licence.lessonIds.map(async (id) => {
+            const item = await readOfflineLesson(offlinePackage.id, id);
+            const text = item?.bodyMarkdown ?? '';
+            const index = text.toLocaleLowerCase().indexOf(term);
+            return item && index >= 0
+              ? {
+                  id,
+                  title: item.title,
+                  snippet: text.slice(Math.max(0, index - 40), index + term.length + 80),
+                }
+              : null;
+          }),
+        );
+        setMatches(local.filter((item): item is NonNullable<typeof item> => item !== null));
+        setStatus('Search results use only the encrypted offline lessons on this device.');
+      }
     }
   }
   async function save(kind: 'bookmark' | 'complete') {
@@ -187,6 +511,29 @@ export function Reader() {
       else setBookmarks((current) => [...current, { id: lesson.id, anchor: `${lesson.id}:start` }]);
       setStatus(kind === 'bookmark' ? 'Bookmark saved.' : 'Lesson marked complete.');
     } catch (reason) {
+      if (!navigator.onLine && offlinePackage) {
+        if (kind === 'bookmark') {
+          const saved = await queueChange({
+            kind: 'bookmark',
+            entityId: lesson.id,
+            content: { anchor: 'start' },
+          });
+          if (saved)
+            setBookmarks((current) => [
+              ...current,
+              { id: crypto.randomUUID(), anchor: `${lesson.id}:start` },
+            ]);
+        } else {
+          const saved = await queueChange({
+            kind: 'progress',
+            entityId: lesson.id,
+            content: { position: { anchor: 'end' } },
+            percent: 100,
+          });
+          if (saved) setCompleted((current) => [...new Set([...current, lesson.id])]);
+        }
+        return;
+      }
       setStatus(
         reason instanceof ApiError && reason.status === 401
           ? 'Sign in to save your reading.'
@@ -231,6 +578,22 @@ export function Reader() {
       setSelected('');
       setStatus('Private annotation saved.');
     } catch {
+      if (!navigator.onLine && offlinePackage) {
+        const saved = await queueChange({
+          kind: 'annotation',
+          entityId: lesson.id,
+          content: { anchor: `quote:${selected}`, kind, quote: selected, note },
+        });
+        if (saved) {
+          setAnnotations((current) => [
+            ...current,
+            { id: crypto.randomUUID(), anchor: `quote:${selected}`, kind, quote: selected, note },
+          ]);
+          setNote('');
+          setSelected('');
+        }
+        return;
+      }
       setStatus('Sign in to save a private annotation, then try again.');
     }
   }
@@ -266,11 +629,29 @@ export function Reader() {
             Arata TechLibrary
           </a>
           <span className="text-sm">{lesson?.publicationTitle ?? 'Digital reader'}</span>
+          <span
+            role="status"
+            aria-live="polite"
+            className="rounded border border-current/30 px-2 py-1 text-xs"
+          >
+            {online ? 'Online' : 'Offline'}
+            {offlinePackage
+              ? ` · licence ends ${new Date(offlinePackage.licence.expiresAt).toLocaleString()}`
+              : ''}
+          </span>
           <a href="/?screen=catalogue" className="underline">
             Browse library
           </a>
         </div>
       </header>
+      {updateReady && (
+        <div role="status" className="mx-auto max-w-7xl border-b border-current/20 px-4 py-3">
+          A reader update is ready.{' '}
+          <button className="ml-2 underline" onClick={onUpdate}>
+            Apply update
+          </button>
+        </div>
+      )}
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-8 lg:grid-cols-[17rem_minmax(0,1fr)]">
         <nav
           aria-label="Table of contents"
@@ -296,6 +677,103 @@ export function Reader() {
               </li>
             ))}
           </ol>
+          <section
+            aria-labelledby="offline-heading"
+            className="mt-6 rounded-lg border border-current/20 p-3"
+          >
+            <h3 id="offline-heading" className="font-semibold">
+              Offline reading
+            </h3>
+            <p className="mt-1 text-xs opacity-80">
+              Only lessons with an active offline permission are saved. Local encryption helps
+              protect storage but is not copy-proof DRM. If this device is offline, remote
+              revocation takes effect when it reconnects.
+            </p>
+            {lesson?.policy.allowOffline &&
+              online &&
+              !offlinePackages.some(
+                (item) => item.editionId === initialEdition && item.status === 'ready',
+              ) && (
+                <button
+                  className="mt-3 rounded border border-current px-3 py-2"
+                  onClick={() => void downloadOffline()}
+                  disabled={offlineActionBusy}
+                >
+                  {offlineActionBusy
+                    ? 'Preparing…'
+                    : offlinePackages.some(
+                          (item) =>
+                            item.editionId === initialEdition &&
+                            (item.status === 'downloading' || item.status === 'quota'),
+                        )
+                      ? 'Resume offline download'
+                      : 'Download for offline reading'}
+                </button>
+              )}
+            {downloadProgress && (
+              <p role="status" className="mt-2 text-sm">
+                {downloadProgress}
+              </p>
+            )}
+            {offlinePackages.map((item) => (
+              <div
+                key={item.id}
+                className="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm"
+              >
+                <span>
+                  {item.status === 'ready'
+                    ? 'Available offline'
+                    : item.status === 'expired'
+                      ? 'Licence expired'
+                      : `Download ${item.downloaded}/${item.total}`}{' '}
+                  · {Math.round(item.bytes / 1024)} KB
+                </span>
+                <button className="underline" onClick={() => void removeOffline(item.id)}>
+                  Remove
+                </button>
+                {pendingRemoval?.id === item.id && (
+                  <div
+                    role="group"
+                    aria-label="Confirm removal of unsynced changes"
+                    className="basis-full rounded border border-current/20 p-2"
+                  >
+                    <p>
+                      {pendingRemoval.count} unsynced change(s) will be discarded if you remove this
+                      package.
+                    </p>
+                    <button className="mr-3 underline" onClick={() => setPendingRemoval(null)}>
+                      Keep package
+                    </button>
+                    <button className="underline" onClick={() => void removeOffline(item.id, true)}>
+                      Discard changes and remove
+                    </button>
+                  </div>
+                )}
+                {!!item.files?.length && (
+                  <ul className="basis-full space-y-1">
+                    {item.files.map((file) => (
+                      <li key={file.id} className="flex justify-between gap-2">
+                        <span>
+                          {file.fileName} · {Math.ceil(file.bytes / 1024)} KB
+                        </span>
+                        <button
+                          className="underline"
+                          onClick={() => void saveOfflineAsset(item.id, file)}
+                        >
+                          Save file
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {item.deferredFiles?.map((file) => (
+                  <p key={`${item.id}:${file.lessonId}`} className="basis-full text-xs opacity-70">
+                    Media not saved offline: {file.reason}
+                  </p>
+                ))}
+              </div>
+            ))}
+          </section>
           <form className="mt-8" onSubmit={(event) => void find(event)}>
             <label className="block text-sm font-semibold" htmlFor="reader-search">
               Search this edition
@@ -344,6 +822,32 @@ export function Reader() {
               {status}
             </p>
           )}
+          {syncConflicts.map((item) => (
+            <section
+              key={item.change.id}
+              className="mb-4 rounded border border-amber-500 p-4"
+              aria-label="Reading sync conflict"
+            >
+              <h2 className="font-semibold">Progress changed elsewhere</h2>
+              <p className="mt-1 text-sm">
+                Server version updated {new Date(item.serverUpdatedAt).toLocaleString()}.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  className="rounded border border-current px-3 py-2"
+                  onClick={() => void resolveSyncConflict(item.change.id, false)}
+                >
+                  Keep server version
+                </button>
+                <button
+                  className="rounded border border-current px-3 py-2"
+                  onClick={() => void resolveSyncConflict(item.change.id, true)}
+                >
+                  Keep this device version
+                </button>
+              </div>
+            </section>
+          ))}
           {lesson && (
             <>
               <p className="text-sm opacity-70">

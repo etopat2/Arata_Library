@@ -1,5 +1,13 @@
 # Implementation progress
 
+## Offline-first reader — 2026-10-29
+
+Status: **offline package, licence and reader sync contributions implemented; complete SRS acceptance remains open**. Requirements: `FR-OFL-001`–`012` (with `FR-OFL-009` intentionally not implemented), reader contributions `FR-RDR-004`–`006`, and security/privacy contributions `SEC-006/007`, `NFR-OPS-004/007`. Wireframes: `reader-dashboard`, `bookshelf`, `reader`, `bookmarks`.
+
+Paths: `apps/api/src/reader/reader.controller.ts`, `apps/api/src/reader/reader.service.ts`, `apps/api/OFFLINE.md`, `apps/web-pwa/src/offline-store.ts`, `apps/web-pwa/src/offline-download.ts`, `apps/web-pwa/src/Reader.tsx`, `apps/web-pwa/src/main.tsx`, `apps/web-pwa/vite.config.ts`, `packages/api-client/src/index.ts`, `api/openapi.v1.yaml`, `api/generated/v1.ts`, `prisma/schema.prisma`, migration `202610280001_offline_license_idempotency`, `tests/e2e/offline.spec.ts`, `tests/integration/catalogue.test.ts`, `database/tests/constraints.test.ts`.
+
+The service worker remains app-shell/static-only; protected content is fetched without HTTP caching, encrypted in browser-managed IndexedDB and checked against signed, scoped, expiring licences. Server sync is idempotent, authorization-checked, revocation-aware and reports progress conflicts for a user decision. Research-event collection, offline exercise scoring, low-bandwidth preference, Safari/Firefox verification and the production trust/key-management model remain open. Client-side encryption is not DRM and disconnected devices cannot observe remote revocation until reconnect. Detailed checks are in `TEST_RESULTS.md` and the implementation limits in `BLOCKERS.md`.
+
 ## Reader content rendering — 2026-10-28
 
 Status: **structured and Markdown content rendering added; full reader acceptance remains open**. Requirements: contribution to `FR-RDR-001` and `FR-RDR-003`; accessibility contribution to `NFR-UX-007`. Wireframe: `reader`. Paths: `apps/web-pwa/src/Reader.tsx`, `apps/web-pwa/src/ReaderContent.tsx`, `apps/web-pwa/src/style.css`, `apps/web-pwa/package.json`, `tests/unit/reader-content.test.tsx`, `vitest.config.ts`.

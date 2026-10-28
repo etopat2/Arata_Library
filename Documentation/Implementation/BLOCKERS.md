@@ -1,5 +1,9 @@
 # Open gaps and blockers
 
+## GAP-039 — Offline release acceptance and trust boundary
+
+**Status: open.** `FR-OFL-009` offline research-event synchronization is disabled until research consent and a dedicated collection contract are implemented. Offline assessment scoring is not implemented. `FR-OFL-012` low-bandwidth preference/media optimization is partial; media over 25 MiB is deferred. Validate Safari and Firefox, real iOS/Android persistence/eviction and production operational monitoring. The current licence's public key is included with the signed object (tamper evidence, not a device-owner trust root); agree and implement the production signing-key trust/rotation model before launch. Client clock rollback checks are best effort and remote revocation cannot reach disconnected clients. Do not represent browser encryption or policy UI as DRM or guaranteed screenshot prevention. See `apps/api/OFFLINE.md`.
+
 ## Unified entitlement follow-up — 2026-10-27
 
 | ID | Area | Current evidence and gap | Required next action |

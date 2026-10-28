@@ -180,7 +180,7 @@ beforeAll(async () => {
     );
     lockedLessonId = lockedLesson.rows[0]!.id;
     await fixture.query(
-      `INSERT INTO app."ContentPolicy" (id,"chapterId","accessClass","allowRead","allowDownload",version,"isActive","approvedAt") VALUES (gen_random_uuid(),$1,'PUBLIC_FREE',true,true,1,true,now())`,
+      `INSERT INTO app."ContentPolicy" (id,"chapterId","accessClass","allowRead","allowDownload","allowOffline",version,"isActive","approvedAt") VALUES (gen_random_uuid(),$1,'PUBLIC_FREE',true,true,true,1,true,now())`,
       [sampleId],
     );
     await fixture.query(
@@ -572,6 +572,114 @@ describe('public catalogue and policy boundaries', () => {
       headers,
     });
     expect(removed.status).toBe(200);
+  });
+
+  it('issues a bounded offline licence and makes duplicate sync operations idempotent', async () => {
+    const { csrfToken } = await import('../../apps/api/src/identity/security.js');
+    const csrf = csrfToken(sessionToken, process.env.AUTH_SESSION_SECRET!);
+    const deviceId = randomUUID();
+    const headers = {
+      'Content-Type': 'application/json',
+      Cookie: `arata_session=${sessionToken}; arata_csrf=${csrf}`,
+      Origin: process.env.WEB_ORIGIN!,
+      'X-CSRF-Token': csrf,
+      'Idempotency-Key': `offline-${suffix}-key`,
+    };
+    const licenseUrl = `${base}/api/v1/reader/offline-licenses`;
+    const requestBody = JSON.stringify({ editionId, deviceId });
+    const issued = await fetch(licenseUrl, { method: 'POST', headers, body: requestBody });
+    expect(issued.status).toBe(201);
+    const licence = (await issued.json()).data;
+    expect(licence.lessonIds).toContain(freeLessonId);
+    expect(Date.parse(licence.expiresAt)).toBeLessThanOrEqual(Date.now() + 7 * 86_400_000 + 30_000);
+    expect(licence.signature).toBeTruthy();
+    const repeated = await fetch(licenseUrl, { method: 'POST', headers, body: requestBody });
+    expect(repeated.status).toBe(201);
+    expect((await repeated.json()).data.id).toBe(licence.id);
+    const deviceLicences = await fetch(`${licenseUrl}?deviceId=${encodeURIComponent(deviceId)}`, {
+      headers: { Cookie: `arata_session=${sessionToken}` },
+    });
+    expect(deviceLicences.status).toBe(200);
+    expect((await deviceLicences.json()).data).toHaveLength(1);
+
+    const operationId = randomUUID();
+    const syncUrl = `${base}/api/v1/reader/sync`;
+    const change = {
+      id: operationId,
+      kind: 'progress',
+      clientUpdatedAt: new Date().toISOString(),
+      entityId: freeLessonId,
+      operation: 'upsert',
+      content: { position: { anchor: 'end' } },
+      percent: 50,
+    };
+    const syncHeaders = { ...headers, 'Idempotency-Key': `sync-${suffix}-key` };
+    const syncBody = JSON.stringify({ licenseId: licence.id, deviceId, changes: [change] });
+    const synced = await fetch(syncUrl, { method: 'POST', headers: syncHeaders, body: syncBody });
+    expect(synced.status).toBe(201);
+    expect((await synced.json()).data.outcomes[0].accepted).toBe(true);
+    const duplicate = await fetch(syncUrl, {
+      method: 'POST',
+      headers: syncHeaders,
+      body: syncBody,
+    });
+    expect(duplicate.status).toBe(201);
+    expect((await duplicate.json()).data.outcomes[0].id).toBe(operationId);
+    const conflict = await fetch(syncUrl, {
+      method: 'POST',
+      headers: syncHeaders,
+      body: JSON.stringify({
+        licenseId: licence.id,
+        deviceId,
+        changes: [{ ...change, percent: 70 }],
+      }),
+    });
+    expect(conflict.status).toBe(409);
+    const serverProgress = await fetch(`${base}/api/v1/reader/lessons/${freeLessonId}/progress`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ anchor: 'server-version', percent: 80, completed: false }),
+    });
+    expect(serverProgress.status).toBe(201);
+    const staleDeviceChange = {
+      ...change,
+      id: randomUUID(),
+      clientUpdatedAt: new Date(Date.now() - 60_000).toISOString(),
+      content: { position: { anchor: 'device-version' } },
+      percent: 30,
+    };
+    const concurrentEdit = await fetch(syncUrl, {
+      method: 'POST',
+      headers: syncHeaders,
+      body: JSON.stringify({
+        licenseId: licence.id,
+        deviceId,
+        changes: [staleDeviceChange],
+      }),
+    });
+    expect(concurrentEdit.status).toBe(201);
+    expect((await concurrentEdit.json()).data.outcomes[0]).toMatchObject({
+      accepted: false,
+      conflict: true,
+      operationId: staleDeviceChange.id,
+      serverPosition: { anchor: 'server-version' },
+    });
+    const revoked = await fetch(`${licenseUrl}/${licence.id}`, {
+      method: 'DELETE',
+      headers,
+    });
+    expect(revoked.status).toBe(200);
+    expect((await revoked.json()).data.revoked).toBe(true);
+    const deniedAfterRevocation = await fetch(syncUrl, {
+      method: 'POST',
+      headers: syncHeaders,
+      body: JSON.stringify({
+        licenseId: licence.id,
+        deviceId,
+        changes: [{ ...change, id: randomUUID() }],
+      }),
+    });
+    expect(deniedAfterRevocation.status).toBe(403);
   });
 
   it('keeps account reader settings private, validated and CSRF protected', async () => {

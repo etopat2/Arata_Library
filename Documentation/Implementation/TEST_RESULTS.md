@@ -1,5 +1,20 @@
 # Validation results
 
+## Offline-first reader implementation — 2026-10-29
+
+**Scope:** `FR-OFL-001`–`012`, `FR-RDR-004`–`006`; screens `reader-dashboard`, `bookshelf`, `reader`, `bookmarks`. Work remains partial where listed in `BLOCKERS.md`.
+
+**Passed locally:**
+
+- `npm run foundation:check` — lint and formatting; strict type checks for API, PWA, worker and packages; 19 Vitest files / 106 tests; package/API/PWA/worker production builds. Vite reports the existing large client bundle warning (~1.05 MB); build succeeded.
+- `npx playwright test tests/e2e/offline.spec.ts --timeout=45000` — 3/3 Chromium tests: desktop download/offline reopen/bookmark queue/expiry/clock rollback, mobile viewport same flow, encrypted queue assertions and pending-change removal guard, and injected IndexedDB quota interruption with resume to ready.
+- `npx vitest run tests/integration/catalogue.test.ts --config vitest.config.ts` — 12/12, including offline licence issue/list/revoke, idempotent duplicate licence and sync, changed-payload rejection, server-vs-offline progress conflict resolution data, and sync rejection after revocation.
+- `npm run db:test` — 17/17 PostgreSQL constraint tests, including offline licence and sync idempotency uniqueness.
+- `npm run api:types` and `npm run api:validate` — generated TypeScript types; 239 operations, 202 paths, 502 schemas, 239 policy/trace rows, 112 request examples and 2,390 response/error examples validated. Fixed the offline licence list response to match the non-paginated running route.
+- `npx prisma format`, `npx prisma validate`, `npx prisma generate` — passed. `npm run db:migrate:status` — 36 migrations, development DB up to date. `npm run db:verify` — PostgreSQL 18.4, UTC, 99 tables, 192 FKs, 113 checks, 55 triggers, 29 enums, 36 complete migrations and role isolation verified.
+
+**Limits:** Browser verification is Chromium desktop/mobile viewport only, not physical-device testing or Safari/Firefox. Offline research event collection and offline exercise scoring remain disabled; adaptive low-bandwidth behavior and large media remain open. Browser encryption/signatures do not provide DRM or reliable protection from a device owner, time manipulation, screenshots, or offline remote revocation.
+
 ## Reader structured content rendering — 2026-10-28
 
 Requirements: partial `FR-RDR-001/003`, accessibility contribution `NFR-UX-007`; wireframe: `reader`. Paths: `apps/web-pwa/src/Reader.tsx`, `ReaderContent.tsx`, `style.css`, web package dependencies, `tests/unit/reader-content.test.tsx`, and `vitest.config.ts`.

@@ -1,5 +1,9 @@
 # Implementation decisions
 
+## ADR-OFL-001 — Offline data boundaries and licence validity (2026-10-29)
+
+**Status: adopted for current implementation; production key trust remains open.** SRS `FR-OFL-001`–`012`, `FR-RDR-004`–`006`, and the PWA contract require offline reading, synchronization and expiry without implying screenshot prevention. Keep Workbox limited to the app shell/static assets and set protected API responses to network-only. Store only lesson text approved by effective `allowOffline`; attached files additionally require `allowDownload` and are limited to 25 MiB. Encrypt content with a non-extractable browser AES-GCM key; this is local storage protection, not DRM. Bind server licences to user/device/edition/revision, bound duration by the active platform setting and entitlement expiry, and recheck authorization and current revision on each sync. Persist client operation idempotency and reject changed duplicate payloads. Surface conflicts, expiry, rollback, storage pressure and removal. Remote changes apply on reconnect; a disconnected client cannot be remotely revoked. Exclude research event sync and offline assessment scoring until consent and dedicated contracts exist. The per-licence public-key signature is currently corruption/tamper evidence only; production trust anchor and key rotation require a release decision.
+
 ## Institutional access decisions — 2026-10-28
 
 | ID | Status | Sources and issue | Resolution |

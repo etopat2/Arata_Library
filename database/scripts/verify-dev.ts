@@ -125,7 +125,7 @@ try {
     row.foreign_keys !== 192 ||
     row.checks < 103 ||
     row.triggers < 54 ||
-    migrations.rows.length !== 35 ||
+    migrations.rows.length !== 36 ||
     migrations.rows.some((m) => !m.complete) ||
     !perms ||
     perms.app_can_research ||

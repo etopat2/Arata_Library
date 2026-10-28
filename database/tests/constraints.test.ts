@@ -154,6 +154,62 @@ test('referential integrity and hierarchy reject missing or mismatched parents',
     );
   }));
 
+test('offline licence idempotency and sync operation IDs reject duplicates', async () =>
+  inTransaction(async (client) => {
+    const userId = await addUser(client);
+    const publicationId = await addPublication(client, userId);
+    const editionId = await addEdition(client, publicationId);
+    const revisionId = randomUUID();
+    await client.query(
+      `INSERT INTO app."Revision" (id,"editionId",number,status,"manifestHash","createdById")
+       VALUES ($1,$2,1,'DRAFT',$3,$4)`,
+      [revisionId, editionId, 'test-manifest', userId],
+    );
+    await client.query(
+      `INSERT INTO app."OfflineLicence" (id,"userId","editionId","revisionId","deviceHash","manifestHash","idempotencyKey","requestHash","expiresAt")
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,now()+interval '1 day')`,
+      [
+        randomUUID(),
+        userId,
+        editionId,
+        revisionId,
+        'a'.repeat(64),
+        'b'.repeat(64),
+        'offline-request-1',
+        'c'.repeat(64),
+      ],
+    );
+    await rejectSql(
+      client,
+      `INSERT INTO app."OfflineLicence" (id,"userId","editionId","revisionId","deviceHash","manifestHash","idempotencyKey","requestHash","expiresAt")
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,now()+interval '1 day')`,
+      [
+        randomUUID(),
+        userId,
+        editionId,
+        revisionId,
+        'd'.repeat(64),
+        'e'.repeat(64),
+        'offline-request-1',
+        'f'.repeat(64),
+      ],
+      '23505',
+    );
+    const operationId = randomUUID();
+    await client.query(
+      `INSERT INTO app."SyncOperation" (id,"userId","deviceHash","clientOperationId","operationType","payloadHash")
+       VALUES ($1,$2,$3,$4,'progress.upsert',$5)`,
+      [randomUUID(), userId, 'a'.repeat(64), operationId, 'b'.repeat(64)],
+    );
+    await rejectSql(
+      client,
+      `INSERT INTO app."SyncOperation" (id,"userId","deviceHash","clientOperationId","operationType","payloadHash")
+       VALUES ($1,$2,$3,$4,'progress.upsert',$5)`,
+      [randomUUID(), userId, 'a'.repeat(64), operationId, 'c'.repeat(64)],
+      '23505',
+    );
+  }));
+
 test('duplicate identities, volume order and standalone edition codes are rejected', async () =>
   inTransaction(async (client) => {
     const userId = await addUser(client);

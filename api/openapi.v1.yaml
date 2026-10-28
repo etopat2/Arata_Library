@@ -6661,7 +6661,19 @@ paths:
                 $ref: '#/components/schemas/post_reader_offline_licensesResponse'
               example:
                 data:
-                  id: sample
+                  id: 00000000-0000-4000-8000-000000000001
+                  editionId: 00000000-0000-4000-8000-000000000002
+                  revisionId: 00000000-0000-4000-8000-000000000003
+                  manifestHash: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                  lessonIds:
+                  - 00000000-0000-4000-8000-000000000004
+                  issuedAt: '2026-10-28T00:00:00Z'
+                  expiresAt: '2026-11-04T00:00:00Z'
+                  revokedAt: null
+                  serverTime: '2026-10-28T00:00:00Z'
+                  formatVersion: 1
+                  signature: dGVzdC1zaWduYXR1cmU
+                  publicKey: dGVzdC1wdWJsaWMta2V5
                 requestId: sample
         '400':
           description: Invalid request
@@ -6862,8 +6874,8 @@ paths:
             schema:
               $ref: '#/components/schemas/OfflineLicenseCreateInput'
             example:
-              editionId: sample
-              deviceId: sample
+              editionId: 00000000-0000-4000-8000-000000000002
+              deviceId: 00000000-0000-4000-8000-000000000005
     get:
       operationId: get_reader_offline_licenses
       tags:
@@ -6878,38 +6890,13 @@ paths:
       security:
       - cookieAuth: []
       parameters:
-      - name: cursor
+      - name: deviceId
         in: query
-        required: false
-        description: Opaque cursor from the preceding page; do not construct it.
-        schema: *id001
-      - name: limit
-        in: query
-        required: false
-        description: Maximum page size.
-        schema:
-          type: integer
-          minimum: 1
-          maximum: 100
-          default: 20
-      - name: sort
-        in: query
-        required: false
-        description: Allowlisted sort key; prefix - requests descending order.
+        required: true
+        description: Random per-install identifier; server stores only a keyed hash.
         schema:
           type: string
-          minLength: 1
-          maxLength: 500
-          enum:
-          - issuedAt
-          - -issuedAt
-          - id
-          - -id
-      - name: status
-        in: query
-        required: false
-        description: Filter by a domain-valid record status.
-        schema: *id002
+          format: uuid
       responses:
         '200':
           description: OfflineLicense result; only authorized data is returned.
@@ -6919,9 +6906,6 @@ paths:
                 $ref: '#/components/schemas/get_reader_offline_licensesResponse'
               example:
                 data: []
-                page:
-                  limit: 1
-                  hasMore: true
                 requestId: sample
         '400':
           description: Invalid request
@@ -7149,7 +7133,7 @@ paths:
                 $ref: '#/components/schemas/delete_reader_offline_licenses_idResponse'
               example:
                 data:
-                  id: sample
+                  revoked: true
                 requestId: sample
         '400':
           description: Invalid request
@@ -7381,8 +7365,7 @@ paths:
                 $ref: '#/components/schemas/post_reader_syncResponse'
               example:
                 data:
-                  accepted: []
-                  rejected: []
+                  outcomes: []
                   serverTime: '2026-10-22T00:00:00Z'
                 requestId: sample
         '400':
@@ -7570,7 +7553,8 @@ paths:
             schema:
               $ref: '#/components/schemas/SyncBatchInput'
             example:
-              deviceId: sample
+              licenseId: 00000000-0000-4000-8000-000000000001
+              deviceId: 00000000-0000-4000-8000-000000000005
               changes: []
   /api/v1/learning/quizzes/{id}:
     get:
@@ -42029,38 +42013,97 @@ components:
         id: *id003
         editionId: *id003
         revisionId: *id003
-        deviceId: *id003
+        manifestHash:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        lessonIds:
+          type: array
+          items: *id003
         issuedAt: *id032
         expiresAt: *id032
-        maxOfflineAt: *id032
-        status: *id002
-        manifestUrl: *id036
+        revokedAt:
+          oneOf:
+          - *id032
+          - type: 'null'
+        serverTime: *id032
+        formatVersion:
+          type: integer
+          const: 1
+        signature:
+          type: string
+          minLength: 1
+        publicKey:
+          type: string
+          minLength: 1
       required:
       - id
+      - editionId
+      - revisionId
+      - manifestHash
+      - lessonIds
+      - issuedAt
+      - expiresAt
+      - revokedAt
+      - serverTime
+      - formatVersion
+      - signature
+      - publicKey
+    OfflineLicenseSummary:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id003
+        editionId: *id003
+        revisionId: *id003
+        manifestHash:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        issuedAt: *id032
+        expiresAt: *id032
+        revokedAt:
+          oneOf:
+          - *id032
+          - type: 'null'
+      required:
+      - id
+      - editionId
+      - revisionId
+      - manifestHash
+      - issuedAt
+      - expiresAt
+      - revokedAt
     SyncResult:
       type: object
       additionalProperties: false
       properties:
-        accepted:
-          type: array
-          items: *id003
-        rejected:
+        outcomes:
           type: array
           items:
-            type: object
-            additionalProperties: false
-            properties:
-              id: *id003
-              reasonCode: *id002
-            required:
-            - id
-            - reasonCode
+            $ref: '#/components/schemas/SyncOutcome'
         serverTime: *id032
-        cursor: *id001
+      required:
+      - outcomes
+      - serverTime
+    SyncOutcome:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id003
+        accepted:
+          type: boolean
+        conflict:
+          type: boolean
+        entityId: *id003
+        serverUpdatedAt: *id032
+        serverCompletedAt:
+          oneOf:
+          - *id032
+          - type: 'null'
+        serverPosition:
+          type: object
+          additionalProperties: true
       required:
       - accepted
-      - rejected
-      - serverTime
     AuditEvent:
       type: object
       additionalProperties: false
@@ -42749,8 +42792,12 @@ components:
       type: object
       additionalProperties: false
       properties:
-        editionId: *id003
-        deviceId: *id003
+        editionId:
+          type: string
+          format: uuid
+        deviceId:
+          type: string
+          format: uuid
         requestedDurationDays:
           type: integer
           minimum: 1
@@ -42762,15 +42809,21 @@ components:
       type: object
       additionalProperties: false
       properties:
-        deviceId: *id003
-        cursor: *id001
+        licenseId:
+          type: string
+          format: uuid
+        deviceId:
+          type: string
+          format: uuid
         changes:
           type: array
           items:
             type: object
             additionalProperties: false
             properties:
-              id: *id003
+              id:
+                type: string
+                format: uuid
               kind:
                 type: string
                 minLength: 1
@@ -42781,7 +42834,9 @@ components:
                 - annotation
                 - research_event
               clientUpdatedAt: *id032
-              entityId: *id003
+              entityId:
+                type: string
+                format: uuid
               operation:
                 type: string
                 minLength: 1
@@ -42789,7 +42844,27 @@ components:
                 enum:
                 - upsert
                 - delete
-              content: *id034
+              content:
+                type: object
+                additionalProperties: false
+                properties:
+                  position:
+                    type: object
+                    additionalProperties: true
+                  anchor:
+                    type: string
+                    maxLength: 500
+                  kind:
+                    type: string
+                    enum:
+                    - NOTE
+                    - HIGHLIGHT
+                  note:
+                    type: string
+                    maxLength: 160
+                  quote:
+                    type: string
+                    maxLength: 100
               percent:
                 type: number
                 minimum: 0
@@ -42798,8 +42873,10 @@ components:
             - id
             - kind
             - clientUpdatedAt
+            - entityId
             - operation
       required:
+      - licenseId
       - deviceId
       - changes
     QuizAttemptCreateInput:
@@ -44284,7 +44361,13 @@ components:
       additionalProperties: false
       properties:
         data:
-          $ref: '#/components/schemas/OfflineLicense'
+          type: object
+          additionalProperties: false
+          properties:
+            revoked:
+              type: boolean
+          required:
+          - revoked
         requestId: *id001
       required:
       - data
@@ -45327,13 +45410,10 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/OfflineLicense'
-        page:
-          $ref: '#/components/schemas/PageInfo'
+            $ref: '#/components/schemas/OfflineLicenseSummary'
         requestId: *id001
       required:
       - data
-      - page
       - requestId
     get_admin_research_eventsResponse:
       type: object
