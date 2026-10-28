@@ -1,4 +1,25 @@
 @import 'tailwindcss';
+.reader-content .hljs-keyword,
+.reader-content .hljs-built_in,
+.reader-content .hljs-type {
+  color: #93c5fd;
+  font-weight: 600;
+}
+.reader-content .hljs-string,
+.reader-content .hljs-regexp,
+.reader-content .hljs-template-variable {
+  color: #86efac;
+}
+.reader-content .hljs-number,
+.reader-content .hljs-literal,
+.reader-content .hljs-attr {
+  color: #fcd34d;
+}
+.reader-content .hljs-comment,
+.reader-content .hljs-quote {
+  color: #cbd5e1;
+  font-style: italic;
+}
 :focus-visible {
   outline: 3px solid #67e8f9;
   outline-offset: 3px;

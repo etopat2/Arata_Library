@@ -14,6 +14,8 @@ Updated: 2026-10-26. The source plan proposes 20 two-week sequencing units; dura
 
 S09 reader settings follow-up: per-account and device preferences now persist for `FR-RDR-002` (`reader`). The signed-in browser restore test passed 1/1, full public browser 11/11, live reader/catalogue API 11/11 and SQL constraints 12/12. Runtime OpenAPI alignment, advanced rendering and release accessibility acceptance remain open.
 
+S09 reader rendering contribution (2026-10-28): the reader now renders sanitized Markdown tables, formulas, code highlighting, and validated lesson blocks (`FR-RDR-001/003`; screen `reader`). Focused content-rendering tests, strict workspace type checks, and the PWA build are recorded in `TEST_RESULTS.md`. Full SRS acceptance, asset resolution, and manual accessibility review remain open.
+
 | Sprint | Source goal | Status | Current note |
 |---|---|---|---|
 | S01 | Initiation and design/contracts | In progress | Inventory, database CI, reconciliation, v1 API design contract and runnable API/PWA/worker foundation are verified. Product services, threat model and staging environment remain. |

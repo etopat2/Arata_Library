@@ -6,6 +6,7 @@ export default defineConfig({
       'packages/**/*.test.ts',
       'apps/**/*.test.ts',
       'tests/unit/**/*.test.ts',
+      'tests/unit/**/*.test.tsx',
       'tests/integration/**/*.test.ts',
     ],
     testTimeout: 10000,

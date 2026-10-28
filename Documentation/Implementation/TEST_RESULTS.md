@@ -1,5 +1,19 @@
 # Validation results
 
+## Reader structured content rendering — 2026-10-28
+
+Requirements: partial `FR-RDR-001/003`, accessibility contribution `NFR-UX-007`; wireframe: `reader`. Paths: `apps/web-pwa/src/Reader.tsx`, `ReaderContent.tsx`, `style.css`, web package dependencies, `tests/unit/reader-content.test.tsx`, and `vitest.config.ts`.
+
+| Check | Result | Evidence and limit |
+|---|---|---|
+| Focused content-rendering tests | 3/3 pass | Semantic headings/tables/math/highlighting, unsafe HTML/URL filtering, and private asset reference suppression. |
+| `npm run typecheck:foundation` | Pass | Built shared packages then passed strict API, PWA, and worker TypeScript checks. |
+| `npm run build -w @arata/web-pwa` | Pass | Production PWA and service worker generated. Build reports a large JavaScript chunk (about 1.03 MB before gzip); code-splitting/performance review remains. |
+| Focused ESLint and Prettier | Pass | All changed TypeScript and configuration files passed. |
+| `npm run test:foundation -- --reporter=dot --silent` | 105/105 pass | All 19 test files passed, including the three new renderer tests. |
+
+The first PWA build attempt ran before workspace packages were rebuilt and failed against stale local package outputs; the sequential foundation typecheck rebuilt those packages, after which the PWA build passed. Markdown rendering sanitizes input, limits URL schemes, disables raw HTML, and does not expose structured asset IDs. Full reader acceptance, asset delivery, performance optimization, and manual accessibility review remain open.
+
 ## Institutional access — 2026-10-28
 
 Requirements: `FR-INS-001`–`013`, `BR-014/017`; entitlement integration `FR-ENT-001/004`. Screens: `eligibility`, `eligibility-status`, `institution-portal`, `institution-roster`, `institution-policies`, `cohort-manager`. Paths are recorded in `PROGRESS.md` and `apps/api/INSTITUTIONS.md`.

@@ -1,5 +1,11 @@
 # Implementation progress
 
+## Reader content rendering — 2026-10-28
+
+Status: **structured and Markdown content rendering added; full reader acceptance remains open**. Requirements: contribution to `FR-RDR-001` and `FR-RDR-003`; accessibility contribution to `NFR-UX-007`. Wireframe: `reader`. Paths: `apps/web-pwa/src/Reader.tsx`, `apps/web-pwa/src/ReaderContent.tsx`, `apps/web-pwa/src/style.css`, `apps/web-pwa/package.json`, `tests/unit/reader-content.test.tsx`, `vitest.config.ts`.
+
+The reader renders sanitized Markdown with tables, math, syntax-highlighted code, validated structured lesson blocks, and user highlights. Executable HTML and unsafe URLs are suppressed; private asset identifiers are not rendered as URLs. Asset resolution, complete reader release acceptance, and manual accessibility review remain open. Test evidence is in `TEST_RESULTS.md`.
+
 ## Institutional access — 2026-10-28
 
 Status: **live onboarding and access controls implemented; production acceptance open**. Requirements: `FR-INS-001`–`013`, `BR-014/017`, with eligibility and agreement contributions to `FR-ENT-001/004`. Screens: `eligibility`, `eligibility-status`, `institution-portal`, `institution-roster`, `institution-policies`, `cohort-manager`. Paths: `apps/api/src/institutions/`, `apps/web-pwa/src/InstitutionScreens.tsx`, `apps/api/INSTITUTIONS.md`, `prisma/schema.prisma`, migrations `202610270009`–`012`, `api/institution_runtime.py`, `api/openapi.v1.yaml`, `api/policies.v1.yaml`, `database/erd/`, and institution SQL/HTTP/unit tests.

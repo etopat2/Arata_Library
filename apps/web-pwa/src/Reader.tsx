@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import {
   ApiError,
   createApiClient,
@@ -7,6 +7,7 @@ import {
   type ReaderManifest,
   type ReaderSettings,
 } from '@arata/api-client';
+import { ReaderBlocks, ReaderContent } from './ReaderContent.js';
 
 const api = createApiClient().reader;
 const catalogue = createApiClient().catalogue;
@@ -21,81 +22,6 @@ const fontFamilies = {
   mono: 'ui-monospace, Menlo, Consolas, monospace',
 } as const;
 type FontFamily = keyof typeof fontFamilies;
-
-function highlighted(value: string, quotes: string[]): ReactNode {
-  const matches = quotes.filter(Boolean);
-  if (!matches.length) return value;
-  const escaped = matches.map((item) => item.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-  const parts = value.split(new RegExp(`(${escaped.join('|')})`, 'g'));
-  return parts.map((part, index) =>
-    matches.includes(part) ? (
-      <mark key={index} className="bg-yellow-200 text-slate-900">
-        {part}
-      </mark>
-    ) : (
-      part
-    ),
-  );
-}
-
-function Content({ markdown, quotes }: { markdown: string; quotes: string[] }) {
-  const lines = markdown.split(/\r?\n/);
-  const result: ReactNode[] = [];
-  let code: string[] = [];
-  let text: string[] = [];
-  let inCode = false;
-  const flushText = () => {
-    if (text.length)
-      result.push(
-        <p key={`p-${result.length}`} className="my-5 whitespace-pre-wrap leading-relaxed">
-          {highlighted(text.join('\n'), quotes)}
-        </p>,
-      );
-    text = [];
-  };
-  for (const line of lines) {
-    if (line.startsWith('```')) {
-      flushText();
-      if (inCode) {
-        result.push(
-          <pre
-            key={`c-${result.length}`}
-            className="my-5 overflow-x-auto rounded-lg bg-slate-900 p-4 text-sm text-slate-50"
-          >
-            <code>{code.join('\n')}</code>
-          </pre>,
-        );
-        code = [];
-      }
-      inCode = !inCode;
-    } else if (inCode) code.push(line);
-    else if (/^#{1,4} /.test(line)) {
-      flushText();
-      const level = line.match(/^#+/)![0].length;
-      const title = line.slice(level + 1);
-      result.push(
-        level <= 2 ? (
-          <h2 key={`h-${result.length}`} className="mt-8 text-2xl font-bold">
-            {title}
-          </h2>
-        ) : (
-          <h3 key={`h-${result.length}`} className="mt-6 text-xl font-semibold">
-            {title}
-          </h3>
-        ),
-      );
-    } else if (line.trim() === '') flushText();
-    else text.push(line);
-  }
-  flushText();
-  if (code.length)
-    result.push(
-      <pre key="trailing-code">
-        <code>{code.join('\n')}</code>
-      </pre>,
-    );
-  return <>{result}</>;
-}
 
 export function Reader() {
   const [manifest, setManifest] = useState<ReaderManifest | null>(null);
@@ -323,6 +249,9 @@ export function Reader() {
       : theme === 'sepia'
         ? 'bg-amber-50 text-stone-900'
         : 'bg-white text-slate-900';
+  const highlightQuotes = annotations
+    .filter((item) => item.kind === 'HIGHLIGHT')
+    .map((item) => item.quote);
   return (
     <div className={`min-h-screen ${palette} ${reducedMotion ? 'reader-reduced-motion' : ''}`}>
       <a
@@ -605,23 +534,19 @@ export function Reader() {
                 </p>
               )}
               <article
-                className="prose max-w-3xl"
+                className="reader-content prose max-w-3xl"
                 style={{ fontSize, fontFamily: fontFamilies[fontFamily], lineHeight: lineSpacing }}
                 aria-label="Lesson content"
               >
                 {lesson.bodyMarkdown ? (
-                  <Content
-                    markdown={lesson.bodyMarkdown}
-                    quotes={annotations
-                      .filter((item) => item.kind === 'HIGHLIGHT')
-                      .map((item) => item.quote)}
-                  />
-                ) : (
+                  <ReaderContent markdown={lesson.bodyMarkdown} quotes={highlightQuotes} />
+                ) : !Array.isArray(lesson.blocks) || !lesson.blocks.length ? (
                   <p>
                     No inline lesson text is available.{' '}
                     {lesson.hasBodyAsset ? 'A licensed asset may be available separately.' : ''}
                   </p>
-                )}
+                ) : null}
+                <ReaderBlocks blocks={lesson.blocks} quotes={highlightQuotes} />
               </article>
               {selected && (
                 <section
