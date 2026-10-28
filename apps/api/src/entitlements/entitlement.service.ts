@@ -304,19 +304,29 @@ export class EntitlementService implements OnModuleInit, OnModuleDestroy {
       expiresAt: Date | null;
       verifiedAt: Date;
       agreementEnd: Date;
+      policyDays: number;
+      domainReviewDueAt: Date;
     }>(
-      `SELECT m.category,m."expiresAt",m."verifiedAt",a."endsAt" AS "agreementEnd"
+      `SELECT m.category,m."expiresAt",m."verifiedAt",a."endsAt" AS "agreementEnd",
+        p."validityDays" AS "policyDays",d."reviewDueAt" AS "domainReviewDueAt"
        FROM app."Membership" m JOIN app."Institution" i ON i.id=m."institutionId"
        JOIN app."User" u ON u.id=m."userId"
        JOIN app."InstitutionDomain" d ON d."institutionId"=i.id AND d.domain=split_part(lower(u.email),'@',2)
        JOIN app."InstitutionAgreement" a ON a."institutionId"=i.id
+       JOIN app."EligibilityPolicy" p ON p."institutionId"=i.id
+         AND p.category=m.category AND p."verificationMode"=m."verificationMethod"
+         AND p.active AND p."approvalStatus"='APPROVED'
        WHERE m.id=$1 AND m."userId"=$2 AND m.status='VERIFIED' AND i.status='APPROVED'
+         AND m."optedOutAt" IS NULL
          AND (SELECT rev.decision FROM app."EligibilityReview" rev WHERE rev."membershipId"=m.id
            ORDER BY rev."reviewedAt" DESC,rev.id DESC LIMIT 1)='APPROVED'
          AND u.status='ACTIVE' AND u."emailVerifiedAt" IS NOT NULL AND m."verifiedAt" IS NOT NULL
          AND (m."expiresAt" IS NULL OR m."expiresAt">now())
          AND d."verifiedAt" IS NOT NULL AND d."approvedAt" IS NOT NULL AND d."suspendedAt" IS NULL
-         AND (d."reviewDueAt" IS NULL OR d."reviewDueAt">now())
+         AND d."reviewDueAt">now()
+         AND (p.scope='LIBRARY' OR (p.scope=$3::app."EntitlementScope"
+           AND p."scopeId" IS NOT DISTINCT FROM $7::uuid))
+         AND m."verifiedAt"+(p."validityDays"*interval '1 day')>now()
          AND a.status='APPROVED' AND a."startsAt"<=now() AND a."endsAt">now()
          AND m.category=ANY(a."permittedCategories")
          AND (a.scope='LIBRARY' OR (a.scope=$3::app."EntitlementScope" AND
@@ -334,6 +344,7 @@ export class EntitlementService implements OnModuleInit, OnModuleDestroy {
         scope.scope === 'PUBLICATION' ? scope.scopeId : null,
         scope.scope === 'VOLUME' ? scope.scopeId : null,
         cohortId ?? null,
+        scope.scope === 'LIBRARY' ? null : scope.scopeId,
       ],
     );
     const row = result.rows[0];
@@ -346,6 +357,8 @@ export class EntitlementService implements OnModuleInit, OnModuleDestroy {
           : settings.institutional.staffValidityDays;
     const limits = [
       row.agreementEnd,
+      row.domainReviewDueAt,
+      new Date(row.verifiedAt.getTime() + row.policyDays * 86_400_000),
       new Date(row.verifiedAt.getTime() + validity * 86_400_000),
       new Date(row.verifiedAt.getTime() + settings.institutional.reverifyDays * 86_400_000),
     ];
@@ -862,7 +875,7 @@ export class EntitlementService implements OnModuleInit, OnModuleDestroy {
     return (
       await this.pool.query(
         `SELECT id,"institutionId",status,scope,"publicationId","volumeId",
-      "memberLimit","permittedCategories","startsAt","endsAt","createdById","approvedById","approvedAt"
+      "memberLimit","reportingEnabled","permittedCategories","startsAt","endsAt","createdById","approvedById","approvedAt"
       FROM app."InstitutionAgreement" WHERE ($1::uuid IS NULL OR "institutionId"=$1)
       ORDER BY "startsAt" DESC LIMIT 100`,
         [institutionId ?? null],
@@ -876,6 +889,7 @@ export class EntitlementService implements OnModuleInit, OnModuleDestroy {
       scope: 'LIBRARY' | 'PUBLICATION' | 'VOLUME';
       scopeId?: string | undefined;
       memberLimit: number;
+      reportingEnabled?: boolean | undefined;
       permittedCategories: string[];
       startsAt: Date;
       endsAt: Date;
@@ -907,7 +921,8 @@ export class EntitlementService implements OnModuleInit, OnModuleDestroy {
       await client.query(
         `INSERT INTO app."InstitutionAgreement"
         (id,"institutionId","createdById",scope,"publicationId","volumeId","memberLimit",
-         "permittedCategories","startsAt","endsAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+         "reportingEnabled","permittedCategories","startsAt","endsAt")
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
         [
           id,
           input.institutionId,
@@ -916,6 +931,7 @@ export class EntitlementService implements OnModuleInit, OnModuleDestroy {
           target.publicationId,
           target.volumeId,
           input.memberLimit,
+          input.reportingEnabled ?? false,
           input.permittedCategories,
           input.startsAt,
           input.endsAt,

@@ -441,16 +441,78 @@ test('institution benefits require approved institution, verified identity and m
     const instId = randomUUID();
     const membershipId = randomUUID();
     await client.query(
-      `INSERT INTO app."Institution" (id, "legalName", status, "verificationMode", "approvedAt") VALUES ($1, '[TEST ONLY] Institution', 'APPROVED', 'MANUAL', now())`,
-      [instId],
+      `INSERT INTO app."Institution" (id, "legalName", status, "verificationMode", "evidenceRef",
+        "requestedById","approvedById","approvedAt")
+       VALUES ($1, '[TEST ONLY] Institution', 'APPROVED', 'MANUAL', 'TEST-ONLY-EVIDENCE',$2,$3,now())`,
+      [instId, issuerId, approverId],
     );
     await client.query(
-      `INSERT INTO app."EligibilityPolicy" (id, "institutionId", category, scope, "verificationMode", "validityDays", active)
-    VALUES ($1, $2, 'STUDENT', 'LIBRARY', 'MANUAL', 30, true)`,
-      [randomUUID(), instId],
+      `INSERT INTO app."RoleAssignment" (id,"userId","roleId","scopeType","startsAt")
+       SELECT $1,$2,id,'PLATFORM',now() FROM app."Role" WHERE code='SYSTEM_ADMIN'`,
+      [randomUUID(), approverId],
+    );
+    const domainId = randomUUID(),
+      challengeId = randomUUID(),
+      proof = 'a'.repeat(64);
+    await client.query(
+      `INSERT INTO app."InstitutionDomain" (id,"institutionId",domain,"requestedById")
+       VALUES ($1,$2,'example.invalid',$3)`,
+      [domainId, instId, issuerId],
+    );
+    await rejectSql(
+      client,
+      `UPDATE app."InstitutionDomain" SET "approvedById"=$2,"approvedAt"=now(),
+       "reviewDueAt"=now()+interval '90 days' WHERE id=$1`,
+      [domainId, approverId],
+      '23514',
     );
     await client.query(
-      `INSERT INTO app."Membership" (id, "institutionId", "userId", status, "verificationMethod") VALUES ($1, $2, $3, 'PENDING', 'MANUAL')`,
+      `INSERT INTO app."InstitutionDomainChallenge"
+       (id,"domainId","requestedById","tokenHash","expiresAt","verifiedAt","createdAt")
+       VALUES ($1,$2,$3,$4,now()+interval '1 day',now(),now()-interval '1 minute')`,
+      [challengeId, domainId, issuerId, proof],
+    );
+    await client.query(
+      `UPDATE app."InstitutionDomain" SET "ownershipProofHash"=$2,"verifiedAt"=now()
+       WHERE id=$1`,
+      [domainId, proof],
+    );
+    await client.query(
+      `UPDATE app."InstitutionDomain" SET "approvedById"=$2,"approvedAt"=now(),
+       "reviewDueAt"=now()+interval '90 days' WHERE id=$1`,
+      [domainId, approverId],
+    );
+    const renewedProof = 'b'.repeat(64);
+    await client.query(
+      `INSERT INTO app."InstitutionDomainChallenge"
+       (id,"domainId","requestedById","tokenHash","expiresAt")
+       VALUES ($1,$2,$3,$4,now()+interval '1 day')`,
+      [randomUUID(), domainId, issuerId, renewedProof],
+    );
+    await rejectSql(
+      client,
+      `UPDATE app."InstitutionDomain" SET "reviewDueAt"=now()+interval '91 days' WHERE id=$1`,
+      [domainId],
+      '23514',
+    );
+    await client.query(
+      `UPDATE app."InstitutionDomainChallenge" SET "verifiedAt"=now()
+       WHERE "domainId"=$1 AND "tokenHash"=$2`,
+      [domainId, renewedProof],
+    );
+    await client.query(
+      `UPDATE app."InstitutionDomain" SET "ownershipProofHash"=$2,"verifiedAt"=now(),
+       "reviewDueAt"=now()+interval '90 days' WHERE id=$1`,
+      [domainId, renewedProof],
+    );
+    await client.query(
+      `INSERT INTO app."EligibilityPolicy" (id, "institutionId", category, scope, "verificationMode",
+       "validityDays", active,"approvalStatus","requestedById","approvedById","approvedAt")
+       VALUES ($1, $2, 'STUDENT', 'LIBRARY', 'MANUAL', 30, true,'APPROVED',$3,$4,now())`,
+      [randomUUID(), instId, issuerId, approverId],
+    );
+    await client.query(
+      `INSERT INTO app."Membership" (id, "institutionId", "userId", status, category, "verificationMethod") VALUES ($1, $2, $3, 'PENDING', 'STUDENT', 'MANUAL')`,
       [membershipId, instId, userId],
     );
     await rejectSql(

@@ -12,6 +12,7 @@ import { ContentPolicyAdmin } from './ContentPolicyAdmin.js';
 import { PlatformPolicyAdmin } from './PlatformPolicyAdmin.js';
 import { BillingScreens } from './BillingScreens.js';
 import { EntitlementScreens } from './EntitlementScreens.js';
+import { InstitutionScreens } from './InstitutionScreens.js';
 import './style.css';
 
 const accountScreens = new Set([
@@ -60,6 +61,14 @@ function App() {
     'trial-admin',
     'institution-access',
   ]).has(new URLSearchParams(location.search).get('screen') ?? '');
+  const institutionScreen = new Set([
+    'eligibility',
+    'eligibility-status',
+    'institution-portal',
+    'institution-roster',
+    'institution-policies',
+    'cohort-manager',
+  ]).has(new URLSearchParams(location.search).get('screen') ?? '');
 
   useEffect(() => {
     void getTheme().then(chooseTheme);
@@ -88,6 +97,7 @@ function App() {
   if (platformSettings) return <PlatformPolicyAdmin />;
   if (billingScreen) return <BillingScreens />;
   if (entitlementScreen) return <EntitlementScreens />;
+  if (institutionScreen) return <InstitutionScreens />;
   if (!account)
     return (
       <PublicPortal

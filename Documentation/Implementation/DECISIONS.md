@@ -1,5 +1,14 @@
 # Implementation decisions
 
+## Institutional access decisions — 2026-10-28
+
+| ID | Status | Sources and issue | Resolution |
+|---|---|---|---|
+| ADR-INS-001 | Implemented | SRS `FR-INS-002/004/005/008` and Step 1 authorization policy require verified ownership, student evidence and independent central approval. Original migration `202610210002_integrity_controls` required `approvedAt` before `verifiedAt`, preventing evidence-first DNS review. | Migration `202610270012_domain_proof_order` permits a verified domain with a proof hash before approval; a trigger still requires the latest verified challenge and a distinct central approver for approval or renewal. Domain equality is exact, and an email must be separately confirmed. |
+| ADR-INS-002 | Implemented; launch evidence open | SRS `FR-INS-004/007/011` and `BR-014`; an institutional domain by itself cannot establish student status. | Default to manual or reviewed roster evidence for student benefits. A `DOMAIN_ONLY` mode can activate only through an explicitly approved institution/category policy. Require active agreement scope, category, capacity, validity and reader opt-in at access time. Keep grants additive with independent paid access. |
+| ADR-INS-003 | Metadata only | SRS `FR-INS-004` calls for institution SSO architecture, while a trusted IdP, federation contract and assertion tests are unavailable. | Allow reviewed issuer/client metadata, but keep `authenticationEnabled=false` and reject activation of SSO evidence policy. No unverified SSO claim can issue eligibility. Track federation implementation as GAP-036. |
+| ADR-INS-004 | Implemented as privacy gate | SRS `FR-INS-013`, `BR-017`; manager reports must not disclose private reader records. | Operational membership counts are scoped to the institution. Engagement is disabled unless a separately approved agreement opts in, and then releases only a thresholded 30-day distinct-reader count. Never return notes, progress or raw event rows. |
+
 ## Unified entitlement decisions — 2026-10-27
 
 | ID | Status | Sources and issue | Resolution |

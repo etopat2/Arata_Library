@@ -1,5 +1,7 @@
 # Arata TechLibrary database
 
+The institutional access extension is documented in [the institution runbook](../apps/api/INSTITUTIONS.md). Apply its four forward migrations to the isolated test database before development, run the validation and physical ERD scripts, and inspect active legacy eligibility policies before migration `202610270009`. The current verified development catalog has 99 tables, 192 foreign keys and 35 migrations. Keep production institutional agreements and evidence disabled until their accountable approvals are complete.
+
 This package defines the PostgreSQL data layer for the SRS baseline. Application services enforce authorization and orchestrate transactions using the database constraints described here. The worker performs bounded reader-lease retention; broader privacy retention and research publication workflows remain separate implementation work.
 
 ## Requirements and structure

@@ -45,7 +45,7 @@ SCHEMAS = {
         "scope": SCOPE, "publicationId": nullable(UUID), "volumeId": nullable(UUID),
         "memberLimit": INT, "permittedCategories": arr(TEXT), "startsAt": TIME,
         "endsAt": TIME, "createdById": nullable(UUID), "approvedById": nullable(UUID),
-        "approvedAt": nullable(TIME)}),
+        "approvedAt": nullable(TIME), "reportingEnabled": {"type": "boolean"}}),
     "InstitutionAgreementState": obj({"id": UUID, "status": TEXT}),
     "EntitlementMaintenance": obj({"notified": INT}),
     "EntitlementGrantInput": obj({"userId": UUID, "reason": REASON, "scope": SCOPE,
@@ -68,7 +68,7 @@ SCHEMAS = {
         "memberLimit": {"type": "integer", "minimum": 1, "maximum": 100000},
         "permittedCategories": arr({"type": "string", "enum": ["STUDENT", "ACADEMIC_STAFF",
             "ORGANIZATION_MEMBER", "SCHOLARSHIP", "SPONSORED_COHORT"]}),
-        "startsAt": TIME, "endsAt": TIME}, ["institutionId", "reason", "scope", "memberLimit",
+        "startsAt": TIME, "endsAt": TIME, "reportingEnabled": {"type": "boolean"}}, ["institutionId", "reason", "scope", "memberLimit",
             "permittedCategories", "startsAt", "endsAt"]),
 }
 

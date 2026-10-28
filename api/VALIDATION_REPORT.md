@@ -1,5 +1,11 @@
 # API contract validation report
 
+## Institutional runtime overlay — 2026-10-28
+
+`institution_runtime.py` defines explicit request and response DTOs, server-side permission conditions, independent approval and tenant boundaries for 32 running institution operations. The rebuilt OpenAPI 3.1 contract has **239 unique operations on 202 paths, 500 schemas, 239 policy rules and 239 endpoint trace rows**. `npm run api:validate` passed 112 request and 2,390 response examples, security declarations, acceptance IDs and unique operation IDs; `npm run api:types` regenerated strict TypeScript definitions. `npm run api:test` passed **11/11**, including institution route and deny-by-default boundary assertions against the stub. The separate live NestJS institution tests passed 9/9; the stub itself does not prove live DNS propagation or SSO federation.
+
+Institutional SSO is deliberately a metadata-only contract with `authenticationEnabled=false`. The 102 original design candidates remain preserved; 238 of 287 SRS IDs have direct operation anchors and 49 retain documented indirect coverage. Legacy design-stage routes outside the runtime overlays are not claimed as implemented.
+
 ## Billing runtime overlay — 2026-10-27
 
 `billing_runtime.py` reconciles 28 running `/api/v1` billing operations with the generated OpenAPI 3.1 contract. The regenerated contract has 201 unique operations, 170 paths, 401 schemas, 201 policy rows and 201 endpoint trace rows. `api:validate` passed schema, security, example, acceptance-ID and duplicate checks; `api:test` passed 7/7 against the test-only stub, including exact billing path/DTO/finance MFA assertions. TypeScript definitions regenerated in `api/generated/v1.ts`. The billing service also has isolated PostgreSQL and HTTP authorization tests in `tests/integration/` and `database/tests/`; those results are recorded separately in `Documentation/Implementation/TEST_RESULTS.md`. The stub does not verify real gateway behavior; Flutterwave sandbox credentials are unavailable (GAP-033).

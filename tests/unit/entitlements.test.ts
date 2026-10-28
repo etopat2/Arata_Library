@@ -24,6 +24,19 @@ describe('independent effective entitlements', () => {
       'institution',
     ]);
   });
+  it('keeps paid access when institutional eligibility is suspended or expires', () => {
+    const paid = fact({ id: 'paid-subscription', source: 'PAID' });
+    const institution = fact({ id: 'school-benefit', source: 'INSTITUTION' });
+    for (const unavailable of [
+      { ...institution, status: 'SUSPENDED' as const },
+      { ...institution, endsAt: now },
+      { ...institution, sourceValid: false },
+    ]) {
+      expect(
+        resolveEffectiveEntitlement([paid, unavailable], {}, now).matched.map((x) => x.id),
+      ).toEqual(['paid-subscription']);
+    }
+  });
   it('rejects future, suspended and invalid source records', () => {
     const facts = [
       fact({ startsAt: new Date('2026-10-28T00:00:00.000Z') }),

@@ -1,5 +1,13 @@
 # Requirements and design risk register
 
+## Institutional additions — 2026-10-28
+
+| Risk | Likelihood | Impact | SRS / gap | Mitigation and evidence required | Proposed owner |
+|---|---|---|---|---|---|
+| RSK-INS-01 Domain ownership is mistaken for current student enrollment | Medium | High | `FR-INS-002/004/005`, `BR-014` | Distinct email confirmation, reviewed category policy, manual/roster evidence, bounded membership and negative forged-domain tests. Obtain institution evidence standard. | Institution operations |
+| RSK-INS-02 Scoped manager reads another institution or private learner history | Medium | Critical | `FR-INS-009/013`, `BR-017` | Server-side tenant query, recent MFA, permission checks, aggregate opt-in/threshold and cross-tenant tests; no notes/progress fields in manager DTOs. | Security + API |
+| RSK-INS-03 SSO metadata is treated as a trusted authentication provider | Medium | Critical | `FR-INS-004`, GAP-036 | Keep authentication disabled and SSO evidence policy unapprovable until real issuer/JWKS/assertion and revocation tests pass. | Identity + institution operations |
+
 Updated 2026-10-22. Likelihood and impact are planning assessments, not measured production incidents. Owners are proposed functions pending assignment.
 
 | Risk | Likelihood | Impact | SRS / gap | Mitigation and evidence required | Proposed owner |

@@ -1,5 +1,14 @@
 # Implementation assumptions register
 
+## Institutional module assumptions — 2026-10-28
+
+| ID | Assumption | Basis and consequence | Validation or owner checkpoint |
+|---|---|---|---|
+| ASM-INS-01 | DNS TXT is the local implemented ownership method; an opaque legal identity reference precedes independent approval. | `FR-INS-001/002/008` require controlled evidence. The platform policy may list other methods, but they are not silently treated as verified. | Confirm each institution's acceptable legal and domain evidence before production approval. |
+| ASM-INS-02 | Student status requires reviewed manual or roster evidence unless a specific category policy receives separate central approval for domain-only verification. | `FR-INS-004/005`, `BR-014`; exact email domain and verified email alone do not prove enrollment. | Institution owner approves enrollment evidence, period, member limit and scope. |
+| ASM-INS-03 | A provider record is configuration metadata, not an active SSO trust relationship. | No verified issuer/assertion contract or test identity provider is supplied. | Complete IdP integration and security conformance before enabling SSO membership evidence. |
+| ASM-INS-04 | Aggregate engagement is opt-in per approved agreement and suppressed below the current disclosure threshold. | `FR-INS-013`, `BR-017`; no manager-level reading history is released. | Privacy owner reviews report purpose and aggregate threshold before production publication. |
+
 Updated 2026-10-22. These are engineering planning assumptions, not SRS amendments or business approvals. Each is reversible before the affected module is released. Material owner questions are listed in [PROPOSED_CLARIFICATIONS.md](PROPOSED_CLARIFICATIONS.md).
 
 | ID | Assumption | Basis and consequence | Validation or owner checkpoint |

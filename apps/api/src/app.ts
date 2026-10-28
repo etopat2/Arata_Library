@@ -36,6 +36,8 @@ import { BillingService } from './billing/billing.service.js';
 import { configuredGateway } from './billing/gateway.js';
 import { EntitlementController } from './entitlements/entitlement.controller.js';
 import { EntitlementService } from './entitlements/entitlement.service.js';
+import { InstitutionController } from './institutions/institution.controller.js';
+import { InstitutionService } from './institutions/institution.service.js';
 
 export type ApiConfig = ReturnType<typeof loadConfig>;
 export function loadConfig() {
@@ -99,6 +101,7 @@ class HealthController {
     PlatformPolicyController,
     BillingController,
     EntitlementController,
+    InstitutionController,
   ],
   providers: [
     { provide: 'APP_CONFIG', useFactory: loadConfig },
@@ -119,6 +122,7 @@ class HealthController {
     { provide: 'BILLING_GATEWAY', useFactory: configuredGateway },
     BillingService,
     EntitlementService,
+    InstitutionService,
   ],
 })
 class AppModule {}

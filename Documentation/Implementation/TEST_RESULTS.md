@@ -1,5 +1,25 @@
 # Validation results
 
+## Institutional access — 2026-10-28
+
+Requirements: `FR-INS-001`–`013`, `BR-014/017`; entitlement integration `FR-ENT-001/004`. Screens: `eligibility`, `eligibility-status`, `institution-portal`, `institution-roster`, `institution-policies`, `cohort-manager`. Paths are recorded in `PROGRESS.md` and `apps/api/INSTITUTIONS.md`.
+
+| Check | Result | Evidence and limit |
+|---|---|---|
+| `npm run db:verify` | Pass | PostgreSQL 18.4 UTC; 99 tables, 192 foreign keys, 113 checks, 55 triggers, 29 enums and all 35 migrations complete. App access remains isolated from research data. |
+| `npm run api:validate` | Pass | 239 operations, 202 paths, 500 schemas, 239 policy rows, 239 trace rows, 112 request examples and 2,390 response examples validated. |
+| Focused institution and entitlement Vitest | 14/14 pass | `tests/unit/institution-rules.test.ts`, `tests/integration/institutions-http.test.ts`, and `tests/unit/entitlements.test.ts`; includes tenant scope, access overlap, suspension/expiry, role and MFA checks, DNS verification, policies, membership and cohort behavior. |
+| Database constraint suite | 16/16 pass | Referential integrity, duplicates, immutable published data, entitlement conditions, institutional membership rules, payment idempotency, research deduplication and retention/deletion controls. |
+| Institution contract tests | 2/2 pass | `python -m pytest -q api/tests/test_institution_runtime.py`; closed request/response schemas and concrete operation policy metadata. |
+| Institution API integration | 7/7 pass | Anonymous and cross-tenant denial, central approval and independent review; does not claim live federation support. |
+| Complete Vitest regression suite | 102/102 pass | `npm run test:foundation -- --reporter=dot --silent`; all 18 test files passed, including billing, identity, publishing, catalogue, reader, entitlements, institutional and worker regressions. |
+| `npm run api:test`, API types | 11/11 pass; pass | Stub-server and contract tests passed, and generated TypeScript types are current. |
+| Browser and accessibility | 1/1 pass | `tests/e2e/institutions.spec.ts` at desktop and phone widths; automated axe scan had no violations. Manual WCAG review remains open. |
+| PWA build, strict types and lint | Pass | `npm run build -w @arata/web-pwa`, `npm run typecheck:foundation`, and final `npm run lint`; installable build and strict checks. |
+| SRS reconciliation | Pass | `build_reconciliation.py --check`: 287 requirement IDs, 90 screens, 102 design API anchors, 99 Prisma models; source SRS sign-off remains pending. |
+
+Institution registration, exact DNS TXT proof, separate central domain approval, reviewed eligibility methods, verified email, time-bound memberships, quotas, opt-out, tenant-scoped managers, deduplicated roster processing, cohorts and privacy-limited aggregate reporting are implemented. SSO federation is intentionally not enabled: only provider metadata/approval scaffolding exists until an IdP is verified. Evidence rules, production/staging conformance and manual accessibility acceptance remain open; no production readiness is inferred. Migration recovery is forward-only or restore from a tested backup; no database reset was used.
+
 ## Unified access entitlements — 2026-10-27
 
 Requirements: `FR-ENT-001`–`006`, `009/015`, partial `FR-PAY-011`, `FR-INS-005`–`011`, `BR-001`–`006`; free promotion is a subfeature of still-open paid gift `FR-ENT-017`. Wireframe screens: `entitlements`, `access-grants`, `trial-admin`, `eligibility`, `eligibility-status`, `institution-roster`, `institution-policies`; supplemental `institution-access` awaits design review. Paths: `apps/api/src/entitlements/`, `packages/access-policy/src/entitlements.ts`, `apps/web-pwa/src/EntitlementScreens.tsx`, `prisma/migrations/202610270006_unified_entitlements/`–`202610270008_paid_entitlement_recovery/`, `api/entitlement_runtime.py`, `database/tests/entitlements.test.ts`, `tests/unit/entitlements.test.ts`, `tests/integration/entitlements-http.test.ts`, `tests/e2e/entitlements.spec.ts`.

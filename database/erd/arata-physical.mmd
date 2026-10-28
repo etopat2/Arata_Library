@@ -132,6 +132,7 @@ erDiagram
     uuid institutionId FK
     character_varying_200_ name
     timestamp_6__with_time_zone createdAt
+    boolean active
   }
   app_CohortMember {
     uuid cohortId PK,FK
@@ -225,6 +226,10 @@ erDiagram
     character_varying_80_ verificationMode
     integer validityDays
     boolean active
+    character_varying_24_ approvalStatus
+    timestamp_6__with_time_zone approvedAt
+    uuid approvedById FK
+    uuid requestedById FK
   }
   app_EligibilityReview {
     uuid id PK
@@ -338,6 +343,12 @@ erDiagram
     character_varying_80_ verificationMode
     timestamp_6__with_time_zone approvedAt
     timestamp_6__with_time_zone createdAt
+    uuid approvedById FK
+    text decisionReason
+    character_varying_500_ evidenceRef
+    character_varying_24_ kind
+    character_varying_160_ registrationRef
+    uuid requestedById FK
   }
   app_InstitutionAgreement {
     uuid id PK
@@ -353,6 +364,7 @@ erDiagram
     uuid approvedById FK
     timestamp_6__with_time_zone approvedAt
     uuid createdById FK
+    boolean reportingEnabled
   }
   app_InstitutionDomain {
     uuid id PK
@@ -364,6 +376,40 @@ erDiagram
     timestamp_6__with_time_zone verifiedAt
     timestamp_6__with_time_zone suspendedAt
     timestamp_6__with_time_zone reviewDueAt
+    uuid requestedById FK
+  }
+  app_InstitutionDomainChallenge {
+    uuid id PK
+    uuid domainId FK
+    uuid requestedById FK
+    character_varying_32_ method
+    character_varying_128_ tokenHash
+    timestamp_6__with_time_zone expiresAt
+    timestamp_6__with_time_zone verifiedAt
+    timestamp_6__with_time_zone createdAt
+  }
+  app_InstitutionRosterImport {
+    uuid id PK
+    uuid institutionId FK
+    uuid actorId FK
+    character_varying_24_ status
+    character_varying_128_ contentHash
+    integer rowCount
+    integer acceptedCount
+    integer rejectedCount
+    timestamp_6__with_time_zone createdAt
+    timestamp_6__with_time_zone appliedAt
+  }
+  app_InstitutionSsoProvider {
+    uuid id PK
+    uuid institutionId FK
+    character_varying_500_ issuerUrl
+    character_varying_300_ clientId
+    character_varying_24_ status
+    uuid requestedById FK
+    uuid approvedById FK
+    timestamp_6__with_time_zone approvedAt
+    timestamp_6__with_time_zone createdAt
   }
   app_Invoice {
     uuid id PK
@@ -401,6 +447,7 @@ erDiagram
     timestamp_6__with_time_zone expiresAt
     timestamp_6__with_time_zone createdAt
     character_varying_32_ category
+    timestamp_6__with_time_zone optedOutAt
   }
   app_Notification {
     uuid id PK
@@ -1035,7 +1082,9 @@ erDiagram
   app_Volume o|--o{ app_Edition : "Edition_volumeId_publicationId_fkey"
   app_User ||--o{ app_EditorialReview : "EditorialReview_reviewerId_fkey"
   app_Revision ||--o{ app_EditorialReview : "EditorialReview_revisionId_fkey"
+  app_User o|--o{ app_EligibilityPolicy : "EligibilityPolicy_approvedById_fkey"
   app_Institution ||--o{ app_EligibilityPolicy : "EligibilityPolicy_institutionId_fkey"
+  app_User o|--o{ app_EligibilityPolicy : "EligibilityPolicy_requestedById_fkey"
   app_Membership ||--o{ app_EligibilityReview : "EligibilityReview_membershipId_fkey"
   app_User ||--o{ app_EligibilityReview : "EligibilityReview_reviewerId_fkey"
   app_GrantCampaign o|--o{ app_Entitlement : "Entitlement_campaignId_fkey"
@@ -1065,11 +1114,21 @@ erDiagram
   app_Asset ||--o{ app_ImportJob : "ImportJob_assetId_fkey"
   app_Edition ||--o{ app_ImportJob : "ImportJob_editionId_fkey"
   app_Revision o|--o{ app_ImportJob : "ImportJob_revisionId_fkey"
+  app_User o|--o{ app_Institution : "Institution_approvedById_fkey"
+  app_User o|--o{ app_Institution : "Institution_requestedById_fkey"
   app_User o|--o{ app_InstitutionAgreement : "InstitutionAgreement_approvedById_fkey"
   app_User o|--o{ app_InstitutionAgreement : "InstitutionAgreement_createdById_fkey"
   app_Institution ||--o{ app_InstitutionAgreement : "InstitutionAgreement_institutionId_fkey"
   app_User o|--o{ app_InstitutionDomain : "InstitutionDomain_approvedById_fkey"
   app_Institution ||--o{ app_InstitutionDomain : "InstitutionDomain_institutionId_fkey"
+  app_User o|--o{ app_InstitutionDomain : "InstitutionDomain_requestedById_fkey"
+  app_InstitutionDomain ||--o{ app_InstitutionDomainChallenge : "InstitutionDomainChallenge_domainId_fkey"
+  app_User ||--o{ app_InstitutionDomainChallenge : "InstitutionDomainChallenge_requestedById_fkey"
+  app_User ||--o{ app_InstitutionRosterImport : "InstitutionRosterImport_actorId_fkey"
+  app_Institution ||--o{ app_InstitutionRosterImport : "InstitutionRosterImport_institutionId_fkey"
+  app_User o|--o{ app_InstitutionSsoProvider : "InstitutionSsoProvider_approvedById_fkey"
+  app_Institution ||--o{ app_InstitutionSsoProvider : "InstitutionSsoProvider_institutionId_fkey"
+  app_User ||--o{ app_InstitutionSsoProvider : "InstitutionSsoProvider_requestedById_fkey"
   app_Order ||--o{ app_Invoice : "Invoice_orderId_fkey"
   app_Asset o|--o{ app_Lesson : "Lesson_bodyAssetId_fkey"
   app_Chapter ||--o{ app_Lesson : "Lesson_chapterId_fkey"

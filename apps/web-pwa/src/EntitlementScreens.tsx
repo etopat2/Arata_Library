@@ -71,6 +71,7 @@ export function EntitlementScreens() {
   const [campaignName, setCampaignName] = useState('');
   const [institutionId, setInstitutionId] = useState('');
   const [memberLimit, setMemberLimit] = useState('100');
+  const [reportingEnabled, setReportingEnabled] = useState(false);
   const [institutionCategory, setInstitutionCategory] = useState('STUDENT');
   const [campaignKind, setCampaignKind] = useState<'BULK' | 'PROMOTION'>('BULK');
   const [recipients, setRecipients] = useState('');
@@ -183,6 +184,7 @@ export function EntitlementScreens() {
         scope: scope === 'COLLECTION' || scope === 'EDITION' ? 'LIBRARY' : scope,
         ...(scope === 'PUBLICATION' || scope === 'VOLUME' ? { scopeId } : {}),
         memberLimit: Number(memberLimit),
+        reportingEnabled,
         permittedCategories: [institutionCategory],
         startsAt: start.toISOString(),
         endsAt: new Date(start.getTime() + Number(durationDays) * 86_400_000).toISOString(),
@@ -672,6 +674,16 @@ export function EntitlementScreens() {
                   required
                   className="mt-1 block w-full rounded bg-slate-800 p-2"
                 />
+              </label>
+              <label className="sm:col-span-2">
+                <input
+                  type="checkbox"
+                  checked={reportingEnabled}
+                  onChange={(event) => setReportingEnabled(event.target.checked)}
+                  className="mr-2"
+                />
+                Request aggregate engagement reporting. A second administrator must approve this
+                scope; small groups remain suppressed.
               </label>
               <label className="sm:col-span-2">
                 Decision reason

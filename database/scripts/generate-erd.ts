@@ -71,8 +71,10 @@ try {
     WHERE k.contype IN ('p', 'u') AND n.nspname IN ('app', 'research', 'research_private')`)
   ).rows;
   const tableNames = [...new Set(columns.map((c) => `${c.schema_name}.${c.table_name}`))];
-  if (tableNames.length !== 96 || foreignKeys.length !== 180)
-    throw new Error('Physical schema differs from the verified 96-table, 180-FK baseline');
+  if (tableNames.length !== 99 || foreignKeys.length !== 192)
+    throw new Error(
+      `Physical schema has ${tableNames.length} tables and ${foreignKeys.length} foreign keys; expected the institutional baseline`,
+    );
   const byTable = new Map(
     tableNames.map((name) => [
       name,

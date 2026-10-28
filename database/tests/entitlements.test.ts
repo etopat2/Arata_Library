@@ -162,9 +162,10 @@ test('institution agreements require a different approver and retain their scope
     const institution = randomUUID(),
       agreement = randomUUID();
     await client.query(
-      `INSERT INTO app."Institution" (id,"legalName",status,"verificationMode","approvedAt")
-      VALUES ($1,'[TEST ONLY] Institution','APPROVED','MANUAL',now())`,
-      [institution],
+      `INSERT INTO app."Institution" (id,"legalName",status,"verificationMode","evidenceRef",
+       "requestedById","approvedById","approvedAt")
+      VALUES ($1,'[TEST ONLY] Institution','APPROVED','MANUAL','TEST-ONLY-EVIDENCE',$2,$3,now())`,
+      [institution, issuer, approver],
     );
     await client.query(
       `INSERT INTO app."InstitutionAgreement" (id,"institutionId","createdById",scope,

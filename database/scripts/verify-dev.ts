@@ -120,12 +120,12 @@ try {
   };
   if (
     !row ||
-    row.tables !== 96 ||
+    row.tables !== 99 ||
     row.enums !== 29 ||
-    row.foreign_keys < 180 ||
+    row.foreign_keys !== 192 ||
     row.checks < 103 ||
     row.triggers < 54 ||
-    migrations.rows.length !== 31 ||
+    migrations.rows.length !== 35 ||
     migrations.rows.some((m) => !m.complete) ||
     !perms ||
     perms.app_can_research ||

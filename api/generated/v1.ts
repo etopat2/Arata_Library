@@ -896,14 +896,14 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List membership records
-         * @description List membership records. Server resolves the current subject, resource scope and policy before returning data; only the fields in the Membership response schema are exposed. Authentication: session; ownership: none; institution boundary: verified_membership_or_scoped_admin; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export. Require verified exact-domain ownership and current membership evidence; an institution manager cannot approve their own domain or cross another institution.
+         * List memberships
+         * @description List memberships. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
          */
         get: operations["get_institutional_memberships"];
         put?: never;
         /**
-         * Create membership record
-         * @description Create membership record. Server resolves the current subject, resource scope and policy before returning data; only the fields in the Membership response schema are exposed. Authentication: session; ownership: none; institution boundary: verified_membership_or_scoped_admin; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export. Require verified exact-domain ownership and current membership evidence; an institution manager cannot approve their own domain or cross another institution.
+         * Manage memberships
+         * @description Manage memberships. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
          */
         post: operations["post_institutional_memberships"];
         delete?: never;
@@ -1316,14 +1316,14 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List institution records
-         * @description List institution records. Server resolves the current subject, resource scope and policy before returning data; only the fields in the Institution response schema are exposed. Authentication: session; ownership: none; institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export. Require verified exact-domain ownership and current membership evidence; an institution manager cannot approve their own domain or cross another institution.
+         * List institutions
+         * @description List institutions. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
          */
         get: operations["get_admin_institutions"];
         put?: never;
         /**
-         * Create institution record
-         * @description Create institution record. Server resolves the current subject, resource scope and policy before returning data; only the fields in the Institution response schema are exposed. Authentication: session; ownership: none; institution boundary: none; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export. Require verified exact-domain ownership and current membership evidence; an institution manager cannot approve their own domain or cross another institution.
+         * Manage institutions
+         * @description Manage institutions. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
          */
         post: operations["post_admin_institutions"];
         delete?: never;
@@ -1339,11 +1339,15 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * List institutions {id} domains
+         * @description List institutions {id} domains. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
+         */
+        get: operations["get_admin_institutions_id_domains"];
         put?: never;
         /**
-         * Create verifieddomain record
-         * @description Create verifieddomain record. Server resolves the current subject, resource scope and policy before returning data; only the fields in the VerifiedDomain response schema are exposed. Authentication: session; ownership: none; institution boundary: verified_membership_or_scoped_admin; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export. Require verified exact-domain ownership and current membership evidence; an institution manager cannot approve their own domain or cross another institution.
+         * Manage institutions {id} domains
+         * @description Manage institutions {id} domains. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
          */
         post: operations["post_admin_institutions_id_domains"];
         delete?: never;
@@ -2234,8 +2238,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Approve a reviewed record
-         * @description Approve a reviewed record. Server resolves the current subject, resource scope and policy before returning data; only the fields in the VerifiedDomain response schema are exposed. Authentication: session; ownership: none; institution boundary: verified_membership_or_scoped_admin; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export. Require verified exact-domain ownership and current membership evidence; an institution manager cannot approve their own domain or cross another institution.
+         * Manage institutions {id} domains {domainId} approve
+         * @description Manage institutions {id} domains {domainId} approve. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
          */
         post: operations["post_admin_domain_approve"];
         delete?: never;
@@ -2252,8 +2256,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List membership records
-         * @description List membership records. Server resolves the current subject, resource scope and policy before returning data; only the fields in the Membership response schema are exposed. Authentication: session; ownership: none; institution boundary: verified_membership_or_scoped_admin; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export. Require verified exact-domain ownership and current membership evidence; an institution manager cannot approve their own domain or cross another institution.
+         * List institutions {id} memberships
+         * @description List institutions {id} memberships. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
          */
         get: operations["get_admin_institution_memberships"];
         put?: never;
@@ -3234,8 +3238,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Create importjob record
-         * @description Create importjob record. Server resolves the current subject, resource scope and policy before returning data; only the fields in the ImportJob response schema are exposed. Authentication: session; ownership: none; institution boundary: verified_membership_or_scoped_admin; entitlement: none; content permission: none. A denied object is not disclosed through a more permissive list, filter or export. Require verified exact-domain ownership and current membership evidence; an institution manager cannot approve their own domain or cross another institution.
+         * Manage institutions {id} roster-imports
+         * @description Manage institutions {id} roster-imports. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
          */
         post: operations["post_admin_roster_import"];
         delete?: never;
@@ -3770,6 +3774,418 @@ export interface paths {
          * @description Independently approve an institution benefit agreement. Server checks active policy, scope, ownership and current source state at request time.
          */
         post: operations["post_admin_institution_agreements_id_approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/institutional/eligible-institutions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List eligible-institutions
+         * @description List eligible-institutions. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
+         */
+        get: operations["get_institutional_eligible_institutions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/institutional/memberships/{id}/opt-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Manage memberships {id} opt-out
+         * @description Manage memberships {id} opt-out. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
+         */
+        post: operations["post_institutional_memberships_id_opt_out"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/institutions/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Manage institutions {id} approve
+         * @description Manage institutions {id} approve. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
+         */
+        post: operations["post_admin_institutions_id_approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/institutions/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Manage institutions {id} reject
+         * @description Manage institutions {id} reject. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
+         */
+        post: operations["post_admin_institutions_id_reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/institutions/{id}/suspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Manage institutions {id} suspend
+         * @description Manage institutions {id} suspend. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
+         */
+        post: operations["post_admin_institutions_id_suspend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/institutions/{id}/managers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Manage institutions {id} managers
+         * @description Manage institutions {id} managers. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
+         */
+        post: operations["post_admin_institutions_id_managers"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/institutions/{id}/managers/{userId}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Manage institutions {id} managers {userId} revoke
+         * @description Manage institutions {id} managers {userId} revoke. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
+         */
+        post: operations["post_admin_institutions_id_managers_userId_revoke"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/institutions/{id}/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List institutions {id} dashboard
+         * @description List institutions {id} dashboard. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
+         */
+        get: operations["get_admin_institutions_id_dashboard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/institutions/{id}/domains/{domainId}/challenge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Manage institutions {id} domains {domainId} challenge
+         * @description Manage institutions {id} domains {domainId} challenge. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
+         */
+        post: operations["post_admin_institutions_id_domains_domainId_challenge"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/institutions/{id}/domains/{domainId}/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Manage institutions {id} domains {domainId} verify
+         * @description Manage institutions {id} domains {domainId} verify. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
+         */
+        post: operations["post_admin_institutions_id_domains_domainId_verify"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/institutions/{id}/domains/{domainId}/suspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Manage institutions {id} domains {domainId} suspend
+         * @description Manage institutions {id} domains {domainId} suspend. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
+         */
+        post: operations["post_admin_institutions_id_domains_domainId_suspend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/institutions/{id}/eligibility-policies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List institutions {id} eligibility-policies
+         * @description List institutions {id} eligibility-policies. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
+         */
+        get: operations["get_admin_institutions_id_eligibility_policies"];
+        put?: never;
+        /**
+         * Manage institutions {id} eligibility-policies
+         * @description Manage institutions {id} eligibility-policies. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
+         */
+        post: operations["post_admin_institutions_id_eligibility_policies"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/institutions/{id}/eligibility-policies/{policyId}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Manage institutions {id} eligibility-policies {policyId} approve
+         * @description Manage institutions {id} eligibility-policies {policyId} approve. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
+         */
+        post: operations["post_admin_institutions_id_eligibility_policies_policyId_approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/institutions/{id}/eligibility-policies/{policyId}/suspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Manage institutions {id} eligibility-policies {policyId} suspend
+         * @description Manage institutions {id} eligibility-policies {policyId} suspend. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
+         */
+        post: operations["post_admin_institutions_id_eligibility_policies_policyId_suspend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/institutions/{id}/memberships/{membershipId}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Manage institutions {id} memberships {membershipId} review
+         * @description Manage institutions {id} memberships {membershipId} review. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
+         */
+        post: operations["post_admin_institutions_id_memberships_membershipId_review"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/institutions/{id}/cohorts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List institutions {id} cohorts
+         * @description List institutions {id} cohorts. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
+         */
+        get: operations["get_admin_institutions_id_cohorts"];
+        put?: never;
+        /**
+         * Manage institutions {id} cohorts
+         * @description Manage institutions {id} cohorts. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
+         */
+        post: operations["post_admin_institutions_id_cohorts"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/institutions/{id}/cohorts/{cohortId}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Manage institutions {id} cohorts {cohortId} members
+         * @description Manage institutions {id} cohorts {cohortId} members. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
+         */
+        post: operations["post_admin_institutions_id_cohorts_cohortId_members"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/institutions/{id}/cohorts/{cohortId}/suspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Manage institutions {id} cohorts {cohortId} suspend
+         * @description Manage institutions {id} cohorts {cohortId} suspend. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
+         */
+        post: operations["post_admin_institutions_id_cohorts_cohortId_suspend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/institutions/{id}/sso-providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List institutions {id} sso-providers
+         * @description List institutions {id} sso-providers. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
+         */
+        get: operations["get_admin_institutions_id_sso_providers"];
+        put?: never;
+        /**
+         * Manage institutions {id} sso-providers
+         * @description Manage institutions {id} sso-providers. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
+         */
+        post: operations["post_admin_institutions_id_sso_providers"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/institutions/{id}/sso-providers/{providerId}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Manage institutions {id} sso-providers {providerId} approve
+         * @description Manage institutions {id} sso-providers {providerId} approve. Server rechecks verified identity, exact domain, active approved institution, scoped manager permission and current agreement or policy as applicable. SSO metadata never enables authentication.
+         */
+        post: operations["post_admin_institutions_id_sso_providers_providerId_approve"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5382,12 +5798,11 @@ export interface components {
             requestId: string;
         };
         get_institutional_membershipsResponse: {
-            data: components["schemas"]["Membership"][];
-            page: components["schemas"]["PageInfo"];
+            data: components["schemas"]["InstitutionOwnMembership"][];
             requestId: string;
         };
         post_institutional_membershipsResponse: {
-            data: components["schemas"]["Membership"];
+            data: components["schemas"]["InstitutionMembershipState"][];
             requestId: string;
         };
         get_institutional_memberships_idResponse: {
@@ -5485,16 +5900,15 @@ export interface components {
             requestId: string;
         };
         get_admin_institutionsResponse: {
-            data: components["schemas"]["Institution"][];
-            page: components["schemas"]["PageInfo"];
+            data: components["schemas"]["InstitutionRecord"][];
             requestId: string;
         };
         post_admin_institutionsResponse: {
-            data: components["schemas"]["Institution"];
+            data: components["schemas"]["InstitutionState"][];
             requestId: string;
         };
         post_admin_institutions_id_domainsResponse: {
-            data: components["schemas"]["VerifiedDomain"];
+            data: components["schemas"]["InstitutionDomainRequested"][];
             requestId: string;
         };
         post_admin_institution_memberships_id_reviewResponse: {
@@ -5710,12 +6124,11 @@ export interface components {
             requestId: string;
         };
         post_admin_domain_approveResponse: {
-            data: components["schemas"]["VerifiedDomain"];
+            data: components["schemas"]["InstitutionDomainApproved"];
             requestId: string;
         };
         get_admin_institution_membershipsResponse: {
-            data: components["schemas"]["Membership"][];
-            page: components["schemas"]["PageInfo"];
+            data: components["schemas"]["InstitutionMembershipRecord"][];
             requestId: string;
         };
         get_reader_offline_licensesResponse: {
@@ -5964,7 +6377,7 @@ export interface components {
             requestId: string;
         };
         post_admin_roster_importResponse: {
-            data: components["schemas"]["ImportJob"];
+            data: components["schemas"]["InstitutionRosterResult"];
             requestId: string;
         };
         get_admin_institution_impact_reportResponse: {
@@ -6502,6 +6915,7 @@ export interface components {
             createdById: string | null;
             approvedById: string | null;
             approvedAt: string | null;
+            reportingEnabled: boolean;
         };
         InstitutionAgreementState: {
             /** Format: uuid */
@@ -6572,6 +6986,7 @@ export interface components {
             startsAt: string;
             /** Format: date-time */
             endsAt: string;
+            reportingEnabled?: boolean;
         };
         post_me_promotion_redemptionsResponse: {
             data: components["schemas"]["EntitlementRedeemed"];
@@ -6627,6 +7042,370 @@ export interface components {
         };
         post_admin_institution_agreements_id_approveResponse: {
             data: components["schemas"]["InstitutionAgreementState"];
+            requestId: string;
+        };
+        InstitutionRecord: {
+            /** Format: uuid */
+            id: string;
+            legalName: string;
+            kind: string;
+            registrationRef: string;
+            status: string;
+            verificationMode: string;
+            approvedAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        InstitutionState: {
+            /** Format: uuid */
+            id: string;
+            status: string;
+        };
+        InstitutionManagerAssignment: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            institutionId: string;
+            /** Format: uuid */
+            userId: string;
+        };
+        InstitutionManagerRevocation: {
+            revoked: boolean;
+        };
+        InstitutionDomainRecord: {
+            /** Format: uuid */
+            id: string;
+            domain: string;
+            verifiedAt: string | null;
+            approvedAt: string | null;
+            suspendedAt: string | null;
+            reviewDueAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        InstitutionDomainChallenge: {
+            /** Format: uuid */
+            challengeId: string;
+            dnsName: string;
+            dnsValue: string;
+            expiresInHours: number;
+        };
+        InstitutionDomainRequested: {
+            /** Format: uuid */
+            id: string;
+            domain: string;
+            /** Format: uuid */
+            challengeId: string;
+            dnsName: string;
+            dnsValue: string;
+            expiresInHours: number;
+        };
+        InstitutionDomainVerified: {
+            /** Format: uuid */
+            id: string;
+            verified: boolean;
+        };
+        InstitutionDomainApproved: {
+            /** Format: uuid */
+            id: string;
+            approved: boolean;
+        };
+        InstitutionDomainSuspended: {
+            /** Format: uuid */
+            id: string;
+            suspended: boolean;
+        };
+        InstitutionPolicyRecord: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            category: "STUDENT" | "ACADEMIC_STAFF" | "ORGANIZATION_MEMBER" | "SCHOLARSHIP" | "SPONSORED_COHORT";
+            /** @enum {string} */
+            scope: "LIBRARY" | "PUBLICATION" | "VOLUME";
+            scopeId: string | null;
+            /** @enum {string} */
+            verificationMode: "MANUAL" | "ROSTER" | "DOMAIN_ONLY" | "SSO";
+            validityDays: number;
+            active: boolean;
+            approvalStatus: string;
+            approvedAt: string | null;
+        };
+        InstitutionPolicyState: {
+            /** Format: uuid */
+            id: string;
+            status: string;
+        };
+        InstitutionPolicySuspended: {
+            /** Format: uuid */
+            id: string;
+            suspended: boolean;
+        };
+        InstitutionOwnMembership: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            institutionId: string;
+            legalName: string;
+            /** @enum {string} */
+            category: "STUDENT" | "ACADEMIC_STAFF" | "ORGANIZATION_MEMBER" | "SCHOLARSHIP" | "SPONSORED_COHORT";
+            status: string;
+            /** @enum {string} */
+            verificationMethod: "MANUAL" | "ROSTER" | "DOMAIN_ONLY" | "SSO";
+            verifiedAt: string | null;
+            expiresAt: string | null;
+            optedOutAt: string | null;
+            effectiveStatus: string;
+        };
+        InstitutionEligible: {
+            /** Format: uuid */
+            id: string;
+            legalName: string;
+            kind: string;
+        };
+        InstitutionMembershipRecord: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            userId: string;
+            email: string;
+            /** @enum {string} */
+            category: "STUDENT" | "ACADEMIC_STAFF" | "ORGANIZATION_MEMBER" | "SCHOLARSHIP" | "SPONSORED_COHORT";
+            status: string;
+            /** @enum {string} */
+            verificationMethod: "MANUAL" | "ROSTER" | "DOMAIN_ONLY" | "SSO";
+            verifiedAt: string | null;
+            expiresAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        InstitutionMembershipState: {
+            /** Format: uuid */
+            id: string;
+            status: string;
+            /** Format: date-time */
+            expiresAt?: string;
+        };
+        InstitutionRosterError: {
+            row: number;
+            code: string;
+        };
+        InstitutionRosterResult: {
+            /** Format: uuid */
+            id?: string;
+            status: string;
+            rowCount: number;
+            acceptedCount: number;
+            rejectedCount: number;
+            errors: components["schemas"]["InstitutionRosterError"][];
+        };
+        InstitutionCohort: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            active: boolean;
+            /** Format: date-time */
+            createdAt?: string;
+            memberCount?: number;
+        };
+        InstitutionCohortMember: {
+            /** Format: uuid */
+            cohortId: string;
+            /** Format: uuid */
+            userId: string;
+            active: boolean;
+        };
+        InstitutionCohortState: {
+            /** Format: uuid */
+            id: string;
+            active: boolean;
+        };
+        InstitutionSsoRecord: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uri */
+            issuerUrl: string;
+            clientId: string;
+            status: string;
+            approvedAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        InstitutionSsoState: {
+            /** Format: uuid */
+            id: string;
+            status: string;
+            authenticationEnabled: boolean;
+        };
+        InstitutionEngagement: {
+            uniqueReaders30d: number;
+            periodDays: number;
+        };
+        InstitutionDashboard: {
+            /** Format: uuid */
+            id: string;
+            legalName: string;
+            status: string;
+            activeMembers: number;
+            pendingMembers: number;
+            activeCohorts: number;
+            engagement: components["schemas"]["InstitutionEngagement"] | null;
+            engagementReason: string | null;
+        };
+        InstitutionRegistrationInput: {
+            legalName: string;
+            /** @enum {string} */
+            kind: "EDUCATIONAL" | "ORGANIZATION";
+            registrationRef: string;
+            evidenceRef: string;
+        };
+        InstitutionReasonInput: {
+            reason: string;
+        };
+        InstitutionManagerInput: {
+            /** Format: uuid */
+            userId: string;
+        };
+        InstitutionDomainInput: {
+            domain: string;
+        };
+        InstitutionProofInput: {
+            token: string;
+        };
+        InstitutionPolicyInput: {
+            /** @enum {string} */
+            category: "STUDENT" | "ACADEMIC_STAFF" | "ORGANIZATION_MEMBER" | "SCHOLARSHIP" | "SPONSORED_COHORT";
+            /** @enum {string} */
+            scope: "LIBRARY" | "PUBLICATION" | "VOLUME";
+            /** Format: uuid */
+            scopeId?: string;
+            /** @enum {string} */
+            verificationMode: "MANUAL" | "ROSTER" | "DOMAIN_ONLY" | "SSO";
+            validityDays: number;
+        };
+        InstitutionEnrollmentInput: {
+            /** Format: uuid */
+            institutionId: string;
+            /** @enum {string} */
+            category: "STUDENT" | "ACADEMIC_STAFF" | "ORGANIZATION_MEMBER" | "SCHOLARSHIP" | "SPONSORED_COHORT";
+            evidenceRef?: string;
+        };
+        InstitutionReviewInput: {
+            /** @enum {string} */
+            decision: "APPROVED" | "REJECTED" | "SUSPENDED";
+            reason: string;
+            evidenceRef?: string;
+        };
+        InstitutionRosterInput: {
+            csv: string;
+            apply?: boolean;
+        };
+        InstitutionCohortInput: {
+            name: string;
+        };
+        InstitutionCohortMemberInput: {
+            /** Format: uuid */
+            userId: string;
+            join: boolean;
+        };
+        InstitutionSsoInput: {
+            /** Format: uri */
+            issuerUrl: string;
+            clientId: string;
+        };
+        get_institutional_eligible_institutionsResponse: {
+            data: components["schemas"]["InstitutionEligible"][];
+            requestId: string;
+        };
+        post_institutional_memberships_id_opt_outResponse: {
+            data: components["schemas"]["InstitutionMembershipState"];
+            requestId: string;
+        };
+        post_admin_institutions_id_approveResponse: {
+            data: components["schemas"]["InstitutionState"];
+            requestId: string;
+        };
+        post_admin_institutions_id_rejectResponse: {
+            data: components["schemas"]["InstitutionState"];
+            requestId: string;
+        };
+        post_admin_institutions_id_suspendResponse: {
+            data: components["schemas"]["InstitutionState"];
+            requestId: string;
+        };
+        post_admin_institutions_id_managersResponse: {
+            data: components["schemas"]["InstitutionManagerAssignment"];
+            requestId: string;
+        };
+        post_admin_institutions_id_managers_userId_revokeResponse: {
+            data: components["schemas"]["InstitutionManagerRevocation"];
+            requestId: string;
+        };
+        get_admin_institutions_id_dashboardResponse: {
+            data: components["schemas"]["InstitutionDashboard"];
+            requestId: string;
+        };
+        get_admin_institutions_id_domainsResponse: {
+            data: components["schemas"]["InstitutionDomainRecord"][];
+            requestId: string;
+        };
+        post_admin_institutions_id_domains_domainId_challengeResponse: {
+            data: components["schemas"]["InstitutionDomainChallenge"];
+            requestId: string;
+        };
+        post_admin_institutions_id_domains_domainId_verifyResponse: {
+            data: components["schemas"]["InstitutionDomainVerified"];
+            requestId: string;
+        };
+        post_admin_institutions_id_domains_domainId_suspendResponse: {
+            data: components["schemas"]["InstitutionDomainSuspended"];
+            requestId: string;
+        };
+        get_admin_institutions_id_eligibility_policiesResponse: {
+            data: components["schemas"]["InstitutionPolicyRecord"][];
+            requestId: string;
+        };
+        post_admin_institutions_id_eligibility_policiesResponse: {
+            data: components["schemas"]["InstitutionPolicyState"][];
+            requestId: string;
+        };
+        post_admin_institutions_id_eligibility_policies_policyId_approveResponse: {
+            data: components["schemas"]["InstitutionPolicyState"];
+            requestId: string;
+        };
+        post_admin_institutions_id_eligibility_policies_policyId_suspendResponse: {
+            data: components["schemas"]["InstitutionPolicySuspended"];
+            requestId: string;
+        };
+        post_admin_institutions_id_memberships_membershipId_reviewResponse: {
+            data: components["schemas"]["InstitutionMembershipState"];
+            requestId: string;
+        };
+        get_admin_institutions_id_cohortsResponse: {
+            data: components["schemas"]["InstitutionCohort"][];
+            requestId: string;
+        };
+        post_admin_institutions_id_cohortsResponse: {
+            data: components["schemas"]["InstitutionCohort"][];
+            requestId: string;
+        };
+        post_admin_institutions_id_cohorts_cohortId_membersResponse: {
+            data: components["schemas"]["InstitutionCohortMember"];
+            requestId: string;
+        };
+        post_admin_institutions_id_cohorts_cohortId_suspendResponse: {
+            data: components["schemas"]["InstitutionCohortState"];
+            requestId: string;
+        };
+        get_admin_institutions_id_sso_providersResponse: {
+            data: components["schemas"]["InstitutionSsoRecord"][];
+            requestId: string;
+        };
+        post_admin_institutions_id_sso_providersResponse: {
+            data: components["schemas"]["InstitutionSsoState"][];
+            requestId: string;
+        };
+        post_admin_institutions_id_sso_providers_providerId_approveResponse: {
+            data: components["schemas"]["InstitutionSsoState"];
             requestId: string;
         };
     };
@@ -16436,23 +17215,14 @@ export interface operations {
     };
     get_institutional_memberships: {
         parameters: {
-            query?: {
-                /** @description Opaque cursor from the preceding page; do not construct it. */
-                cursor?: string;
-                /** @description Maximum page size. */
-                limit?: number;
-                /** @description Allowlisted sort key; prefix - requests descending order. */
-                sort?: "id" | "-id";
-                /** @description Filter by a domain-valid record status. */
-                status?: string;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Membership result; only authorized data is returned. */
+            /** @description List memberships */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -16461,10 +17231,6 @@ export interface operations {
                     /**
                      * @example {
                      *       "data": [],
-                     *       "page": {
-                     *         "limit": 1,
-                     *         "hasMore": true
-                     *       },
                      *       "requestId": "sample"
                      *     }
                      */
@@ -16639,28 +17405,24 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Opaque 8–128 character key. Same actor, operation, key and body returns the original result; changed body is 409. */
-                "Idempotency-Key": string;
-                /** @description Bound to the authenticated cookie session. */
                 "X-CSRF-Token": string;
             };
             path?: never;
             cookie?: never;
         };
-        /** @description Validated MembershipCreateInput DTO. Unknown fields are rejected. */
         requestBody: {
             content: {
                 /**
                  * @example {
-                 *       "institutionId": "sample",
-                 *       "category": "student"
+                 *       "institutionId": "00000000-0000-4000-8000-000000000001",
+                 *       "category": "STUDENT"
                  *     }
                  */
-                "application/json": components["schemas"]["MembershipCreateInput"];
+                "application/json": components["schemas"]["InstitutionEnrollmentInput"];
             };
         };
         responses: {
-            /** @description Membership result; only authorized data is returned. */
+            /** @description Manage memberships */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -16668,9 +17430,7 @@ export interface operations {
                 content: {
                     /**
                      * @example {
-                     *       "data": {
-                     *         "id": "sample"
-                     *       },
+                     *       "data": [],
                      *       "requestId": "sample"
                      *     }
                      */
@@ -21627,23 +22387,14 @@ export interface operations {
     };
     get_admin_institutions: {
         parameters: {
-            query?: {
-                /** @description Opaque cursor from the preceding page; do not construct it. */
-                cursor?: string;
-                /** @description Maximum page size. */
-                limit?: number;
-                /** @description Allowlisted sort key; prefix - requests descending order. */
-                sort?: "createdAt" | "-createdAt" | "name" | "-name" | "id" | "-id";
-                /** @description Filter by a domain-valid record status. */
-                status?: string;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Institution result; only authorized data is returned. */
+            /** @description List institutions */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -21652,10 +22403,6 @@ export interface operations {
                     /**
                      * @example {
                      *       "data": [],
-                     *       "page": {
-                     *         "limit": 1,
-                     *         "hasMore": true
-                     *       },
                      *       "requestId": "sample"
                      *     }
                      */
@@ -21830,29 +22577,26 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Opaque 8–128 character key. Same actor, operation, key and body returns the original result; changed body is 409. */
-                "Idempotency-Key": string;
-                /** @description Bound to the authenticated cookie session. */
                 "X-CSRF-Token": string;
             };
             path?: never;
             cookie?: never;
         };
-        /** @description Validated InstitutionCreateInput DTO. Unknown fields are rejected. */
         requestBody: {
             content: {
                 /**
                  * @example {
-                 *       "name": "sample",
                  *       "legalName": "sample",
-                 *       "contactEmail": "example@invalid.test"
+                 *       "kind": "EDUCATIONAL",
+                 *       "registrationRef": "TEST-REGISTRATION",
+                 *       "evidenceRef": "TEST-EVIDENCE"
                  *     }
                  */
-                "application/json": components["schemas"]["InstitutionCreateInput"];
+                "application/json": components["schemas"]["InstitutionRegistrationInput"];
             };
         };
         responses: {
-            /** @description Institution result; only authorized data is returned. */
+            /** @description Manage institutions */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -21860,9 +22604,7 @@ export interface operations {
                 content: {
                     /**
                      * @example {
-                     *       "data": {
-                     *         "id": "sample"
-                     *       },
+                     *       "data": [],
                      *       "requestId": "sample"
                      *     }
                      */
@@ -22033,35 +22775,219 @@ export interface operations {
             };
         };
     };
-    post_admin_institutions_id_domains: {
+    get_admin_institutions_id_domains: {
         parameters: {
             query?: never;
-            header: {
-                /** @description Opaque 8–128 character key. Same actor, operation, key and body returns the original result; changed body is 409. */
-                "Idempotency-Key": string;
-                /** @description Bound to the authenticated cookie session. */
-                "X-CSRF-Token": string;
-            };
+            header?: never;
             path: {
-                /** @description Stable id identifier. */
                 id: string;
             };
             cookie?: never;
         };
-        /** @description Validated DomainCreateInput DTO. Unknown fields are rejected. */
+        requestBody?: never;
+        responses: {
+            /** @description List institutions {id} domains */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [],
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["get_admin_institutions_id_domainsResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_admin_institutions_id_domains: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
         requestBody: {
             content: {
                 /**
                  * @example {
-                 *       "domain": "example.invalid",
-                 *       "verificationMethod": "dns_txt"
+                 *       "domain": "school.example.edu"
                  *     }
                  */
-                "application/json": components["schemas"]["DomainCreateInput"];
+                "application/json": components["schemas"]["InstitutionDomainInput"];
             };
         };
         responses: {
-            /** @description VerifiedDomain result; only authorized data is returned. */
+            /** @description Manage institutions {id} domains */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -22069,9 +22995,7 @@ export interface operations {
                 content: {
                     /**
                      * @example {
-                     *       "data": {
-                     *         "id": "sample"
-                     *       },
+                     *       "data": [],
                      *       "requestId": "sample"
                      *     }
                      */
@@ -32390,35 +33314,27 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Opaque 8–128 character key. Same actor, operation, key and body returns the original result; changed body is 409. */
-                "Idempotency-Key": string;
-                /** @description Bound to the authenticated cookie session. */
                 "X-CSRF-Token": string;
-                /** @description Recent MFA proof bound to this action and actor. */
-                "X-Step-Up-Token": string;
             };
             path: {
-                /** @description Stable id identifier. */
                 id: string;
-                /** @description Stable domainId identifier. */
                 domainId: string;
             };
             cookie?: never;
         };
-        /** @description Validated ReasonInput DTO. Unknown fields are rejected. */
         requestBody: {
             content: {
                 /**
                  * @example {
-                 *       "reason": "sample"
+                 *       "reason": "Reviewed institutional evidence"
                  *     }
                  */
-                "application/json": components["schemas"]["ReasonInput"];
+                "application/json": components["schemas"]["InstitutionReasonInput"];
             };
         };
         responses: {
-            /** @description VerifiedDomain result; only authorized data is returned. */
-            200: {
+            /** @description Manage institutions {id} domains {domainId} approve */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -32426,7 +33342,8 @@ export interface operations {
                     /**
                      * @example {
                      *       "data": {
-                     *         "id": "sample"
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "approved": true
                      *       },
                      *       "requestId": "sample"
                      *     }
@@ -32601,25 +33518,17 @@ export interface operations {
     get_admin_institution_memberships: {
         parameters: {
             query?: {
-                /** @description Opaque cursor from the preceding page; do not construct it. */
-                cursor?: string;
-                /** @description Maximum page size. */
                 limit?: number;
-                /** @description Allowlisted sort key; prefix - requests descending order. */
-                sort?: "id" | "-id";
-                /** @description Filter by a domain-valid record status. */
-                status?: string;
             };
             header?: never;
             path: {
-                /** @description Stable id identifier. */
                 id: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Membership result; only authorized data is returned. */
+            /** @description List institutions {id} memberships */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -32628,10 +33537,6 @@ export interface operations {
                     /**
                      * @example {
                      *       "data": [],
-                     *       "page": {
-                     *         "limit": 1,
-                     *         "hasMore": true
-                     *       },
                      *       "requestId": "sample"
                      *     }
                      */
@@ -44200,33 +45105,25 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                /** @description Opaque 8–128 character key. Same actor, operation, key and body returns the original result; changed body is 409. */
-                "Idempotency-Key": string;
-                /** @description Bound to the authenticated cookie session. */
                 "X-CSRF-Token": string;
             };
             path: {
-                /** @description Stable id identifier. */
                 id: string;
             };
             cookie?: never;
         };
-        /** @description Validated RosterImportCreateInput DTO. Unknown fields are rejected. */
         requestBody: {
             content: {
                 /**
                  * @example {
-                 *       "assetId": "sample",
-                 *       "dryRun": true,
-                 *       "category": "student",
-                 *       "reason": "sample"
+                 *       "csv": "email,category,action\nstudent@example.edu,STUDENT,UPSERT"
                  *     }
                  */
-                "application/json": components["schemas"]["RosterImportCreateInput"];
+                "application/json": components["schemas"]["InstitutionRosterInput"];
             };
         };
         responses: {
-            /** @description ImportJob result; only authorized data is returned. */
+            /** @description Manage institutions {id} roster-imports */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -44235,7 +45132,11 @@ export interface operations {
                     /**
                      * @example {
                      *       "data": {
-                     *         "id": "sample"
+                     *         "status": "sample",
+                     *         "rowCount": 1,
+                     *         "acceptedCount": 1,
+                     *         "rejectedCount": 1,
+                     *         "errors": []
                      *       },
                      *       "requestId": "sample"
                      *     }
@@ -49995,6 +50896,4628 @@ export interface operations {
                      *     }
                      */
                     "application/json": components["schemas"]["post_admin_institution_agreements_id_approveResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_institutional_eligible_institutions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List eligible-institutions */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [],
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["get_institutional_eligible_institutionsResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_institutional_memberships_id_opt_out: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Manage memberships {id} opt-out */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": {
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "status": "sample"
+                     *       },
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["post_institutional_memberships_id_opt_outResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_admin_institutions_id_approve: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "reason": "Reviewed institutional evidence"
+                 *     }
+                 */
+                "application/json": components["schemas"]["InstitutionReasonInput"];
+            };
+        };
+        responses: {
+            /** @description Manage institutions {id} approve */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": {
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "status": "sample"
+                     *       },
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["post_admin_institutions_id_approveResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_admin_institutions_id_reject: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "reason": "Reviewed institutional evidence"
+                 *     }
+                 */
+                "application/json": components["schemas"]["InstitutionReasonInput"];
+            };
+        };
+        responses: {
+            /** @description Manage institutions {id} reject */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": {
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "status": "sample"
+                     *       },
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["post_admin_institutions_id_rejectResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_admin_institutions_id_suspend: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "reason": "Reviewed institutional evidence"
+                 *     }
+                 */
+                "application/json": components["schemas"]["InstitutionReasonInput"];
+            };
+        };
+        responses: {
+            /** @description Manage institutions {id} suspend */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": {
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "status": "sample"
+                     *       },
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["post_admin_institutions_id_suspendResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_admin_institutions_id_managers: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "userId": "00000000-0000-4000-8000-000000000001"
+                 *     }
+                 */
+                "application/json": components["schemas"]["InstitutionManagerInput"];
+            };
+        };
+        responses: {
+            /** @description Manage institutions {id} managers */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": {
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "institutionId": "00000000-0000-4000-8000-000000000001",
+                     *         "userId": "00000000-0000-4000-8000-000000000001"
+                     *       },
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["post_admin_institutions_id_managersResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_admin_institutions_id_managers_userId_revoke: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "reason": "Reviewed institutional evidence"
+                 *     }
+                 */
+                "application/json": components["schemas"]["InstitutionReasonInput"];
+            };
+        };
+        responses: {
+            /** @description Manage institutions {id} managers {userId} revoke */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": {
+                     *         "revoked": true
+                     *       },
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["post_admin_institutions_id_managers_userId_revokeResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_admin_institutions_id_dashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List institutions {id} dashboard */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": {
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "legalName": "sample",
+                     *         "status": "sample",
+                     *         "activeMembers": 1,
+                     *         "pendingMembers": 1,
+                     *         "activeCohorts": 1,
+                     *         "engagement": null,
+                     *         "engagementReason": null
+                     *       },
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["get_admin_institutions_id_dashboardResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_admin_institutions_id_domains_domainId_challenge: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+                domainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Manage institutions {id} domains {domainId} challenge */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": {
+                     *         "challengeId": "00000000-0000-4000-8000-000000000001",
+                     *         "dnsName": "sample",
+                     *         "dnsValue": "sample",
+                     *         "expiresInHours": 1
+                     *       },
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["post_admin_institutions_id_domains_domainId_challengeResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_admin_institutions_id_domains_domainId_verify: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+                domainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+                 *     }
+                 */
+                "application/json": components["schemas"]["InstitutionProofInput"];
+            };
+        };
+        responses: {
+            /** @description Manage institutions {id} domains {domainId} verify */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": {
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "verified": true
+                     *       },
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["post_admin_institutions_id_domains_domainId_verifyResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_admin_institutions_id_domains_domainId_suspend: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+                domainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "reason": "Reviewed institutional evidence"
+                 *     }
+                 */
+                "application/json": components["schemas"]["InstitutionReasonInput"];
+            };
+        };
+        responses: {
+            /** @description Manage institutions {id} domains {domainId} suspend */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": {
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "suspended": true
+                     *       },
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["post_admin_institutions_id_domains_domainId_suspendResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_admin_institutions_id_eligibility_policies: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List institutions {id} eligibility-policies */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [],
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["get_admin_institutions_id_eligibility_policiesResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_admin_institutions_id_eligibility_policies: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "category": "STUDENT",
+                 *       "scope": "LIBRARY",
+                 *       "verificationMode": "MANUAL",
+                 *       "validityDays": 1
+                 *     }
+                 */
+                "application/json": components["schemas"]["InstitutionPolicyInput"];
+            };
+        };
+        responses: {
+            /** @description Manage institutions {id} eligibility-policies */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [],
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["post_admin_institutions_id_eligibility_policiesResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_admin_institutions_id_eligibility_policies_policyId_approve: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+                policyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "reason": "Reviewed institutional evidence"
+                 *     }
+                 */
+                "application/json": components["schemas"]["InstitutionReasonInput"];
+            };
+        };
+        responses: {
+            /** @description Manage institutions {id} eligibility-policies {policyId} approve */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": {
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "status": "sample"
+                     *       },
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["post_admin_institutions_id_eligibility_policies_policyId_approveResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_admin_institutions_id_eligibility_policies_policyId_suspend: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+                policyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "reason": "Reviewed institutional evidence"
+                 *     }
+                 */
+                "application/json": components["schemas"]["InstitutionReasonInput"];
+            };
+        };
+        responses: {
+            /** @description Manage institutions {id} eligibility-policies {policyId} suspend */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": {
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "suspended": true
+                     *       },
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["post_admin_institutions_id_eligibility_policies_policyId_suspendResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_admin_institutions_id_memberships_membershipId_review: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+                membershipId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "decision": "APPROVED",
+                 *       "reason": "Reviewed institutional evidence"
+                 *     }
+                 */
+                "application/json": components["schemas"]["InstitutionReviewInput"];
+            };
+        };
+        responses: {
+            /** @description Manage institutions {id} memberships {membershipId} review */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": {
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "status": "sample"
+                     *       },
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["post_admin_institutions_id_memberships_membershipId_reviewResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_admin_institutions_id_cohorts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List institutions {id} cohorts */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [],
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["get_admin_institutions_id_cohortsResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_admin_institutions_id_cohorts: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "name": "sample"
+                 *     }
+                 */
+                "application/json": components["schemas"]["InstitutionCohortInput"];
+            };
+        };
+        responses: {
+            /** @description Manage institutions {id} cohorts */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [],
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["post_admin_institutions_id_cohortsResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_admin_institutions_id_cohorts_cohortId_members: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+                cohortId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "userId": "00000000-0000-4000-8000-000000000001",
+                 *       "join": true
+                 *     }
+                 */
+                "application/json": components["schemas"]["InstitutionCohortMemberInput"];
+            };
+        };
+        responses: {
+            /** @description Manage institutions {id} cohorts {cohortId} members */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": {
+                     *         "cohortId": "00000000-0000-4000-8000-000000000001",
+                     *         "userId": "00000000-0000-4000-8000-000000000001",
+                     *         "active": true
+                     *       },
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["post_admin_institutions_id_cohorts_cohortId_membersResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_admin_institutions_id_cohorts_cohortId_suspend: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+                cohortId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "reason": "Reviewed institutional evidence"
+                 *     }
+                 */
+                "application/json": components["schemas"]["InstitutionReasonInput"];
+            };
+        };
+        responses: {
+            /** @description Manage institutions {id} cohorts {cohortId} suspend */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": {
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "active": true
+                     *       },
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["post_admin_institutions_id_cohorts_cohortId_suspendResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_admin_institutions_id_sso_providers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List institutions {id} sso-providers */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [],
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["get_admin_institutions_id_sso_providersResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_admin_institutions_id_sso_providers: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "issuerUrl": "https://identity.example.edu/",
+                 *       "clientId": "sample"
+                 *     }
+                 */
+                "application/json": components["schemas"]["InstitutionSsoInput"];
+            };
+        };
+        responses: {
+            /** @description Manage institutions {id} sso-providers */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [],
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["post_admin_institutions_id_sso_providersResponse"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/400",
+                     *       "title": "Invalid request",
+                     *       "status": 400,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/401",
+                     *       "title": "Authentication required",
+                     *       "status": 401,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/403",
+                     *       "title": "Access denied",
+                     *       "status": 403,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/404",
+                     *       "title": "Not found",
+                     *       "status": 404,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description State conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/409",
+                     *       "title": "State conflict",
+                     *       "status": 409,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Precondition failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/412",
+                     *       "title": "Precondition failed",
+                     *       "status": 412,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Business rule violation */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/422",
+                     *       "title": "Business rule violation",
+                     *       "status": 422,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/429",
+                     *       "title": "Rate limit exceeded",
+                     *       "status": 429,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "https://api.arata.example/problems/500",
+                     *       "title": "Unexpected server error",
+                     *       "status": 500,
+                     *       "code": "REQUEST_ERROR",
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_admin_institutions_id_sso_providers_providerId_approve: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+                providerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "reason": "Reviewed institutional evidence"
+                 *     }
+                 */
+                "application/json": components["schemas"]["InstitutionReasonInput"];
+            };
+        };
+        responses: {
+            /** @description Manage institutions {id} sso-providers {providerId} approve */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": {
+                     *         "id": "00000000-0000-4000-8000-000000000001",
+                     *         "status": "sample",
+                     *         "authenticationEnabled": true
+                     *       },
+                     *       "requestId": "sample"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["post_admin_institutions_id_sso_providers_providerId_approveResponse"];
                 };
             };
             /** @description Invalid request */

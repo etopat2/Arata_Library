@@ -271,7 +271,7 @@ def main(check: bool) -> None:
     for path, method, _ in operations:
         operation_by_path[path].append(method)
     models = set(re.findall(r"(?m)^model (\w+) \{", (ROOT / "prisma/schema.prisma").read_text(encoding="utf-8")))
-    if len(models) != 91:
+    if len(models) != 99:
         raise ValueError(f"unexpected Prisma model count: {len(models)}")
 
     prior = rows(OUT / "REQUIREMENT_TRACEABILITY.csv")
@@ -308,6 +308,8 @@ def main(check: bool) -> None:
             candidate_paths += ";/api/v1/reader/settings"
         elif ident == "NFR-UX-007":
             db_models = "ReaderPreference"
+        if ident.startswith("FR-INS-") or ident in {"BR-014", "BR-017"}:
+            db_models = prior_row["database_models"]
         for name in db_models.split(";"):
             if name and not name.startswith("N/A") and name not in models:
                 raise ValueError(f"{ident} maps missing Prisma model {name}")

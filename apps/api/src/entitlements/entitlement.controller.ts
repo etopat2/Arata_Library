@@ -60,6 +60,7 @@ const agreement = z.strictObject({
   scope: z.enum(['LIBRARY', 'PUBLICATION', 'VOLUME']),
   scopeId: uuid.optional(),
   memberLimit: z.number().int().min(1).max(100000),
+  reportingEnabled: z.boolean().default(false),
   permittedCategories: z
     .array(
       z.enum([

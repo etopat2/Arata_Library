@@ -1,5 +1,11 @@
 # Implementation progress
 
+## Institutional access — 2026-10-28
+
+Status: **live onboarding and access controls implemented; production acceptance open**. Requirements: `FR-INS-001`–`013`, `BR-014/017`, with eligibility and agreement contributions to `FR-ENT-001/004`. Screens: `eligibility`, `eligibility-status`, `institution-portal`, `institution-roster`, `institution-policies`, `cohort-manager`. Paths: `apps/api/src/institutions/`, `apps/web-pwa/src/InstitutionScreens.tsx`, `apps/api/INSTITUTIONS.md`, `prisma/schema.prisma`, migrations `202610270009`–`012`, `api/institution_runtime.py`, `api/openapi.v1.yaml`, `api/policies.v1.yaml`, `database/erd/`, and institution SQL/HTTP/unit tests.
+
+The active service registers institutions with distinct central approval, proves exact domain control by one-use DNS TXT challenge, requires separately approved category/scope/evidence policies, confirms account email, reviews time-bound memberships against agreements and quotas, supports atomic deduplicated roster import, cohort management, opt-out and tenant-scoped administration. The dashboard limits engagement to opt-in thresholded aggregate counts; managers cannot access notes or progress. SSO metadata can be requested and reviewed, but federated authentication remains disabled pending a verified IdP integration. Source SRS sign-off, institutional evidence standards, real IdP conformance, staging load and manual accessibility review remain release gates. See `TEST_RESULTS.md` and `BLOCKERS.md`.
+
 ## Unified access entitlement engine — 2026-10-27
 
 Status: **current grant/decision module implemented and locally verified; production launch gates remain open**. Requirements: `FR-ENT-001`–`006`, `FR-ENT-009/015`, `FR-PAY-011`, partial `FR-INS-005`–`011`, `BR-001`–`006`. SRS `FR-ENT-017` paid gift codes remain open; a free promotional code subfeature is implemented. Screens: `entitlements`, `access-grants`, `trial-admin`, `my-subscription`, `eligibility`, `eligibility-status`, `institution-roster`, `institution-policies`; supplemental `institution-access` administrator screen requires design review.

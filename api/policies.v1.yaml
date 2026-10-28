@@ -640,28 +640,30 @@ policies:
     effect: allow
     authentication: session
     rolesAny: []
-    ownership: none
+    permission: authenticated-account
+    ownership: subject_user
     institutionBoundary: verified_membership_or_scoped_admin
-    entitlement: none
+    entitlement: current-approved-agreement-for-benefit
     contentPermission: none
     mfa: false
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: Deny by default; central approval differs from institution manager scope.
   post_institutional_memberships:
     effect: allow
     authentication: session
     rolesAny: []
-    ownership: none
+    permission: authenticated-account
+    ownership: subject_user
     institutionBoundary: verified_membership_or_scoped_admin
-    entitlement: none
+    entitlement: current-approved-agreement-for-benefit
     contentPermission: none
     mfa: false
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: Deny by default; central approval differs from institution manager scope.
   get_institutional_memberships_id:
     effect: allow
     authentication: session
@@ -1013,45 +1015,49 @@ policies:
     effect: allow
     authentication: session
     rolesAny:
-    - platform_admin
-    - institution_manager
+    - SYSTEM_ADMIN
+    - INSTITUTION_MANAGER
+    permission: INSTITUTION_READ
     ownership: none
-    institutionBoundary: none
-    entitlement: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
     contentPermission: none
-    mfa: false
+    mfa: true
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: Deny by default; central approval differs from institution manager scope.
   post_admin_institutions:
     effect: allow
     authentication: session
     rolesAny:
-    - platform_admin
+    - SYSTEM_ADMIN
+    permission: INSTITUTION_APPROVE
     ownership: none
-    institutionBoundary: none
-    entitlement: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
     contentPermission: none
-    mfa: false
+    mfa: true
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: Deny by default; central approval differs from institution manager scope.
   post_admin_institutions_id_domains:
     effect: allow
     authentication: session
     rolesAny:
-    - platform_admin
+    - SYSTEM_ADMIN
+    - INSTITUTION_MANAGER
+    permission: INSTITUTION_ROSTER
     ownership: none
     institutionBoundary: verified_membership_or_scoped_admin
-    entitlement: none
+    entitlement: current-approved-agreement-for-benefit
     contentPermission: none
-    mfa: false
+    mfa: true
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: Deny by default; central approval differs from institution manager scope.
   post_admin_institution_memberships_id_review:
     effect: allow
     authentication: session
@@ -1755,31 +1761,33 @@ policies:
     effect: allow
     authentication: session
     rolesAny:
-    - platform_admin
+    - SYSTEM_ADMIN
+    permission: INSTITUTION_APPROVE
     ownership: none
     institutionBoundary: verified_membership_or_scoped_admin
-    entitlement: none
+    entitlement: current-approved-agreement-for-benefit
     contentPermission: none
     mfa: true
     reasonRequired: true
     distinctApprover: true
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: Deny by default; central approval differs from institution manager scope.
   get_admin_institution_memberships:
     effect: allow
     authentication: session
     rolesAny:
-    - platform_admin
-    - institution_manager
+    - SYSTEM_ADMIN
+    - INSTITUTION_MANAGER
+    permission: INSTITUTION_READ
     ownership: none
     institutionBoundary: verified_membership_or_scoped_admin
-    entitlement: none
+    entitlement: current-approved-agreement-for-benefit
     contentPermission: none
-    mfa: false
+    mfa: true
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: Deny by default; central approval differs from institution manager scope.
   get_reader_offline_licenses:
     effect: allow
     authentication: session
@@ -2583,16 +2591,18 @@ policies:
     effect: allow
     authentication: session
     rolesAny:
-    - platform_admin
+    - SYSTEM_ADMIN
+    - INSTITUTION_MANAGER
+    permission: INSTITUTION_ROSTER
     ownership: none
     institutionBoundary: verified_membership_or_scoped_admin
-    entitlement: none
+    entitlement: current-approved-agreement-for-benefit
     contentPermission: none
-    mfa: false
+    mfa: true
     reasonRequired: false
     distinctApprover: false
     purposeRequired: false
-    note: Deny by default; server evaluates current resource state.
+    note: Deny by default; central approval differs from institution manager scope.
   get_admin_institution_impact_report:
     effect: allow
     authentication: session
@@ -3030,3 +3040,374 @@ policies:
     distinctApprover: true
     purposeRequired: false
     note: Deny by default; server verifies scope, current policy and source evidence.
+  get_institutional_eligible_institutions:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    permission: authenticated-account
+    ownership: subject_user
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; central approval differs from institution manager scope.
+  post_institutional_memberships_id_opt_out:
+    effect: allow
+    authentication: session
+    rolesAny: []
+    permission: authenticated-account
+    ownership: subject_user
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
+    contentPermission: none
+    mfa: false
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; central approval differs from institution manager scope.
+  post_admin_institutions_id_approve:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    permission: INSTITUTION_APPROVE
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: true
+    purposeRequired: false
+    note: Deny by default; central approval differs from institution manager scope.
+  post_admin_institutions_id_reject:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    permission: INSTITUTION_APPROVE
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; central approval differs from institution manager scope.
+  post_admin_institutions_id_suspend:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    permission: INSTITUTION_APPROVE
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; central approval differs from institution manager scope.
+  post_admin_institutions_id_managers:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    permission: INSTITUTION_APPROVE
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; central approval differs from institution manager scope.
+  post_admin_institutions_id_managers_userId_revoke:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    permission: INSTITUTION_APPROVE
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; central approval differs from institution manager scope.
+  get_admin_institutions_id_dashboard:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    - INSTITUTION_MANAGER
+    permission: INSTITUTION_READ
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; central approval differs from institution manager scope.
+  get_admin_institutions_id_domains:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    - INSTITUTION_MANAGER
+    permission: INSTITUTION_READ
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; central approval differs from institution manager scope.
+  post_admin_institutions_id_domains_domainId_challenge:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    - INSTITUTION_MANAGER
+    permission: INSTITUTION_ROSTER
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; central approval differs from institution manager scope.
+  post_admin_institutions_id_domains_domainId_verify:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    - INSTITUTION_MANAGER
+    permission: INSTITUTION_ROSTER
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; central approval differs from institution manager scope.
+  post_admin_institutions_id_domains_domainId_suspend:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    permission: INSTITUTION_APPROVE
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; central approval differs from institution manager scope.
+  get_admin_institutions_id_eligibility_policies:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    - INSTITUTION_MANAGER
+    permission: INSTITUTION_READ
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; central approval differs from institution manager scope.
+  post_admin_institutions_id_eligibility_policies:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    - INSTITUTION_MANAGER
+    permission: INSTITUTION_ROSTER
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; central approval differs from institution manager scope.
+  post_admin_institutions_id_eligibility_policies_policyId_approve:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    permission: INSTITUTION_APPROVE
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: true
+    purposeRequired: false
+    note: Deny by default; central approval differs from institution manager scope.
+  post_admin_institutions_id_eligibility_policies_policyId_suspend:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    permission: INSTITUTION_APPROVE
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; central approval differs from institution manager scope.
+  post_admin_institutions_id_memberships_membershipId_review:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    - INSTITUTION_MANAGER
+    permission: INSTITUTION_ROSTER
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; central approval differs from institution manager scope.
+  get_admin_institutions_id_cohorts:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    - INSTITUTION_MANAGER
+    permission: INSTITUTION_READ
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; central approval differs from institution manager scope.
+  post_admin_institutions_id_cohorts:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    - INSTITUTION_MANAGER
+    permission: INSTITUTION_COHORT
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; central approval differs from institution manager scope.
+  post_admin_institutions_id_cohorts_cohortId_members:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    - INSTITUTION_MANAGER
+    permission: INSTITUTION_COHORT
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; central approval differs from institution manager scope.
+  post_admin_institutions_id_cohorts_cohortId_suspend:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    - INSTITUTION_MANAGER
+    permission: INSTITUTION_COHORT
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; central approval differs from institution manager scope.
+  get_admin_institutions_id_sso_providers:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    - INSTITUTION_MANAGER
+    permission: INSTITUTION_READ
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; central approval differs from institution manager scope.
+  post_admin_institutions_id_sso_providers:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    - INSTITUTION_MANAGER
+    permission: INSTITUTION_ROSTER
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
+    contentPermission: none
+    mfa: true
+    reasonRequired: false
+    distinctApprover: false
+    purposeRequired: false
+    note: Deny by default; central approval differs from institution manager scope.
+  post_admin_institutions_id_sso_providers_providerId_approve:
+    effect: allow
+    authentication: session
+    rolesAny:
+    - SYSTEM_ADMIN
+    permission: INSTITUTION_SSO
+    ownership: none
+    institutionBoundary: verified_membership_or_scoped_admin
+    entitlement: current-approved-agreement-for-benefit
+    contentPermission: none
+    mfa: true
+    reasonRequired: true
+    distinctApprover: true
+    purposeRequired: false
+    note: Deny by default; central approval differs from institution manager scope.

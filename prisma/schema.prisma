@@ -284,81 +284,90 @@ enum ResearchStudyStatus {
 }
 
 model User {
-  id                       String                  @id @default(uuid()) @db.Uuid
-  email                    String                  @unique @db.VarChar(320)
-  passwordHash             String?                 @db.VarChar(255)
-  status                   UserStatus              @default(ACTIVE)
-  emailVerifiedAt          DateTime?               @db.Timestamptz(6)
-  failedLoginCount         Int                     @default(0)
-  lockedUntil              DateTime?               @db.Timestamptz(6)
-  closedAt                 DateTime?               @db.Timestamptz(6)
-  termsAcceptedAt          DateTime?               @db.Timestamptz(6)
-  termsVersion             String                  @default("LEGACY_UNRECORDED") @db.VarChar(64)
-  privacyVersion           String                  @db.VarChar(64)
-  createdAt                DateTime                @default(now()) @db.Timestamptz(6)
-  updatedAt                DateTime                @updatedAt @db.Timestamptz(6)
-  profile                  UserProfile?
-  sessions                 AuthSession[]
-  readerLeases             ReaderLease[]
-  readerPreference         ReaderPreference?
-  authenticators           Authenticator[]
-  verificationTokens       VerificationToken[]
-  roles                    RoleAssignment[]
-  privacyPreferences       PrivacyPreference[]
-  notificationPreference   NotificationPreference?
-  subjectRequests          SubjectRequest[]
-  publications             Publication[]
-  uploads                  Asset[]
-  editorialReviews         EditorialReview[]
-  subscriptions            Subscription[]
-  trialUsages              TrialUsage[]
-  orders                   Order[]
-  entitlements             Entitlement[]
-  memberships              Membership[]
-  cohortMemberships        CohortMember[]
-  progress                 ReadingProgress[]
-  bookmarks                Bookmark[]
-  annotations              Annotation[]
-  quizAttempts             QuizAttempt[]
-  projectSubmissions       ProjectSubmission[]
-  offlineLicences          OfflineLicence[]
-  syncOperations           SyncOperation[]
-  notifications            Notification[]
-  auditEvents              AuditEvent[]
-  pseudonymLinks           PseudonymLink[]
-  policyChanges            PolicyChange[]
-  platformPoliciesCreated  PlatformPolicyVersion[] @relation("PlatformPolicyCreator")
-  platformPoliciesApproved PlatformPolicyVersion[] @relation("PlatformPolicyApprover")
-  platformPoliciesEdited   PlatformPolicyVersion[] @relation("PlatformPolicyEditor")
-  platformPolicyEvents     PlatformPolicyEvent[]
-  refundsRequested         Refund[]                @relation("RefundRequester")
-  refundsApproved          Refund[]                @relation("RefundApprover")
-  disputesReported         PaymentDispute[]        @relation("DisputeReporter")
-  disputesResolved         PaymentDispute[]        @relation("DisputeResolver")
-  requestedGrants          GrantApproval[]         @relation("GrantRequester")
-  approvedGrants           GrantApproval[]         @relation("GrantApprover")
-  issuedEntitlements       Entitlement[]           @relation("EntitlementIssuer")
-  grantCampaignsCreated    GrantCampaign[]         @relation("CampaignCreator")
-  grantCampaignsApproved   GrantCampaign[]         @relation("CampaignApprover")
-  campaignClaims           GrantCampaignClaim[]
-  accessDecisions          AccessDecisionLog[]
-  agreementsApproved       InstitutionAgreement[]  @relation("AgreementApprover")
-  agreementsCreated        InstitutionAgreement[]  @relation("AgreementCreator")
-  eligibilityReviews       EligibilityReview[]
-  approvalsRequested       ApprovalRequest[]       @relation("ApprovalRequester")
-  approvalsDecided         ApprovalRequest[]       @relation("ApprovalDecider")
-  disclosureReviews        DisclosureReview[]
-  researchExports          ResearchExport[]
-  publishedInsights        PublicInsight[]
-  researchAudits           ResearchAudit[]
-  approvedDomains          InstitutionDomain[]
-  createdRevisions         Revision[]              @relation("RevisionCreator")
-  publishedRevisions       Revision[]              @relation("RevisionPublisher")
-  rightsAttestations       RightsAttestation[]
-  uploadSessions           UploadSession[]
-  importJobs               ImportJob[]
-  publicationSchedules     PublicationSchedule[]
-  errata                   RevisionErratum[]
+  id                           String                       @id @default(uuid()) @db.Uuid
+  email                        String                       @unique @db.VarChar(320)
+  passwordHash                 String?                      @db.VarChar(255)
+  status                       UserStatus                   @default(ACTIVE)
+  emailVerifiedAt              DateTime?                    @db.Timestamptz(6)
+  failedLoginCount             Int                          @default(0)
+  lockedUntil                  DateTime?                    @db.Timestamptz(6)
+  closedAt                     DateTime?                    @db.Timestamptz(6)
+  termsAcceptedAt              DateTime?                    @db.Timestamptz(6)
+  termsVersion                 String                       @default("LEGACY_UNRECORDED") @db.VarChar(64)
+  privacyVersion               String                       @db.VarChar(64)
+  createdAt                    DateTime                     @default(now()) @db.Timestamptz(6)
+  updatedAt                    DateTime                     @updatedAt @db.Timestamptz(6)
+  profile                      UserProfile?
+  sessions                     AuthSession[]
+  readerLeases                 ReaderLease[]
+  readerPreference             ReaderPreference?
+  authenticators               Authenticator[]
+  verificationTokens           VerificationToken[]
+  roles                        RoleAssignment[]
+  privacyPreferences           PrivacyPreference[]
+  notificationPreference       NotificationPreference?
+  subjectRequests              SubjectRequest[]
+  publications                 Publication[]
+  uploads                      Asset[]
+  editorialReviews             EditorialReview[]
+  subscriptions                Subscription[]
+  trialUsages                  TrialUsage[]
+  orders                       Order[]
+  entitlements                 Entitlement[]
+  memberships                  Membership[]
+  cohortMemberships            CohortMember[]
+  progress                     ReadingProgress[]
+  bookmarks                    Bookmark[]
+  annotations                  Annotation[]
+  quizAttempts                 QuizAttempt[]
+  projectSubmissions           ProjectSubmission[]
+  offlineLicences              OfflineLicence[]
+  syncOperations               SyncOperation[]
+  notifications                Notification[]
+  auditEvents                  AuditEvent[]
+  pseudonymLinks               PseudonymLink[]
+  policyChanges                PolicyChange[]
+  platformPoliciesCreated      PlatformPolicyVersion[]      @relation("PlatformPolicyCreator")
+  platformPoliciesApproved     PlatformPolicyVersion[]      @relation("PlatformPolicyApprover")
+  platformPoliciesEdited       PlatformPolicyVersion[]      @relation("PlatformPolicyEditor")
+  platformPolicyEvents         PlatformPolicyEvent[]
+  refundsRequested             Refund[]                     @relation("RefundRequester")
+  refundsApproved              Refund[]                     @relation("RefundApprover")
+  disputesReported             PaymentDispute[]             @relation("DisputeReporter")
+  disputesResolved             PaymentDispute[]             @relation("DisputeResolver")
+  requestedGrants              GrantApproval[]              @relation("GrantRequester")
+  approvedGrants               GrantApproval[]              @relation("GrantApprover")
+  issuedEntitlements           Entitlement[]                @relation("EntitlementIssuer")
+  grantCampaignsCreated        GrantCampaign[]              @relation("CampaignCreator")
+  grantCampaignsApproved       GrantCampaign[]              @relation("CampaignApprover")
+  campaignClaims               GrantCampaignClaim[]
+  accessDecisions              AccessDecisionLog[]
+  agreementsApproved           InstitutionAgreement[]       @relation("AgreementApprover")
+  agreementsCreated            InstitutionAgreement[]       @relation("AgreementCreator")
+  institutionsRequested        Institution[]                @relation("InstitutionRequester")
+  institutionsApproved         Institution[]                @relation("InstitutionApprover")
+  domainsRequested             InstitutionDomain[]          @relation("DomainRequester")
+  domainChallenges             InstitutionDomainChallenge[]
+  eligibilityPoliciesRequested EligibilityPolicy[]          @relation("EligibilityPolicyRequester")
+  eligibilityPoliciesApproved  EligibilityPolicy[]          @relation("EligibilityPolicyApprover")
+  rosterImports                InstitutionRosterImport[]
+  ssoProvidersRequested        InstitutionSsoProvider[]     @relation("InstitutionSsoRequester")
+  ssoProvidersApproved         InstitutionSsoProvider[]     @relation("InstitutionSsoApprover")
+  eligibilityReviews           EligibilityReview[]
+  approvalsRequested           ApprovalRequest[]            @relation("ApprovalRequester")
+  approvalsDecided             ApprovalRequest[]            @relation("ApprovalDecider")
+  disclosureReviews            DisclosureReview[]
+  researchExports              ResearchExport[]
+  publishedInsights            PublicInsight[]
+  researchAudits               ResearchAudit[]
+  approvedDomains              InstitutionDomain[]
+  createdRevisions             Revision[]                   @relation("RevisionCreator")
+  publishedRevisions           Revision[]                   @relation("RevisionPublisher")
+  rightsAttestations           RightsAttestation[]
+  uploadSessions               UploadSession[]
+  importJobs                   ImportJob[]
+  publicationSchedules         PublicationSchedule[]
+  errata                       RevisionErratum[]
 
   @@schema("app")
 }
@@ -1438,6 +1447,7 @@ model InstitutionAgreement {
   publicationId       String?          @db.Uuid
   volumeId            String?          @db.Uuid
   memberLimit         Int
+  reportingEnabled    Boolean          @default(false)
   permittedCategories String[]         @default([])
   startsAt            DateTime         @db.Timestamptz(6)
   endsAt              DateTime         @db.Timestamptz(6)
@@ -1470,33 +1480,46 @@ model AccessDecisionLog {
 }
 
 model Institution {
-  id               String                 @id @default(uuid()) @db.Uuid
-  legalName        String                 @db.VarChar(400)
-  status           InstitutionStatus      @default(PENDING)
-  verificationMode String                 @db.VarChar(80)
-  approvedAt       DateTime?              @db.Timestamptz(6)
-  createdAt        DateTime               @default(now()) @db.Timestamptz(6)
+  id               String                    @id @default(uuid()) @db.Uuid
+  legalName        String                    @db.VarChar(400)
+  kind             String                    @default("EDUCATIONAL") @db.VarChar(24)
+  registrationRef  String?                   @db.VarChar(160)
+  evidenceRef      String?                   @db.VarChar(500)
+  requestedById    String?                   @db.Uuid
+  approvedById     String?                   @db.Uuid
+  decisionReason   String?
+  status           InstitutionStatus         @default(PENDING)
+  verificationMode String                    @db.VarChar(80)
+  approvedAt       DateTime?                 @db.Timestamptz(6)
+  createdAt        DateTime                  @default(now()) @db.Timestamptz(6)
+  requestedBy      User?                     @relation("InstitutionRequester", fields: [requestedById], references: [id], onDelete: Restrict)
+  approvedBy       User?                     @relation("InstitutionApprover", fields: [approvedById], references: [id], onDelete: Restrict)
   domains          InstitutionDomain[]
   memberships      Membership[]
   policies         EligibilityPolicy[]
   cohorts          Cohort[]
   agreements       InstitutionAgreement[]
+  rosterImports    InstitutionRosterImport[]
+  ssoProviders     InstitutionSsoProvider[]
 
   @@schema("app")
 }
 
 model InstitutionDomain {
-  id                 String      @id @default(uuid()) @db.Uuid
-  institutionId      String      @db.Uuid
-  domain             String      @unique @db.VarChar(253)
-  ownershipProofHash String?     @db.VarChar(128)
-  approvedById       String?     @db.Uuid
-  approvedAt         DateTime?   @db.Timestamptz(6)
-  verifiedAt         DateTime?   @db.Timestamptz(6)
-  suspendedAt        DateTime?   @db.Timestamptz(6)
-  reviewDueAt        DateTime?   @db.Timestamptz(6)
-  institution        Institution @relation(fields: [institutionId], references: [id], onDelete: Restrict)
-  approvedBy         User?       @relation(fields: [approvedById], references: [id], onDelete: Restrict)
+  id                 String                       @id @default(uuid()) @db.Uuid
+  institutionId      String                       @db.Uuid
+  domain             String                       @unique @db.VarChar(253)
+  ownershipProofHash String?                      @db.VarChar(128)
+  requestedById      String?                      @db.Uuid
+  approvedById       String?                      @db.Uuid
+  approvedAt         DateTime?                    @db.Timestamptz(6)
+  verifiedAt         DateTime?                    @db.Timestamptz(6)
+  suspendedAt        DateTime?                    @db.Timestamptz(6)
+  reviewDueAt        DateTime?                    @db.Timestamptz(6)
+  institution        Institution                  @relation(fields: [institutionId], references: [id], onDelete: Restrict)
+  requestedBy        User?                        @relation("DomainRequester", fields: [requestedById], references: [id], onDelete: Restrict)
+  approvedBy         User?                        @relation(fields: [approvedById], references: [id], onDelete: Restrict)
+  challenges         InstitutionDomainChallenge[]
 
   @@index([institutionId, verifiedAt])
   @@schema("app")
@@ -1512,6 +1535,7 @@ model Membership {
   evidenceRef        String?
   verifiedAt         DateTime?           @db.Timestamptz(6)
   expiresAt          DateTime?           @db.Timestamptz(6)
+  optedOutAt         DateTime?           @db.Timestamptz(6)
   createdAt          DateTime            @default(now()) @db.Timestamptz(6)
   institution        Institution         @relation(fields: [institutionId], references: [id], onDelete: Restrict)
   user               User                @relation(fields: [userId], references: [id], onDelete: Restrict)
@@ -1532,7 +1556,13 @@ model EligibilityPolicy {
   verificationMode String           @db.VarChar(80)
   validityDays     Int
   active           Boolean          @default(false)
+  approvalStatus   String           @default("PENDING") @db.VarChar(24)
+  requestedById    String?          @db.Uuid
+  approvedById     String?          @db.Uuid
+  approvedAt       DateTime?        @db.Timestamptz(6)
   institution      Institution      @relation(fields: [institutionId], references: [id], onDelete: Restrict)
+  requestedBy      User?            @relation("EligibilityPolicyRequester", fields: [requestedById], references: [id], onDelete: Restrict)
+  approvedBy       User?            @relation("EligibilityPolicyApprover", fields: [approvedById], references: [id], onDelete: Restrict)
 
   @@index([institutionId, active])
   @@schema("app")
@@ -1556,12 +1586,66 @@ model Cohort {
   id            String         @id @default(uuid()) @db.Uuid
   institutionId String         @db.Uuid
   name          String         @db.VarChar(200)
+  active        Boolean        @default(true)
   createdAt     DateTime       @default(now()) @db.Timestamptz(6)
   institution   Institution    @relation(fields: [institutionId], references: [id], onDelete: Restrict)
   members       CohortMember[]
   entitlements  Entitlement[]
 
   @@unique([institutionId, name])
+  @@schema("app")
+}
+
+model InstitutionDomainChallenge {
+  id            String            @id @default(uuid()) @db.Uuid
+  domainId      String            @db.Uuid
+  requestedById String            @db.Uuid
+  method        String            @default("DNS_TXT") @db.VarChar(32)
+  tokenHash     String            @db.VarChar(128)
+  expiresAt     DateTime          @db.Timestamptz(6)
+  verifiedAt    DateTime?         @db.Timestamptz(6)
+  createdAt     DateTime          @default(now()) @db.Timestamptz(6)
+  domain        InstitutionDomain @relation(fields: [domainId], references: [id], onDelete: Restrict)
+  requestedBy   User              @relation(fields: [requestedById], references: [id], onDelete: Restrict)
+
+  @@index([domainId, expiresAt])
+  @@schema("app")
+}
+
+model InstitutionRosterImport {
+  id            String      @id @default(uuid()) @db.Uuid
+  institutionId String      @db.Uuid
+  actorId       String      @db.Uuid
+  status        String      @default("PREVIEW") @db.VarChar(24)
+  contentHash   String      @db.VarChar(128)
+  rowCount      Int
+  acceptedCount Int         @default(0)
+  rejectedCount Int         @default(0)
+  createdAt     DateTime    @default(now()) @db.Timestamptz(6)
+  appliedAt     DateTime?   @db.Timestamptz(6)
+  institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Restrict)
+  actor         User        @relation(fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@unique([institutionId, contentHash])
+  @@index([institutionId, createdAt(sort: Desc)])
+  @@schema("app")
+}
+
+model InstitutionSsoProvider {
+  id            String      @id @default(uuid()) @db.Uuid
+  institutionId String      @db.Uuid
+  issuerUrl     String      @db.VarChar(500)
+  clientId      String      @db.VarChar(300)
+  status        String      @default("PENDING") @db.VarChar(24)
+  requestedById String      @db.Uuid
+  approvedById  String?     @db.Uuid
+  approvedAt    DateTime?   @db.Timestamptz(6)
+  createdAt     DateTime    @default(now()) @db.Timestamptz(6)
+  institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Restrict)
+  requestedBy   User        @relation("InstitutionSsoRequester", fields: [requestedById], references: [id], onDelete: Restrict)
+  approvedBy    User?       @relation("InstitutionSsoApprover", fields: [approvedById], references: [id], onDelete: Restrict)
+
+  @@unique([institutionId, issuerUrl])
   @@schema("app")
 }
 
